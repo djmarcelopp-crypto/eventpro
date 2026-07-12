@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'core/theme/app_colors.dart';
+import 'core/theme/app_text_styles.dart';
+import 'core/theme/app_theme.dart';
+import 'core/widgets/primary_button.dart';
+
 void main() {
   runApp(const EventProApp());
 }
@@ -12,17 +17,7 @@ class EventProApp extends StatelessWidget {
     return MaterialApp(
       title: 'EventPro',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFFD4AF37),
-          onPrimary: Color(0xFF121212),
-          surface: Color(0xFF121212),
-          onSurface: Color(0xFFFFFFFF),
-        ),
-      ),
+      theme: AppTheme.darkTheme,
       home: const SplashScreen(),
     );
   }
@@ -44,46 +39,32 @@ class SplashScreen extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'EVENTPRO',
-                    style: TextStyle(
-                      color: Color(0xFFD4AF37),
-                      fontSize: 34,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.2,
+                    style: AppTextStyles.displayLarge.copyWith(
+                      color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'DJ Marcelo PP Festas e Eventos',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFFFFFFF),
-                      fontSize: 16,
-                      height: 1.5,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      color: AppColors.white,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD4AF37),
-                        foregroundColor: const Color(0xFF121212),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text('Entrar'),
-                    ),
+                  PrimaryButton(
+                    label: 'Entrar',
+                    onPressed: () {},
                   ),
                 ],
               ),
-              const Text(
+              Text(
                 'Versão 0.1.0',
-                style: TextStyle(color: Color(0xFFFFFFFF), fontSize: 12),
+                style: AppTextStyles.caption.copyWith(
+                  color: AppColors.white,
+                ),
               ),
             ],
           ),

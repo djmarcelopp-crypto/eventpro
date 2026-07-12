@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'dashboard_modules.dart';
@@ -27,6 +29,17 @@ class DashboardScreen extends StatelessWidget {
     final contentWidth = _contentWidthFor(bodyWidth);
     final totalSpacing = _gridSpacing * (columnCount - 1);
     return (contentWidth - totalSpacing) / columnCount;
+  }
+
+  void _onModuleTap(BuildContext context, DashboardModuleId id) {
+    switch (id) {
+      case DashboardModuleId.clients:
+        context.push(AppRoutes.clients);
+      case DashboardModuleId.catalog:
+      case DashboardModuleId.budgets:
+      case DashboardModuleId.settings:
+        break;
+    }
   }
 
   @override
@@ -86,7 +99,7 @@ class DashboardScreen extends StatelessWidget {
                             ),
                             child: DashboardShortcutCard(
                               module: module,
-                              onTap: () {},
+                              onTap: () => _onModuleTap(context, module.id),
                             ),
                           ),
                       ],

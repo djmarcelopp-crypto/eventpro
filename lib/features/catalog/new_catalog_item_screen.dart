@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -10,14 +11,21 @@ import 'catalog_billing_unit.dart';
 import 'catalog_category.dart';
 import 'catalog_form_validators.dart';
 import 'catalog_item_type.dart';
+import 'catalog_list_feedback.dart';
 import 'models/catalog_item.dart';
 import 'providers/catalog_provider.dart';
 import 'utils/brazilian_currency_input_formatter.dart';
+import 'utils/catalog_form_initializer.dart';
 import 'utils/catalog_price_formatter.dart';
 import 'widgets/catalog_item_image_placeholder.dart';
 
 class NewCatalogItemScreen extends ConsumerStatefulWidget {
-  const NewCatalogItemScreen({super.key});
+  const NewCatalogItemScreen({
+    super.key,
+    this.itemId,
+  });
+
+  final String? itemId;
 
   @override
   ConsumerState<NewCatalogItemScreen> createState() =>
@@ -38,6 +46,53 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
   CatalogCategory _category = CatalogCategory.sound;
   CatalogBillingUnit _billingUnit = CatalogBillingUnit.unit;
   bool _active = true;
+  bool _initializedForEdit = false;
+
+  bool get _isEditing => widget.itemId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeForEditIfNeeded();
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initializeForEditIfNeeded();
+  }
+
+  void _initializeForEditIfNeeded() {
+    if (!_isEditing || _initializedForEdit) {
+      return;
+    }
+
+    final item = ref.read(catalogProvider.notifier).findById(widget.itemId!);
+    if (item == null) {
+      return;
+    }
+
+    final values = CatalogFormInitializer.fromItem(item);
+    CatalogFormInitializer.applyToControllers(
+      values: values,
+      nameController: _nameController,
+      descriptionController: _descriptionController,
+      customUnitController: _customUnitController,
+      priceController: _priceController,
+    );
+
+    setState(() {
+      _type = values.type;
+      _category = values.category;
+      _billingUnit = values.billingUnit;
+      _active = values.active;
+      _initializedForEdit = true;
+    });
+  }
 
   @override
   void dispose() {
@@ -77,6 +132,14 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       customUnit: _customUnitController.text,
     );
 
+    final existingItem = _isEditing
+        ? ref.read(catalogProvider.notifier).findById(widget.itemId!)
+        : null;
+
+    if (_isEditing && existingItem == null) {
+      return;
+    }
+
     final item = CatalogItem.fromForm(
       type: _type,
       name: _nameController.text,
@@ -85,7 +148,21 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       price: price,
       active: _active,
       description: _descriptionController.text,
+      imageReference: existingItem?.imageReference,
+      id: existingItem?.id,
+      createdAt: existingItem?.createdAt,
     );
+
+    if (_isEditing) {
+      ref.read(catalogProvider.notifier).updateItem(item);
+      context.go(AppRoutes.catalog);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          CatalogListFeedbackPresenter.showSnackBar(CatalogListFeedback.updated);
+        });
+      });
+      return;
+    }
 
     ref.read(catalogProvider.notifier).addItem(item);
     context.pop(true);
@@ -119,7 +196,7 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Novo item',
+          _isEditing ? 'Editar item' : 'Novo item',
           style: AppTextStyles.headlineMedium.copyWith(
             fontSize: 20,
           ),
@@ -171,24 +248,29 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
                         validator: CatalogFormValidators.validateName,
                       ),
                       const SizedBox(height: _fieldSpacing),
-                      DropdownButtonFormField<CatalogCategory>(
-                        key: const Key('catalog_category_field'),
-                        initialValue: _category,
-                        decoration: _dropdownDecoration('Categoria'),
-                        items: [
-                          for (final category in CatalogCategory.values)
-                            DropdownMenuItem(
-                              value: category,
-                              child: Text(category.label),
-                            ),
-                        ],
-                        onChanged: (value) {
-                          if (value != null) {
-                            setState(() {
-                              _category = value;
-                            });
-                          }
-                        },
+                      KeyedSubtree(
+                        key: ValueKey(
+                          'catalog_category_dropdown_$_initializedForEdit$_category',
+                        ),
+                        child: DropdownButtonFormField<CatalogCategory>(
+                          key: const Key('catalog_category_field'),
+                          initialValue: _category,
+                          decoration: _dropdownDecoration('Categoria'),
+                          items: [
+                            for (final category in CatalogCategory.values)
+                              DropdownMenuItem(
+                                value: category,
+                                child: Text(category.label),
+                              ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _category = value;
+                              });
+                            }
+                          },
+                        ),
                       ),
                       const SizedBox(height: _fieldSpacing),
                       AppTextField(
@@ -200,18 +282,23 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
                         maxLines: 3,
                       ),
                       const SizedBox(height: _fieldSpacing),
-                      DropdownButtonFormField<CatalogBillingUnit>(
-                        key: const Key('catalog_unit_field'),
-                        initialValue: _billingUnit,
-                        decoration: _dropdownDecoration('Unidade de cobrança'),
-                        items: [
-                          for (final unit in CatalogBillingUnit.values)
-                            DropdownMenuItem(
-                              value: unit,
-                              child: Text(unit.label),
-                            ),
-                        ],
-                        onChanged: _onBillingUnitChanged,
+                      KeyedSubtree(
+                        key: ValueKey(
+                          'catalog_unit_dropdown_$_initializedForEdit$_billingUnit',
+                        ),
+                        child: DropdownButtonFormField<CatalogBillingUnit>(
+                          key: const Key('catalog_unit_field'),
+                          initialValue: _billingUnit,
+                          decoration: _dropdownDecoration('Unidade de cobrança'),
+                          items: [
+                            for (final unit in CatalogBillingUnit.values)
+                              DropdownMenuItem(
+                                value: unit,
+                                child: Text(unit.label),
+                              ),
+                          ],
+                          onChanged: _onBillingUnitChanged,
+                        ),
                       ),
                       if (_billingUnit.isOther) ...[
                         const SizedBox(height: _fieldSpacing),

@@ -6,12 +6,15 @@ import 'package:eventpro/features/catalog/models/catalog_item.dart';
 import 'package:eventpro/features/catalog/widgets/catalog_list_item.dart';
 
 void main() {
-  Widget buildItem(CatalogItem item) {
+  Widget buildItem(CatalogItem item, {VoidCallback? onTap}) {
     return MaterialApp(
       home: Scaffold(
         body: SizedBox(
           width: 320,
-          child: CatalogListItem(item: item),
+          child: CatalogListItem(
+            item: item,
+            onTap: onTap ?? () {},
+          ),
         ),
       ),
     );

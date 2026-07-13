@@ -1,14 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/catalog_category.dart';
 import 'package:eventpro/features/catalog/catalog_item_type.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
-import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 
 CatalogItem _sampleItem({
   String id = 'item-1',
   DateTime? createdAt,
   String? imageReference,
+  bool active = true,
 }) {
   return CatalogItem.fromForm(
     type: CatalogItemType.equipment,
@@ -16,6 +17,7 @@ CatalogItem _sampleItem({
     category: CatalogCategory.sound,
     unit: 'un',
     price: 200,
+    active: active,
     id: id,
     createdAt: createdAt ?? DateTime(2024, 6, 15),
     imageReference: imageReference,
@@ -55,10 +57,15 @@ void main() {
       expect(notifier.findById('missing'), isNull);
     });
 
-    test('updateItem preserva id e createdAt', () {
+    test('updateItem preserva id, createdAt e imageReference', () {
       final createdAt = DateTime(2024, 1, 10, 8, 30);
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem(createdAt: createdAt));
+      notifier.addItem(
+        _sampleItem(
+          createdAt: createdAt,
+          imageReference: 'catalog/items/photo.jpg',
+        ),
+      );
 
       notifier.updateItem(
         CatalogItem.fromForm(
@@ -75,15 +82,83 @@ void main() {
       final updated = container.read(catalogProvider).single;
       expect(updated.id, 'item-1');
       expect(updated.createdAt, createdAt);
+      expect(updated.imageReference, 'catalog/items/photo.jpg');
       expect(updated.name, 'DJ Profissional');
     });
 
-    test('deleteItem remove item da lista', () {
+    test('updateItem altera status ativo', () {
       final notifier = container.read(catalogProvider.notifier);
       notifier.addItem(_sampleItem());
-      notifier.deleteItem('item-1');
 
-      expect(container.read(catalogProvider), isEmpty);
+      final existing = notifier.findById('item-1')!;
+      notifier.updateItem(existing.copyWith(active: false));
+
+      expect(container.read(catalogProvider).single.active, isFalse);
+    });
+
+    test('updateItem ignora ID inexistente', () {
+      final notifier = container.read(catalogProvider.notifier);
+      notifier.addItem(_sampleItem());
+
+      notifier.updateItem(
+        CatalogItem.fromForm(
+          type: CatalogItemType.service,
+          name: 'Item fantasma',
+          category: CatalogCategory.dj,
+          unit: 'hora',
+          price: 300,
+          id: 'missing-id',
+        ),
+      );
+
+      final items = container.read(catalogProvider);
+      expect(items, hasLength(1));
+      expect(items.single.name, 'Caixa de som');
+    });
+
+    test('updateItem mantém posição na lista', () {
+      final notifier = container.read(catalogProvider.notifier);
+      notifier.addItem(
+        _sampleItem(id: 'item-1', createdAt: DateTime(2024, 1, 1)),
+      );
+      notifier.addItem(
+        CatalogItem.fromForm(
+          type: CatalogItemType.service,
+          name: 'DJ',
+          category: CatalogCategory.dj,
+          unit: 'hora',
+          price: 500,
+          id: 'item-2',
+          createdAt: DateTime(2024, 2, 1),
+        ),
+      );
+      notifier.addItem(
+        CatalogItem.fromForm(
+          type: CatalogItemType.equipment,
+          name: 'Painel LED',
+          category: CatalogCategory.ledPanel,
+          unit: 'Diária',
+          price: 800,
+          id: 'item-3',
+          createdAt: DateTime(2024, 3, 1),
+        ),
+      );
+
+      notifier.updateItem(
+        CatalogItem.fromForm(
+          type: CatalogItemType.equipment,
+          name: 'Caixa atualizada',
+          category: CatalogCategory.sound,
+          unit: 'un',
+          price: 250,
+          id: 'item-1',
+          createdAt: DateTime(2099, 1, 1),
+        ),
+      );
+
+      final items = container.read(catalogProvider);
+      expect(items.map((item) => item.id).toList(), ['item-1', 'item-2', 'item-3']);
+      expect(items.first.name, 'Caixa atualizada');
     });
   });
 }

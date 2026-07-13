@@ -28,18 +28,12 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
     final updated = item.copyWith(
       id: existing.id,
       createdAt: existing.createdAt,
+      imageReference: item.imageReference ?? existing.imageReference,
     );
 
     state = [
       for (final current in state)
         if (current.id == updated.id) updated else current,
-    ];
-  }
-
-  void deleteItem(String id) {
-    state = [
-      for (final item in state)
-        if (item.id != id) item,
     ];
   }
 }

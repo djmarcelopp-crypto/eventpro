@@ -11,6 +11,7 @@ import 'package:eventpro/features/clients/providers/cep_lookup_provider.dart';
 import 'package:eventpro/features/clients/providers/cnpj_lookup_provider.dart';
 import 'package:eventpro/features/clients/utils/client_date_formatter.dart';
 import 'package:eventpro/features/clients/client_list_feedback.dart';
+import 'package:eventpro/features/catalog/catalog_list_feedback.dart';
 import 'package:eventpro/main.dart';
 
 import 'features/clients/fakes/fake_cep_lookup_service.dart';
@@ -72,41 +73,41 @@ Future<void> _selectCompanyAndEnterCnpj(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-  Future<void> _tapCatalogSave(WidgetTester tester) async {
-    final saveButton = find.byKey(const Key('catalog_save_button'));
-    final formScrollable = find.ancestor(
-      of: saveButton,
-      matching: find.byType(Scrollable),
-    );
-    await tester.scrollUntilVisible(
-      saveButton,
-      800,
-      scrollable: formScrollable,
-    );
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(saveButton);
-    await tester.pumpAndSettle();
-    await tester.tap(saveButton);
-    await tester.pumpAndSettle();
-  }
+Future<void> _tapCatalogSave(WidgetTester tester) async {
+  final saveButton = find.byKey(const Key('catalog_save_button'));
+  final formScrollable = find.ancestor(
+    of: saveButton,
+    matching: find.byType(Scrollable),
+  );
+  await tester.scrollUntilVisible(
+    saveButton,
+    800,
+    scrollable: formScrollable,
+  );
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(saveButton);
+  await tester.pumpAndSettle();
+  await tester.tap(saveButton);
+  await tester.pumpAndSettle();
+}
 
-  Future<void> _tapSave(WidgetTester tester) async {
-    final saveButton = find.byKey(const Key('client_save_button'));
-    final formScrollable = find.ancestor(
-      of: saveButton,
-      matching: find.byType(Scrollable),
-    );
-    await tester.scrollUntilVisible(
-      saveButton,
-      800,
-      scrollable: formScrollable,
-    );
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(saveButton);
-    await tester.pumpAndSettle();
-    await tester.tap(saveButton);
-    await tester.pumpAndSettle();
-  }
+Future<void> _tapSave(WidgetTester tester) async {
+  final saveButton = find.byKey(const Key('client_save_button'));
+  final formScrollable = find.ancestor(
+    of: saveButton,
+    matching: find.byType(Scrollable),
+  );
+  await tester.scrollUntilVisible(
+    saveButton,
+    800,
+    scrollable: formScrollable,
+  );
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(saveButton);
+  await tester.pumpAndSettle();
+  await tester.tap(saveButton);
+  await tester.pumpAndSettle();
+}
 
 Future<void> _fillRequiredFields(WidgetTester tester) async {
   await tester.enterText(
@@ -129,6 +130,33 @@ Future<void> _createClientAndOpenDetail(WidgetTester tester) async {
   await _tapSave(tester);
 
   await tester.tap(find.text('Maria Silva'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _createCatalogItemAndOpenDetail(WidgetTester tester) async {
+  await _pumpAppFromSplash(tester);
+
+  await tester.tap(find.text('Entrar'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Catálogo'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.byKey(const Key('catalog_new_item_button')));
+  await tester.pumpAndSettle();
+
+  await tester.enterText(
+    find.byKey(const Key('catalog_name_field')),
+    'Mesa de som',
+  );
+  await tester.enterText(
+    find.byKey(const Key('catalog_price_field')),
+    '1500',
+  );
+  await _tapCatalogSave(tester);
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Mesa de som'));
   await tester.pumpAndSettle();
 }
 
@@ -251,6 +279,57 @@ void main() {
     expect(find.text('R\$ 1.500,00 / Unidade'), findsOneWidget);
     expect(find.text('Item cadastrado com sucesso'), findsOneWidget);
     expect(find.byKey(const Key('catalog_items_grid')), findsOneWidget);
+  });
+
+  testWidgets('Abre detalhes ao tocar item no Catálogo', (
+    WidgetTester tester,
+  ) async {
+    await _createCatalogItemAndOpenDetail(tester);
+
+    expect(find.byKey(const Key('catalog_edit_button')), findsOneWidget);
+    expect(find.text('Equipamento'), findsOneWidget);
+    expect(find.text('R\$ 1.500,00'), findsOneWidget);
+    expect(find.text('Ativo'), findsOneWidget);
+  });
+
+  testWidgets('Edita item do Catálogo e retorna com feedback', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await _createCatalogItemAndOpenDetail(tester);
+
+    await tester.tap(find.byKey(const Key('catalog_edit_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Editar item'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('catalog_name_field')),
+      'Mesa atualizada',
+    );
+    await _tapCatalogSave(tester);
+    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Catálogo'), findsOneWidget);
+    expect(find.text('Mesa atualizada'), findsOneWidget);
+  });
+
+  testWidgets('Exibe feedback global após atualização do catálogo', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_createTestApp());
+    await tester.pumpAndSettle();
+
+    CatalogListFeedbackPresenter.showSnackBar(CatalogListFeedback.updated);
+    await tester.pump();
+
+    expect(find.text('Item atualizado com sucesso'), findsOneWidget);
   });
 
   testWidgets('Navega para o formulário Novo cliente', (

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:eventpro/core/widgets/app_text_field.dart';
 import 'package:eventpro/features/catalog/catalog_billing_unit.dart';
 import 'package:eventpro/features/catalog/catalog_category.dart';
+import 'package:eventpro/features/catalog/catalog_item_type.dart';
+import 'package:eventpro/features/catalog/models/catalog_item.dart';
 import 'package:eventpro/features/catalog/new_catalog_item_screen.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 
@@ -264,6 +266,76 @@ void main() {
       expect(items.single.unit, CatalogBillingUnit.unit.label);
       expect(items.single.category, CatalogCategory.sound);
       expect(items.single.imageReference, isNull);
+    });
+
+    testWidgets('salva edição preservando id, createdAt e imageReference', (
+      tester,
+    ) async {
+      final createdAt = DateTime(2024, 2, 10);
+      final item = CatalogItem.fromForm(
+        type: CatalogItemType.equipment,
+        name: 'Mesa de som',
+        category: CatalogCategory.sound,
+        unit: 'Unidade',
+        price: 1200,
+        imageReference: 'catalog/items/mesa.jpg',
+        id: 'item-edit-1',
+        createdAt: createdAt,
+      );
+
+      late GoRouter router;
+
+      late ProviderContainer container;
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container = ProviderContainer(),
+          child: MaterialApp.router(
+            routerConfig: router = GoRouter(
+              initialLocation: '/',
+              routes: [
+                GoRoute(
+                  path: '/',
+                  builder: (context, state) => const Scaffold(
+                    body: Text('Lista do catálogo'),
+                  ),
+                ),
+                GoRoute(
+                  path: '/edit',
+                  builder: (context, state) => NewCatalogItemScreen(
+                    itemId: item.id,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      container.read(catalogProvider.notifier).addItem(item);
+      router.go('/edit');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Editar item'), findsOneWidget);
+      expect(
+        tester.widget<AppTextField>(find.byKey(const Key('catalog_name_field')))
+            .controller
+            ?.text,
+        'Mesa de som',
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('catalog_name_field')),
+        'Mesa atualizada',
+      );
+      await _tapCatalogSave(tester);
+
+      final updated = container.read(catalogProvider).single;
+      expect(updated.name, 'Mesa atualizada');
+      expect(updated.id, 'item-edit-1');
+      expect(updated.createdAt, createdAt);
+      expect(updated.imageReference, 'catalog/items/mesa.jpg');
     });
   });
 }

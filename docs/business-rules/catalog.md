@@ -49,7 +49,20 @@ Novas categorias exigirão alteração do enum `CatalogCategory`.
 - Grid responsivo: 1, 2 ou 3 colunas conforme largura da tela.
 - Cada card exibe: placeholder de foto, nome, tipo, categoria, preço por unidade e status.
 - Itens **inativos** permanecem visíveis com indicação visual clara (badge **Inativo** e opacidade reduzida).
-- Edição e exclusão: tarefas futuras.
+- Card clicável abre detalhes do item.
+
+## Desativação vs exclusão
+
+- Itens são **desativados, não apagados**, para preservar futuros históricos de orçamentos.
+- A API pública do `catalogProvider` não expõe exclusão definitiva nesta fase.
+- Desativação altera `active: false`; o item permanece no catálogo e no provider.
+
+## Detalhes e edição
+
+- Tela de detalhes exibe: foto (placeholder), nome, tipo, categoria, descrição (se houver), unidade, preço formatado, status e data de cadastro.
+- Campos vazios não geram linhas desnecessárias.
+- Edição reutiliza o formulário de cadastro, preservando `id`, `createdAt` e `imageReference`.
+- Ativar/Desativar exige confirmação; permanece na tela de detalhes com feedback local.
 
 ## Campos do item
 
@@ -86,3 +99,5 @@ Novas categorias exigirão alteração do enum `CatalogCategory`.
 
 - `/catalog` — listagem do catálogo.
 - `/catalog/new` — formulário de cadastro de item.
+- `/catalog/:id` — detalhes do item.
+- `/catalog/:id/edit` — formulário de edição do item.

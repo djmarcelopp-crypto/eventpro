@@ -20,6 +20,10 @@ class CatalogScreen extends ConsumerStatefulWidget {
 class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   static const _maxContentWidth = 960.0;
 
+  void _openItemDetail(String itemId) {
+    context.push(AppRoutes.catalogDetail(itemId));
+  }
+
   Future<void> _openNewItem() async {
     final created = await context.push<bool>(AppRoutes.catalogNew);
 
@@ -105,7 +109,11 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {
-                        return CatalogListItem(item: items[index]);
+                        final item = items[index];
+                        return CatalogListItem(
+                          item: item,
+                          onTap: () => _openItemDetail(item.id),
+                        );
                       },
                     ),
                   ),

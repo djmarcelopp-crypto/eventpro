@@ -5,12 +5,14 @@ import '../../main.dart';
 
 enum CatalogListFeedback {
   created,
+  updated,
 }
 
 abstract class CatalogListFeedbackPresenter {
   static String message(CatalogListFeedback feedback) {
     return switch (feedback) {
       CatalogListFeedback.created => 'Item cadastrado com sucesso',
+      CatalogListFeedback.updated => 'Item atualizado com sucesso',
     };
   }
 

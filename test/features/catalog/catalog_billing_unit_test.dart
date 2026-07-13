@@ -32,5 +32,17 @@ void main() {
         'Pacote especial',
       );
     });
+
+    test('fromStoredUnit retorna unidade predefinida', () {
+      final values = CatalogBillingUnitResolver.fromStoredUnit('Diária');
+      expect(values.unit, CatalogBillingUnit.daily);
+      expect(values.customUnit, isNull);
+    });
+
+    test('fromStoredUnit retorna Outro para texto customizado', () {
+      final values = CatalogBillingUnitResolver.fromStoredUnit('Pacote VIP');
+      expect(values.unit, CatalogBillingUnit.other);
+      expect(values.customUnit, 'Pacote VIP');
+    });
   });
 }

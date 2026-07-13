@@ -26,6 +26,31 @@ Nesta fase, os itens existem apenas durante a sessão do aplicativo (provider em
 
 Novas categorias exigirão alteração do enum `CatalogCategory`.
 
+## Unidades de cobrança iniciais
+
+- Unidade
+- Diária
+- Hora
+- Metro
+- Metro quadrado
+- Evento
+- Serviço
+- Outro (permite informar unidade personalizada)
+
+## Preço
+
+- Entrada amigável em pt-BR: aceita `1500`, `1500,00` e `1.500,00`.
+- Exibição formatada: `R$ 1.500,00`.
+- Valor deve ser **maior que zero**; negativos não são permitidos.
+- Colar valores formatados no campo é suportado.
+
+## Listagem
+
+- Grid responsivo: 1, 2 ou 3 colunas conforme largura da tela.
+- Cada card exibe: placeholder de foto, nome, tipo, categoria, preço por unidade e status.
+- Itens **inativos** permanecem visíveis com indicação visual clara (badge **Inativo** e opacidade reduzida).
+- Edição e exclusão: tarefas futuras.
+
 ## Campos do item
 
 | Campo | Obrigatório | Observação |
@@ -36,7 +61,7 @@ Novas categorias exigirão alteração do enum `CatalogCategory`.
 | `category` | Sim | Uma das categorias iniciais |
 | `description` | Não | Texto livre |
 | `unit` | Sim | Unidade de cobrança (ex.: un, hora, dia) |
-| `price` | Sim | Valor numérico |
+| `price` | Sim | Valor numérico em reais; deve ser **maior que zero** |
 | `active` | Sim | Padrão `true`; permite desativar sem excluir |
 | `createdAt` | Sim | Data de cadastro automática |
 | `imageReference` | Não | Referência opcional da foto principal |
@@ -59,4 +84,5 @@ Novas categorias exigirão alteração do enum `CatalogCategory`.
 
 ## Rotas
 
-- `/catalog` — listagem do catálogo (estado vazio na fundação inicial).
+- `/catalog` — listagem do catálogo.
+- `/catalog/new` — formulário de cadastro de item.

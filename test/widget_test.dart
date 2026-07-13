@@ -72,6 +72,24 @@ Future<void> _selectCompanyAndEnterCnpj(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+  Future<void> _tapCatalogSave(WidgetTester tester) async {
+    final saveButton = find.byKey(const Key('catalog_save_button'));
+    final formScrollable = find.ancestor(
+      of: saveButton,
+      matching: find.byType(Scrollable),
+    );
+    await tester.scrollUntilVisible(
+      saveButton,
+      800,
+      scrollable: formScrollable,
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+  }
+
   Future<void> _tapSave(WidgetTester tester) async {
     final saveButton = find.byKey(const Key('client_save_button'));
     final formScrollable = find.ancestor(
@@ -182,7 +200,7 @@ void main() {
     expect(find.text('Módulos'), findsOneWidget);
   });
 
-  testWidgets('Botão Novo item do Catálogo não abre formulário', (
+  testWidgets('Navega para formulário Novo item do Catálogo', (
     WidgetTester tester,
   ) async {
     await _pumpAppFromSplash(tester);
@@ -196,8 +214,43 @@ void main() {
     await tester.tap(find.byKey(const Key('catalog_new_item_button')));
     await tester.pumpAndSettle();
 
+    expect(find.text('Novo item'), findsOneWidget);
+    expect(find.byKey(const Key('catalog_name_field')), findsOneWidget);
+    expect(find.byKey(const Key('catalog_price_field')), findsOneWidget);
+    expect(find.text('Preço (R\$)'), findsOneWidget);
+    expect(find.text('Salvar'), findsOneWidget);
+  });
+
+  testWidgets('Cadastra item no Catálogo e exibe na listagem', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Catálogo'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('catalog_new_item_button')));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('catalog_name_field')),
+      'Mesa de som',
+    );
+    await tester.enterText(
+      find.byKey(const Key('catalog_price_field')),
+      '1500',
+    );
+
+    await _tapCatalogSave(tester);
+
     expect(find.text('Catálogo'), findsOneWidget);
-    expect(find.text('Nenhum item no catálogo'), findsOneWidget);
+    expect(find.text('Mesa de som'), findsOneWidget);
+    expect(find.text('R\$ 1.500,00 / Unidade'), findsOneWidget);
+    expect(find.text('Item cadastrado com sucesso'), findsOneWidget);
+    expect(find.byKey(const Key('catalog_items_grid')), findsOneWidget);
   });
 
   testWidgets('Navega para o formulário Novo cliente', (

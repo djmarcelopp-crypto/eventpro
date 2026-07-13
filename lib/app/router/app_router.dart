@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/catalog/catalog_screen.dart';
+import '../../features/catalog/new_catalog_item_screen.dart';
 import '../../features/clients/client_detail_screen.dart';
 import '../../features/clients/clients_screen.dart';
 import '../../features/clients/new_client_screen.dart';
@@ -12,6 +13,7 @@ abstract class AppRoutes {
   static const dashboard = '/dashboard';
   static const clients = '/clients';
   static const catalog = '/catalog';
+  static const catalogNew = '/catalog/new';
   static const clientsNew = '/clients/new';
 
   static String clientsDetail(String id) => '$clients/$id';
@@ -34,6 +36,12 @@ abstract class AppRouter {
       GoRoute(
         path: AppRoutes.catalog,
         builder: (context, state) => const CatalogScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewCatalogItemScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.clients,

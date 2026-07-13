@@ -8,7 +8,7 @@ class Client {
     required this.createdAt,
     required this.type,
     required this.name,
-    required this.whatsApp,
+    this.whatsApp,
     this.tradeName,
     this.phone,
     this.email,
@@ -25,7 +25,7 @@ class Client {
   final String name;
   final String? tradeName;
   final String? phone;
-  final String whatsApp;
+  final String? whatsApp;
   final String? email;
   final String? document;
   final ClientAddress? address;
@@ -38,7 +38,7 @@ class Client {
   factory Client.fromForm({
     required ClientType type,
     required String name,
-    required String whatsApp,
+    String? whatsApp,
     String? tradeName,
     String? phone,
     String? email,
@@ -63,7 +63,7 @@ class Client {
       name: name.trim(),
       tradeName: _optionalText(tradeName),
       phone: _optionalDigits(phone),
-      whatsApp: ClientFormValidators.extractDigits(whatsApp),
+      whatsApp: _optionalDigits(whatsApp),
       email: _optionalText(email),
       document: _optionalDigits(document),
       address: ClientAddress.fromForm(
@@ -97,6 +97,7 @@ class Client {
     String? internalNotes,
     bool clearTradeName = false,
     bool clearPhone = false,
+    bool clearWhatsApp = false,
     bool clearEmail = false,
     bool clearDocument = false,
     bool clearAddress = false,
@@ -111,7 +112,7 @@ class Client {
       name: name ?? this.name,
       tradeName: clearTradeName ? null : (tradeName ?? this.tradeName),
       phone: clearPhone ? null : (phone ?? this.phone),
-      whatsApp: whatsApp ?? this.whatsApp,
+      whatsApp: clearWhatsApp ? null : (whatsApp ?? this.whatsApp),
       email: clearEmail ? null : (email ?? this.email),
       document: clearDocument ? null : (document ?? this.document),
       address: clearAddress ? null : (address ?? this.address),

@@ -56,14 +56,16 @@ abstract class ClientFormInitializer {
 
     return ClientFormValues(
       clientType: client.type,
-      birthday: client.birthday,
+      birthday: client.type == ClientType.individual ? client.birthday : null,
       alsoWhatsApp: isPhoneAlsoWhatsApp(client),
       name: client.name,
       tradeName: client.tradeName ?? '',
       phone: client.phone == null
           ? ''
           : ClientDisplayFormatter.formatPhone(client.phone!),
-      whatsApp: ClientDisplayFormatter.formatWhatsApp(client.whatsApp),
+      whatsApp: client.whatsApp == null
+          ? ''
+          : ClientDisplayFormatter.formatWhatsApp(client.whatsApp!),
       email: client.email ?? '',
       document: client.document == null
           ? ''
@@ -82,9 +84,10 @@ abstract class ClientFormInitializer {
       state: address?.state ?? '',
       instagram: client.instagram ?? '',
       internalNotes: client.internalNotes ?? '',
-      birthdayText: client.birthday == null
-          ? ''
-          : ClientDateFormatter.formatBirthday(client.birthday!),
+      birthdayText: client.type == ClientType.individual &&
+              client.birthday != null
+          ? ClientDateFormatter.formatBirthday(client.birthday!)
+          : '',
     );
   }
 
@@ -131,6 +134,11 @@ abstract class ClientFormInitializer {
       return false;
     }
 
-    return client.whatsApp == '55$phone';
+    final whatsApp = client.whatsApp;
+    if (whatsApp == null) {
+      return false;
+    }
+
+    return whatsApp == '55$phone';
   }
 }

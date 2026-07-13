@@ -1,3 +1,4 @@
+import '../client_type.dart';
 import '../models/client.dart';
 import 'client_date_formatter.dart';
 import 'client_display_formatter.dart';
@@ -43,6 +44,13 @@ abstract class ClientDetailPresenter {
       );
     }
 
+    items.add(
+      ClientDetailItem(
+        label: 'Data de cadastro',
+        value: ClientDateFormatter.formatRegistrationDate(client.createdAt),
+      ),
+    );
+
     return items;
   }
 
@@ -59,12 +67,15 @@ abstract class ClientDetailPresenter {
       );
     }
 
-    items.add(
-      ClientDetailItem(
-        label: 'WhatsApp',
-        value: ClientDisplayFormatter.formatWhatsApp(client.whatsApp),
-      ),
-    );
+    final whatsApp = client.whatsApp;
+    if (whatsApp != null && whatsApp.isNotEmpty) {
+      items.add(
+        ClientDetailItem(
+          label: 'WhatsApp',
+          value: ClientDisplayFormatter.formatWhatsApp(whatsApp),
+        ),
+      );
+    }
 
     final email = client.email?.trim();
     if (email != null && email.isNotEmpty) {
@@ -131,6 +142,10 @@ abstract class ClientDetailPresenter {
   }
 
   static List<ClientDetailItem> additional(Client client) {
+    if (client.type == ClientType.company) {
+      return const [];
+    }
+
     final birthday = client.birthday;
     if (birthday == null) {
       return const [];

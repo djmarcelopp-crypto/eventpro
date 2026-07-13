@@ -61,10 +61,11 @@ class ClientListItem extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 8),
-              Text(
-                ClientDisplayFormatter.formatWhatsApp(client.whatsApp),
-                style: AppTextStyles.bodyMedium,
-              ),
+              if (ClientDisplayFormatter.formatPrimaryContact(client) != null)
+                Text(
+                  ClientDisplayFormatter.formatPrimaryContact(client)!,
+                  style: AppTextStyles.bodyMedium,
+                ),
               if (documentDigits.isNotEmpty) ...[
                 const SizedBox(height: 4),
                 Text(

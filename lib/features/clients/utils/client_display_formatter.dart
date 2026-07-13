@@ -1,4 +1,5 @@
 import '../client_type.dart';
+import '../models/client.dart';
 import 'text_input_masks.dart';
 
 abstract class ClientDisplayFormatter {
@@ -26,6 +27,25 @@ abstract class ClientDisplayFormatter {
       ClientType.individual => 'CPF',
       ClientType.company => 'CNPJ',
     };
+  }
+
+  static String? formatPrimaryContact(Client client) {
+    final whatsApp = client.whatsApp;
+    if (whatsApp != null && whatsApp.isNotEmpty) {
+      return formatWhatsApp(whatsApp);
+    }
+
+    final phone = client.phone;
+    if (phone != null && phone.isNotEmpty) {
+      return formatPhone(phone);
+    }
+
+    final email = client.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+
+    return null;
   }
 }
 

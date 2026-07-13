@@ -40,13 +40,29 @@ abstract class ClientFormValidators {
   static String? validateWhatsApp(String? value) {
     final trimmed = value?.trim() ?? '';
     if (trimmed.isEmpty) {
-      return 'Informe o WhatsApp';
+      return null;
     }
 
     final digits = extractDigits(trimmed);
     if (digits.length != 13) {
       return 'WhatsApp inválido';
     }
+    return null;
+  }
+
+  static String? validateAtLeastOneContact({
+    required String? phone,
+    required String? whatsApp,
+    required String? email,
+  }) {
+    final hasPhone = extractDigits(phone).isNotEmpty;
+    final hasWhatsApp = extractDigits(whatsApp).isNotEmpty;
+    final hasEmail = email?.trim().isNotEmpty ?? false;
+
+    if (!hasPhone && !hasWhatsApp && !hasEmail) {
+      return 'Informe pelo menos um contato: telefone, WhatsApp ou e-mail.';
+    }
+
     return null;
   }
 

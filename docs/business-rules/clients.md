@@ -8,18 +8,29 @@
 - **Nunca** deve ser incluído em materiais compartilhados com o cliente.
 - Futuras integrações (orçamentos, PDF, compartilhamento) devem respeitar esta regra.
 
-## Data de aniversário
-
-- Campo opcional destinado ao cadastro do cliente.
-- Deve ser preparado para futura integração com o módulo **Agenda**.
-
 ## Telefone e WhatsApp
 
-- **Telefone** é opcional e aceita número fixo ou celular com DDD.
-- **WhatsApp** é obrigatório e deve ser um celular brasileiro válido com prefixo `+55`.
+- **Telefone**, **WhatsApp** e **E-mail** são individualmente opcionais.
+- Para salvar, é obrigatório informar **pelo menos um** dos três contatos.
+- Mensagem quando nenhum contato é informado: *"Informe pelo menos um contato: telefone, WhatsApp ou e-mail."*
+- Quando preenchidos, cada campo mantém sua validação específica (formato de telefone, WhatsApp com DDI 55 e e-mail válido).
+- Telefone fixo retornado pela consulta de CNPJ satisfaz a regra de contato mínimo.
 - A opção **"Este número também é WhatsApp"** copia o telefone para o WhatsApp somente quando o número informado é um celular válido.
 - Telefone fixo **não** pode ser copiado automaticamente para o WhatsApp; o usuário recebe feedback claro e deve preencher o WhatsApp manualmente.
 - Desmarcar a opção **não** apaga um WhatsApp já digitado.
+- Na listagem, o contato exibido segue a prioridade: WhatsApp → Telefone → E-mail.
+
+## Data de aniversário
+
+- Campo opcional destinado ao cadastro de **Pessoa Física**.
+- **Pessoa Jurídica** não exibe nem salva data de aniversário.
+- Deve ser preparado para futura integração com o módulo **Agenda**.
+
+## Data de cadastro
+
+- Gerada automaticamente no momento do cadastro (`createdAt`).
+- Exibida nos detalhes do cliente como **Data de cadastro**.
+- Não pode ser editada; é preservada durante atualizações.
 
 ## CPF (Pessoa Física)
 

@@ -19,4 +19,8 @@ abstract class ClientDateFormatter {
     final month = _monthNames[date.month - 1];
     return '$day/$month/${date.year}';
   }
+
+  static String formatRegistrationDate(DateTime date) {
+    return formatBirthday(date);
+  }
 }

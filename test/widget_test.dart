@@ -180,7 +180,118 @@ void main() {
     await _tapSave(tester);
 
     expect(find.text('Informe o nome do cliente'), findsOneWidget);
-    expect(find.text('Informe o WhatsApp'), findsOneWidget);
+    expect(find.byKey(const Key('client_contact_error')), findsNothing);
+
+    await tester.enterText(
+      find.byKey(const Key('client_name_field')),
+      'Maria Silva',
+    );
+    await _tapSave(tester);
+
+    expect(
+      find.text(
+        'Informe pelo menos um contato: telefone, WhatsApp ou e-mail.',
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('Salva com somente telefone preenchido', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('client_name_field')),
+      'Maria Silva',
+    );
+    await tester.enterText(
+      find.byKey(const Key('client_phone_field')),
+      '6732321234',
+    );
+    await _tapSave(tester);
+
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.text('Maria Silva'), findsOneWidget);
+    expect(
+      find.text(
+        'Informe pelo menos um contato: telefone, WhatsApp ou e-mail.',
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Salva com somente e-mail preenchido', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('client_name_field')),
+      'Maria Silva',
+    );
+    await tester.enterText(
+      find.byKey(const Key('client_email_field')),
+      'maria@email.com',
+    );
+    await _tapSave(tester);
+
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.text('Maria Silva'), findsOneWidget);
+  });
+
+  testWidgets('Remove mensagem de contato ao preencher um campo', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('client_name_field')),
+      'Maria Silva',
+    );
+    await _tapSave(tester);
+
+    expect(find.byKey(const Key('client_contact_error')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('client_email_field')),
+      'maria@email.com',
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('client_contact_error')), findsNothing);
+  });
+
+  testWidgets('Prioriza erro específico de e-mail inválido', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('client_name_field')),
+      'Maria Silva',
+    );
+    await tester.enterText(
+      find.byKey(const Key('client_email_field')),
+      'email-invalido',
+    );
+    await _tapSave(tester);
+
+    expect(find.text('E-mail inválido'), findsOneWidget);
+    expect(find.byKey(const Key('client_contact_error')), findsNothing);
+  });
+
+  testWidgets('Oculta aniversário em Pessoa Jurídica', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    expect(find.byKey(const Key('client_birthday_field')), findsOneWidget);
+
+    await tester.tap(find.text('Pessoa Jurídica'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('client_birthday_field')), findsNothing);
   });
 
   testWidgets('Valida e-mail somente quando preenchido', (

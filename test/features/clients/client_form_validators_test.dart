@@ -9,14 +9,50 @@ void main() {
       expect(ClientFormValidators.validateName('Maria Silva'), isNull);
     });
 
-    test('validateWhatsApp exige 13 dígitos com DDI 55', () {
-      expect(ClientFormValidators.validateWhatsApp(null), 'Informe o WhatsApp');
+    test('validateWhatsApp valida somente quando preenchido', () {
+      expect(ClientFormValidators.validateWhatsApp(null), isNull);
+      expect(ClientFormValidators.validateWhatsApp(''), isNull);
       expect(
         ClientFormValidators.validateWhatsApp('+55 (67) 9814'),
         'WhatsApp inválido',
       );
       expect(
         ClientFormValidators.validateWhatsApp('+55 (67) 98149-5959'),
+        isNull,
+      );
+    });
+
+    test('validateAtLeastOneContact exige pelo menos um contato', () {
+      expect(
+        ClientFormValidators.validateAtLeastOneContact(
+          phone: null,
+          whatsApp: null,
+          email: null,
+        ),
+        'Informe pelo menos um contato: telefone, WhatsApp ou e-mail.',
+      );
+      expect(
+        ClientFormValidators.validateAtLeastOneContact(
+          phone: '(67) 3232-1234',
+          whatsApp: null,
+          email: null,
+        ),
+        isNull,
+      );
+      expect(
+        ClientFormValidators.validateAtLeastOneContact(
+          phone: null,
+          whatsApp: '+55 (67) 98149-5959',
+          email: null,
+        ),
+        isNull,
+      );
+      expect(
+        ClientFormValidators.validateAtLeastOneContact(
+          phone: null,
+          whatsApp: null,
+          email: 'maria@email.com',
+        ),
         isNull,
       );
     });

@@ -65,6 +65,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   ClientType _clientType = ClientType.individual;
   DateTime? _birthday;
   String? _birthdayError;
+  String? _contactError;
   bool _isCnpjLookupLoading = false;
   bool _isCepLookupLoading = false;
   bool _alsoWhatsApp = false;
@@ -72,11 +73,16 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
   bool get _isEditing => widget.clientId != null;
 
+  bool get _isIndividual => _clientType == ClientType.individual;
+
   @override
   void initState() {
     super.initState();
     _documentController.addListener(_onDocumentChanged);
     _postalCodeController.addListener(_onPostalCodeChanged);
+    _phoneController.addListener(_onContactFieldChanged);
+    _whatsAppController.addListener(_onContactFieldChanged);
+    _emailController.addListener(_onContactFieldChanged);
     if (_isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _initializeForEditIfNeeded();
@@ -126,10 +132,33 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     setState(() {
       _clientType = values.clientType;
-      _birthday = values.birthday;
+      _birthday =
+          values.clientType == ClientType.individual ? values.birthday : null;
       _alsoWhatsApp = values.alsoWhatsApp;
       _initializedForEdit = true;
     });
+
+    if (values.clientType == ClientType.company) {
+      _birthdayController.clear();
+    }
+  }
+
+  void _onContactFieldChanged() {
+    if (_contactError == null) {
+      return;
+    }
+
+    final contactError = ClientFormValidators.validateAtLeastOneContact(
+      phone: _phoneController.text,
+      whatsApp: _whatsAppController.text,
+      email: _emailController.text,
+    );
+
+    if (contactError == null) {
+      setState(() {
+        _contactError = null;
+      });
+    }
   }
 
   void _onPostalCodeChanged() {
@@ -146,6 +175,9 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   void dispose() {
     _documentController.removeListener(_onDocumentChanged);
     _postalCodeController.removeListener(_onPostalCodeChanged);
+    _phoneController.removeListener(_onContactFieldChanged);
+    _whatsAppController.removeListener(_onContactFieldChanged);
+    _emailController.removeListener(_onContactFieldChanged);
     _nameController.dispose();
     _tradeNameController.dispose();
     _phoneController.dispose();
@@ -172,6 +204,11 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     setState(() {
       _clientType = selection.first;
+      if (selection.first == ClientType.company) {
+        _birthday = null;
+        _birthdayError = null;
+        _birthdayController.clear();
+      }
       if (!_isEditing) {
         _documentController.clear();
         _tradeNameController.clear();
@@ -548,13 +585,25 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   }
 
   void _onSave() {
-    final birthdayError = ClientFormValidators.validateBirthday(_birthday);
+    final birthdayError = _isIndividual
+        ? ClientFormValidators.validateBirthday(_birthday)
+        : null;
+
+    final formValid = _formKey.currentState?.validate() ?? false;
+    final contactError = formValid
+        ? ClientFormValidators.validateAtLeastOneContact(
+            phone: _phoneController.text,
+            whatsApp: _whatsAppController.text,
+            email: _emailController.text,
+          )
+        : null;
 
     setState(() {
       _birthdayError = birthdayError;
+      _contactError = contactError;
     });
 
-    if (!(_formKey.currentState?.validate() ?? false) || birthdayError != null) {
+    if (!formValid || birthdayError != null || contactError != null) {
       return;
     }
 
@@ -584,7 +633,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       city: _cityController.text,
       state: _stateController.text,
       instagram: _instagramController.text,
-      birthday: _birthday,
+      birthday: _isIndividual ? _birthday : null,
       internalNotes: _notesController.text,
       id: existingClient?.id,
       createdAt: existingClient?.createdAt,
@@ -847,6 +896,16 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         textInputAction: TextInputAction.next,
                         validator: ClientFormValidators.validateEmail,
                       ),
+                      if (_contactError != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          _contactError!,
+                          key: const Key('client_contact_error'),
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: _fieldSpacing),
                       AppTextField(
                         key: const Key('client_document_field'),
@@ -903,42 +962,44 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: _fieldSpacing),
-                      AppTextField(
-                        key: const Key('client_birthday_field'),
-                        label: 'Data de aniversário',
-                        hint: 'Selecione a data',
-                        controller: _birthdayController,
-                        readOnly: true,
-                        onTap: _pickBirthday,
-                      ),
-                      if (_birthday != null) ...[
-                        const SizedBox(height: 8),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: TextButton.icon(
-                            onPressed: _clearBirthday,
-                            icon: const Icon(
-                              Icons.clear,
-                              size: 18,
-                              color: AppColors.secondaryText,
-                            ),
-                            label: Text(
-                              'Limpar data',
-                              style: AppTextStyles.bodyMedium,
+                      if (_isIndividual) ...[
+                        AppTextField(
+                          key: const Key('client_birthday_field'),
+                          label: 'Data de aniversário',
+                          hint: 'Selecione a data',
+                          controller: _birthdayController,
+                          readOnly: true,
+                          onTap: _pickBirthday,
+                        ),
+                        if (_birthday != null) ...[
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: _clearBirthday,
+                              icon: const Icon(
+                                Icons.clear,
+                                size: 18,
+                                color: AppColors.secondaryText,
+                              ),
+                              label: Text(
+                                'Limpar data',
+                                style: AppTextStyles.bodyMedium,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                      if (_birthdayError != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          _birthdayError!,
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColors.error,
+                        ],
+                        if (_birthdayError != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            _birthdayError!,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.error,
+                            ),
                           ),
-                        ),
+                        ],
+                        const SizedBox(height: _fieldSpacing),
                       ],
-                      const SizedBox(height: _fieldSpacing),
                       // Internal notes must never be included in budgets or PDFs.
                       // See docs/business-rules/clients.md
                       AppTextField(

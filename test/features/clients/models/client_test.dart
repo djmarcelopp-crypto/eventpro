@@ -54,6 +54,18 @@ void main() {
       expect(client.createdAt, isNotNull);
     });
 
+    test('whatsApp vazio fica null', () {
+      final client = Client.fromForm(
+        type: ClientType.individual,
+        name: 'Maria Silva',
+        phone: '6732321234',
+        whatsApp: '',
+      );
+
+      expect(client.whatsApp, isNull);
+      expect(client.phone, '6732321234');
+    });
+
     test('preserva id e createdAt na edição', () {
       final createdAt = DateTime(2024, 3, 10);
       final client = Client.fromForm(

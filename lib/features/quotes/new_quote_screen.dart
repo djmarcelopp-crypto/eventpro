@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router/app_router.dart';
+
 import '../catalog/models/catalog_item.dart';
 import '../catalog/providers/catalog_provider.dart';
 import '../catalog/utils/brazilian_currency_input_formatter.dart';
@@ -10,12 +12,18 @@ import '../clients/providers/clients_provider.dart';
 import '../clients/utils/client_display_formatter.dart';
 import 'models/quote.dart';
 import 'models/quote_client_snapshot.dart';
+import 'models/quote_company_snapshot.dart';
 import 'models/quote_event_snapshot.dart';
 import 'models/quote_line_draft.dart';
 import 'models/quote_line_item.dart';
 import 'models/quote_status.dart';
+import 'providers/quote_clock_provider.dart';
+import 'providers/quote_company_logo_storage_provider.dart';
 import 'providers/quotes_provider.dart';
+import '../settings/providers/company_profile_provider.dart';
 import 'state/quote_form_state.dart';
+import 'utils/quote_form_defaults.dart';
+import 'utils/quote_new_draft_company_snapshot_coordinator.dart';
 import 'utils/quote_form_initializer.dart';
 import 'utils/quote_line_draft_saver.dart';
 import 'utils/quote_date_formatter.dart';
@@ -29,6 +37,7 @@ import 'widgets/quote_client_selector.dart';
 import 'widgets/quote_event_section.dart';
 import 'widgets/quote_financial_summary.dart';
 import 'widgets/quote_line_editor.dart';
+import 'widgets/quote_company_profile_banner.dart';
 import 'widgets/quote_validity_notes_section.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -86,6 +95,8 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   bool _discardConfirmed = false;
   bool _saving = false;
   bool _initializedForEdit = false;
+  bool _defaultsApplied = false;
+  bool _applyingDefaults = false;
   String? _editingQuoteId;
 
   String? _clientError;
@@ -103,9 +114,9 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   void initState() {
     super.initState();
     if (!_isEditing) {
-      final now = DateTime.now();
-      _validUntil = QuoteDateFormatter.addDays(now, 7);
-      _validUntilController.text = QuoteDateFormatter.format(_validUntil!);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyNewQuoteDefaultsOnce();
+      });
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _initializeForEditIfNeeded();
@@ -131,6 +142,34 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _initializeForEditIfNeeded();
+  }
+
+  void _applyNewQuoteDefaultsOnce() {
+    if (_defaultsApplied || _isEditing || !mounted) {
+      return;
+    }
+
+    _defaultsApplied = true;
+    final now = ref.read(quoteClockProvider)();
+    final profile = ref.read(companyProfileProvider);
+    final defaults = QuoteFormDefaults.fromCompanyProfile(
+      profile,
+      clock: now,
+    );
+
+    _applyingDefaults = true;
+    try {
+      setState(() {
+        _validUntil = defaults.validUntil;
+        _validUntilController.text =
+            QuoteDateFormatter.format(defaults.validUntil);
+        if (defaults.publicNotes.isNotEmpty) {
+          _notesController.text = defaults.publicNotes;
+        }
+      });
+    } finally {
+      _applyingDefaults = false;
+    }
   }
 
   void _initializeForEditIfNeeded() {
@@ -284,6 +323,9 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   }
 
   void _markDirty() {
+    if (_applyingDefaults) {
+      return;
+    }
     setState(() {
       _isDirty = true;
     });
@@ -694,55 +736,98 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
       _saveError = null;
     });
 
-    final draft = Quote(
-      id: _isEditing
-          ? _editingQuoteId!
-          : DateTime.now().microsecondsSinceEpoch.toString(),
-      number: 'IGNORED',
-      status: QuoteStatus.draft,
-      clientSnapshot: QuoteClientSnapshot.fromClient(client),
-      eventSnapshot: _buildEventSnapshot(),
-      items: lineItems,
-      subtotalCents: 0,
-      discountCents: _summary.discountCents,
-      freightCents: _summary.freightCents,
-      totalCents: 0,
-      statusHistory: const [],
-      validUntil: _validUntil,
-      notes: _optionalText(_notesController.text),
-      internalNotes: _optionalText(_internalNotesController.text),
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
+    final now = ref.read(quoteClockProvider)();
+    final quoteId = _isEditing
+        ? _editingQuoteId!
+        : now.microsecondsSinceEpoch.toString();
+    final logoCoordinator = QuoteNewDraftCompanySnapshotCoordinator(
+      logoStorage: ref.read(quoteCompanyLogoStorageProvider),
     );
 
-    final success = _isEditing
-        ? ref.read(quotesProvider.notifier).updateQuote(draft)
-        : ref.read(quotesProvider.notifier).addQuote(draft);
+    String? copiedLogoReference;
+    QuoteCompanySnapshot? companySnapshot;
 
-    if (!success) {
+    try {
+      if (!_isEditing) {
+        final profile = ref.read(companyProfileProvider);
+        final snapshotResult = await logoCoordinator.build(
+          profile: profile,
+          quoteId: quoteId,
+          timestamp: now,
+        );
+        companySnapshot = snapshotResult.snapshot;
+        copiedLogoReference = snapshotResult.copiedLogoReference;
+      }
+
+      final draft = Quote(
+        id: quoteId,
+        number: 'IGNORED',
+        status: QuoteStatus.draft,
+        clientSnapshot: QuoteClientSnapshot.fromClient(client),
+        eventSnapshot: _buildEventSnapshot(),
+        items: lineItems,
+        subtotalCents: 0,
+        discountCents: _summary.discountCents,
+        freightCents: _summary.freightCents,
+        totalCents: 0,
+        statusHistory: const [],
+        validUntil: _validUntil,
+        notes: _optionalText(_notesController.text),
+        internalNotes: _optionalText(_internalNotesController.text),
+        companySnapshot: companySnapshot,
+        createdAt: now,
+        updatedAt: now,
+      );
+
+      final success = _isEditing
+          ? ref.read(quotesProvider.notifier).updateQuote(draft)
+          : ref.read(quotesProvider.notifier).addQuote(draft);
+
+      if (!success) {
+        if (!_isEditing) {
+          await logoCoordinator.rollbackCopiedLogo(copiedLogoReference);
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        setState(() {
+          _saving = false;
+          _saveError = _isEditing
+              ? 'Não foi possível atualizar o orçamento.'
+              : 'Não foi possível salvar o orçamento.';
+        });
+        return;
+      }
+
       if (!mounted) {
         return;
       }
+
+      setState(() {
+        _formSaved = true;
+        _isDirty = false;
+        _saving = false;
+      });
+
+      context.pop(true);
+    } catch (_) {
+      if (!_isEditing) {
+        await logoCoordinator.rollbackCopiedLogo(copiedLogoReference);
+      }
+
+      if (!mounted) {
+        return;
+      }
+
       setState(() {
         _saving = false;
         _saveError = _isEditing
             ? 'Não foi possível atualizar o orçamento.'
             : 'Não foi possível salvar o orçamento.';
       });
-      return;
     }
-
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _formSaved = true;
-      _isDirty = false;
-      _saving = false;
-    });
-
-    context.pop(true);
   }
 
   QuoteEventSnapshot _buildEventSnapshot() {
@@ -884,6 +969,15 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (!_isEditing) ...[
+                          QuoteCompanyProfileBanner(
+                            profile: ref.watch(companyProfileProvider),
+                            onConfigureCompany: () {
+                              context.push(AppRoutes.settingsCompany);
+                            },
+                          ),
+                          const SizedBox(height: _fieldSpacing),
+                        ],
                         _buildClientSection(selectedClient),
                         const SizedBox(height: _fieldSpacing),
                         QuoteEventSection(

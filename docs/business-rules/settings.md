@@ -81,6 +81,30 @@ Ao sair com alterações pendentes: diálogo **"Descartar alterações?"**
 - Validação condicional: exige tipo + chave somente se um dos campos PIX foi iniciado.
 - Mensagens de erro **nunca** expõem a chave informada.
 
-## Snapshot futuro (Orçamentos / Contratos)
+## Integração com Orçamentos (TASK-019)
 
-Quando implementado, o snapshot de empresa em orçamentos/PDF/contratos será **congelado no momento da geração**. Alterações posteriores em Configurações não afetam documentos antigos.
+O perfil alimenta o formulário de novo orçamento e o snapshot congelado da empresa emissora.
+
+### Defaults no novo orçamento
+
+- `defaultValidityDays` e `defaultPublicNotes` aplicados **uma vez** na abertura de `/quotes/new`.
+- Sem perfil: validade padrão de 7 dias; observações vazias.
+- Defaults **não** alteram orçamentos existentes nem o snapshot.
+
+### Snapshot em orçamentos
+
+- Congelado no **primeiro save** do novo orçamento via `QuoteCompanySnapshotBuilder`.
+- Se `CompanyProfile == null` no save, o orçamento permanece sem snapshot (legado válido).
+- Edição posterior do perfil **não altera** orçamentos já salvos.
+- Logo copiado para `quotes/company-assets/` no save; referência opaca no snapshot.
+- PDF e contratos futuros usarão o snapshot, não o perfil atual.
+- Ação **"Atualizar dados da empresa"** no orçamento: etapa futura.
+
+### Detalhes do orçamento
+
+- A tela de detalhes **não consulta** Settings; exibe somente `QuoteCompanySnapshot` quando existir.
+- Chave PIX e dados internos do perfil **não** aparecem nos detalhes.
+
+## Snapshot futuro (Contratos)
+
+Contratos usarão o snapshot de empresa já capturado no orçamento. Alterações posteriores em Configurações não afetam documentos antigos.

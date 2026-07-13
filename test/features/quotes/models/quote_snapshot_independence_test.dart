@@ -5,6 +5,7 @@ import 'package:eventpro/features/catalog/catalog_item_type.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
 import 'package:eventpro/features/quotes/models/quote_client_snapshot.dart';
 import 'package:eventpro/features/quotes/models/quote_line_item.dart';
+import 'package:eventpro/features/quotes/utils/quote_company_snapshot_builder.dart';
 import '../quotes_test_helpers.dart';
 
 void main() {
@@ -65,6 +66,23 @@ void main() {
       );
 
       expect(snapshot.displayName, isNot(contains('Nota secreta')));
+    });
+
+    test('alterar CompanyProfile não altera QuoteCompanySnapshot', () {
+      final fixedNow = DateTime(2026, 7, 13, 10, 0);
+      final profile = sampleConfiguredCompanyProfile(timestamp: fixedNow);
+      final snapshot = QuoteCompanySnapshotBuilder.fromProfile(
+        profile: profile,
+        capturedAt: fixedNow,
+      )!;
+
+      final updatedProfile = profile.copyWith(
+        tradeName: 'Empresa Atualizada',
+        legalName: 'Nova Razão LTDA',
+      );
+
+      expect(snapshot.identification.tradeName, 'DJ Marcelo PP');
+      expect(updatedProfile.tradeName, 'Empresa Atualizada');
     });
   });
 }

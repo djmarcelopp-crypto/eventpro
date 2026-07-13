@@ -71,6 +71,56 @@ Um orçamento é um **documento congelado**. Alterações futuras em Clientes, C
 - Campos congelados: nome, descrição, unidade, quantidade, preço unitário, total da linha.
 - **Sem `imageReference`** nesta fase (ver seção Imagens).
 
+### Empresa emissora (`QuoteCompanySnapshot`) — TASK-019
+
+- Criado no **primeiro save** de um novo orçamento (`addQuote`), a partir do `CompanyProfile` vigente em Configurações.
+- Se não houver perfil salvo no momento do save, `companySnapshot` permanece `null` (orçamento válido).
+- **Edição** (`updateQuote`) **nunca** recria nem altera o snapshot existente.
+- **Transições de status** e **reabertura** (Aprovado → Rascunho) preservam o snapshot integralmente.
+- Logo copiado para área imutável de Quotes (`quotes/company-assets/...`); referência opaca no snapshot.
+- Alterações posteriores em Configurações **não propagam** para orçamentos já salvos.
+- Ação explícita **"Atualizar dados da empresa"** no orçamento fica para etapa futura.
+- PDF e contrato usarão exclusivamente o snapshot (não implementados nesta fase).
+- Estado ainda em memória (provider); persistência Firebase em etapa futura.
+
+#### Campos capturados
+
+| Bloco | Conteúdo |
+|-------|----------|
+| Identificação | Nome comercial, razão social, CNPJ (dígitos), inscrição estadual |
+| Contato | Telefone, WhatsApp, e-mail, Instagram, site (dígitos nos telefones) |
+| Endereço | CEP, logradouro, número, complemento, bairro, cidade, UF |
+| Representante legal | Nome, CPF, cargo |
+| Pagamento | Tipo/chave PIX, beneficiário, condições |
+| Logo | Referência copiada para Quotes |
+| Metadados | `captureStatus` (configured/incomplete), `capturedAt` |
+
+#### Status de captura
+
+| Status | Condição |
+|--------|----------|
+| `configured` | Perfil com status Configurado no momento do save |
+| `incomplete` | Perfil salvo, mas incompleto ou sem dados profissionais completos |
+
+#### Defaults no novo formulário (não alteram snapshot)
+
+- Abertura de `/quotes/new` aplica **uma vez** (sem marcar dirty):
+  - validade = hoje local + `defaultValidityDays` do perfil (ou +7 dias sem perfil);
+  - observações públicas = `defaultPublicNotes` do perfil (se houver).
+- Edição carrega valores salvos do orçamento; banner de perfil incompleto **somente** em `/quotes/new`.
+
+#### Detalhes — seção "Empresa emissora"
+
+- Exibida somente leitura quando `companySnapshot != null`.
+- Usa **exclusivamente** o snapshot; **não consulta** Settings.
+- Campos vazios são ocultados.
+- Contato principal: WhatsApp → telefone → e-mail (formatação na apresentação).
+- CNPJ: `00.000.000/0000-00`; telefones com máscaras brasileiras.
+- Endereço resumido sem separadores sobrando.
+- Indicação de status: "Dados completos/incompletos no momento da criação".
+- **Não exibe:** chave PIX, representante legal, logo, dados internos.
+- Orçamentos antigos (`companySnapshot == null`): aviso discreto; sem erro em edição, transição ou listagem.
+
 ## Dinheiro em centavos
 
 | Conceito | Tipo |
@@ -159,7 +209,7 @@ Composição prevista:
 | Bloco | Origem |
 |-------|--------|
 | Orçamento aprovado | `Quote` congelado |
-| Dados da empresa | Configurações (`CompanyProfile` em memória; snapshot congelado na geração — ver `docs/business-rules/settings.md`) |
+| Dados da empresa | `QuoteCompanySnapshot` congelado no primeiro save (ver `docs/business-rules/settings.md`) |
 | Dados do cliente | `QuoteClientSnapshot` |
 | Dados do evento | `QuoteEventSnapshot` |
 | Itens e valores | `List<QuoteLineItem>` + totais em centavos |
@@ -197,7 +247,7 @@ Composição prevista:
 ### Tela de detalhes
 
 - Resolve o orçamento pelo ID da rota via `quotesProvider` (sem `extra` como fonte oficial).
-- Exibe snapshots congelados: cliente, evento, itens, financeiro, observações e histórico.
+- Exibe snapshots congelados: cliente, **empresa emissora** (quando capturada), evento, itens, financeiro, observações e histórico.
 - Campos vazios são ocultados; observações internas ficam em seção separada com aviso de bloqueio em PDF/contrato.
 - ID inexistente exibe estado amigável com botão Voltar.
 
@@ -220,7 +270,7 @@ Composição prevista:
 
 - Reutiliza `NewQuoteScreen(quoteId)` com `QuoteFormInitializer`.
 - Bloqueada fora de `draft`.
-- `updateQuote` preserva `id`, `number`, `createdAt`, `status`, `approvedAt` e `statusHistory`.
+- `updateQuote` preserva `id`, `number`, `createdAt`, `status`, `approvedAt`, `statusHistory` e **`companySnapshot`**.
 
 ### Linhas na edição (`isExistingLine`)
 

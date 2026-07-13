@@ -2,11 +2,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/features/quotes/models/quote.dart';
 import 'package:eventpro/features/quotes/models/quote_client_snapshot.dart';
+import 'package:eventpro/features/quotes/models/quote_company_capture_status.dart';
+import 'package:eventpro/features/quotes/models/quote_company_snapshot.dart';
 import 'package:eventpro/features/quotes/models/quote_event_snapshot.dart';
 import 'package:eventpro/features/quotes/models/quote_status.dart';
 import 'package:eventpro/features/quotes/models/quote_status_history_entry.dart';
 import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
+import 'package:eventpro/features/quotes/utils/quote_company_snapshot_builder.dart';
+import 'package:eventpro/features/settings/providers/company_profile_provider.dart';
 import '../quotes_test_helpers.dart';
 
 void main() {
@@ -285,6 +289,173 @@ void main() {
       expect(finalQuote.statusHistory[3].newStatus, QuoteStatus.draft);
       expect(finalQuote.statusHistory.last.newStatus, QuoteStatus.approved);
       expect(finalQuote.statusHistory.last.changedAt, t6);
+    });
+
+    group('companySnapshot', () {
+      Quote draftWithSnapshot({
+        required String id,
+        required QuoteCompanySnapshot snapshot,
+      }) {
+        return sampleQuoteDraft(id: id).copyWith(
+          companySnapshot: snapshot,
+          status: QuoteStatus.draft,
+          approvedAt: null,
+        );
+      }
+
+      QuoteCompanySnapshot alternateSnapshot() {
+        return sampleCompanySnapshot(
+          capturedAt: DateTime(2025, 1, 1),
+          tradeName: 'Outra Empresa',
+          captureStatus: QuoteCompanyCaptureStatus.incomplete,
+        );
+      }
+
+      test('addQuote preserva snapshot recebido na criação', () {
+        final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
+        final notifier = container.read(quotesProvider.notifier);
+
+        notifier.addQuote(
+          draftWithSnapshot(id: 'quote-snap', snapshot: snapshot),
+        );
+
+        expect(
+          notifier.findById('quote-snap')!.companySnapshot,
+          snapshot,
+        );
+      });
+
+      test('addQuote sem snapshot mantém null', () {
+        final notifier = container.read(quotesProvider.notifier);
+        notifier.addQuote(sampleQuoteDraft(id: 'quote-null'));
+
+        expect(notifier.findById('quote-null')!.companySnapshot, isNull);
+      });
+
+      test('updateQuote preserva snapshot existente', () {
+        final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
+        final notifier = container.read(quotesProvider.notifier);
+        notifier.addQuote(
+          draftWithSnapshot(id: 'quote-update', snapshot: snapshot),
+        );
+
+        final existing = notifier.findById('quote-update')!;
+        final attempt = Quote(
+          id: existing.id,
+          number: 'IGNORED',
+          status: QuoteStatus.draft,
+          clientSnapshot: existing.clientSnapshot,
+          eventSnapshot: existing.eventSnapshot,
+          items: existing.items,
+          subtotalCents: 0,
+          discountCents: 0,
+          freightCents: 0,
+          totalCents: 0,
+          statusHistory: existing.statusHistory,
+          notes: 'Atualizado',
+          companySnapshot: alternateSnapshot(),
+          createdAt: existing.createdAt,
+          updatedAt: existing.createdAt,
+        );
+
+        expect(notifier.updateQuote(attempt), isTrue);
+        expect(notifier.findById('quote-update')!.companySnapshot, snapshot);
+        expect(notifier.findById('quote-update')!.notes, 'Atualizado');
+      });
+
+      test('transições preservam snapshot', () {
+        final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
+        final notifier = container.read(quotesProvider.notifier);
+        notifier.addQuote(
+          draftWithSnapshot(id: 'quote-transitions', snapshot: snapshot),
+        );
+
+        notifier.transitionStatus('quote-transitions', QuoteStatus.sent);
+        expect(
+          notifier.findById('quote-transitions')!.companySnapshot,
+          snapshot,
+        );
+
+        notifier.transitionStatus('quote-transitions', QuoteStatus.approved);
+        expect(
+          notifier.findById('quote-transitions')!.companySnapshot,
+          snapshot,
+        );
+
+        notifier.transitionStatus('quote-transitions', QuoteStatus.cancelled);
+        expect(
+          notifier.findById('quote-transitions')!.companySnapshot,
+          snapshot,
+        );
+      });
+
+      test('reabertura de aprovado preserva snapshot', () {
+        final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
+        final notifier = container.read(quotesProvider.notifier);
+        notifier.addQuote(
+          draftWithSnapshot(id: 'quote-reopen-snap', snapshot: snapshot),
+        );
+
+        notifier.transitionStatus('quote-reopen-snap', QuoteStatus.sent);
+        notifier.transitionStatus('quote-reopen-snap', QuoteStatus.approved);
+        notifier.transitionStatus('quote-reopen-snap', QuoteStatus.draft);
+
+        final reopened = notifier.findById('quote-reopen-snap')!;
+        expect(reopened.status, QuoteStatus.draft);
+        expect(reopened.companySnapshot, snapshot);
+      });
+
+      test('copyWith sem snapshot preserva valor existente', () {
+        final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
+        final notifier = container.read(quotesProvider.notifier);
+        notifier.addQuote(
+          draftWithSnapshot(id: 'quote-copywith', snapshot: snapshot),
+        );
+
+        notifier.transitionStatus('quote-copywith', QuoteStatus.sent);
+        final sent = notifier.findById('quote-copywith')!;
+
+        expect(sent.copyWith(notes: 'Teste').companySnapshot, snapshot);
+      });
+
+      test('alteração posterior em CompanyProfile não altera snapshot', () {
+        final profileContainer = ProviderContainer(
+          overrides: [
+            quoteClockProvider.overrideWithValue(() => fixedNow),
+          ],
+        );
+        addTearDown(profileContainer.dispose);
+
+        final profileNotifier =
+            profileContainer.read(companyProfileProvider.notifier);
+        profileNotifier.save(sampleConfiguredCompanyProfile(timestamp: fixedNow));
+
+        final originalSnapshot = QuoteCompanySnapshotBuilder.fromProfile(
+          profile: profileContainer.read(companyProfileProvider),
+          capturedAt: fixedNow,
+        )!;
+
+        final quotesNotifier = profileContainer.read(quotesProvider.notifier);
+        quotesNotifier.addQuote(
+          draftWithSnapshot(id: 'quote-profile', snapshot: originalSnapshot),
+        );
+
+        profileNotifier.save(
+          sampleConfiguredCompanyProfile(timestamp: fixedNow).copyWith(
+            tradeName: 'Empresa Alterada',
+            legalName: 'Nova Razão Social LTDA',
+          ),
+        );
+
+        final updatedDraft = quotesNotifier.findById('quote-profile')!;
+        final updateAttempt = updatedDraft.copyWith(notes: 'Só notas mudam');
+        quotesNotifier.updateQuote(updateAttempt);
+
+        final quote = quotesNotifier.findById('quote-profile')!;
+        expect(quote.companySnapshot, originalSnapshot);
+        expect(quote.companySnapshot!.identification.tradeName, 'DJ Marcelo PP');
+        expect(quote.notes, 'Só notas mudam');
+      });
     });
   });
 }

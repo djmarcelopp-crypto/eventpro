@@ -2,6 +2,8 @@ import '../../clients/utils/client_display_formatter.dart';
 import '../models/quote.dart';
 import '../models/quote_client_snapshot.dart';
 import '../models/quote_client_type.dart';
+import '../models/quote_company_capture_status.dart';
+import '../models/quote_company_snapshot.dart';
 import '../models/quote_event_snapshot.dart';
 import '../models/quote_line_item.dart';
 import '../models/quote_status.dart';
@@ -115,6 +117,150 @@ abstract class QuoteDetailPresenter {
       return digits;
     }
     return formatted;
+  }
+
+  static String formatCompanyCnpj(String? digits) {
+    final normalized = digits?.trim() ?? '';
+    if (normalized.isEmpty) {
+      return '—';
+    }
+    return _maskDigits(normalized, '##.###.###/####-##');
+  }
+
+  static String? formatCompanyPrimaryContact(QuoteCompanyContact contact) {
+    final whatsApp = contact.whatsAppDigits;
+    if (whatsApp != null && whatsApp.isNotEmpty) {
+      return _formatContactDigits(
+        whatsApp,
+        ClientDisplayFormatter.formatWhatsApp,
+      );
+    }
+
+    final phone = contact.phoneDigits;
+    if (phone != null && phone.isNotEmpty) {
+      return _formatContactDigits(
+        phone,
+        ClientDisplayFormatter.formatPhone,
+      );
+    }
+
+    final email = contact.email?.trim();
+    if (email != null && email.isNotEmpty) {
+      return email;
+    }
+
+    return null;
+  }
+
+  static String? formatCompanyAddress(QuoteCompanyAddress address) {
+    if (address.isEmpty) {
+      return null;
+    }
+
+    final parts = <String>[];
+
+    final street = address.street?.trim();
+    final number = address.number?.trim();
+    if (street != null && street.isNotEmpty) {
+      if (number != null && number.isNotEmpty) {
+        parts.add('$street, $number');
+      } else {
+        parts.add(street);
+      }
+    }
+
+    final complement = address.complement?.trim();
+    if (complement != null && complement.isNotEmpty) {
+      parts.add(complement);
+    }
+
+    final neighborhood = address.neighborhood?.trim();
+    if (neighborhood != null && neighborhood.isNotEmpty) {
+      parts.add(neighborhood);
+    }
+
+    final city = address.city?.trim();
+    final state = address.state?.trim();
+    if (city != null && city.isNotEmpty) {
+      if (state != null && state.isNotEmpty) {
+        parts.add('$city - $state');
+      } else {
+        parts.add(city);
+      }
+    } else if (state != null && state.isNotEmpty) {
+      parts.add(state);
+    }
+
+    if (parts.isEmpty) {
+      return null;
+    }
+
+    return parts.join(' • ');
+  }
+
+  static String companyIssuerStatusLabel(QuoteCompanyCaptureStatus status) {
+    return switch (status) {
+      QuoteCompanyCaptureStatus.configured =>
+        'Dados completos no momento da criação',
+      QuoteCompanyCaptureStatus.incomplete =>
+        'Dados incompletos no momento da criação',
+    };
+  }
+
+  static List<QuoteDetailItem> companyIssuerItems(
+    QuoteCompanySnapshot snapshot,
+  ) {
+    final items = <QuoteDetailItem>[
+      QuoteDetailItem(
+        label: 'Nome comercial',
+        value: snapshot.identification.tradeName,
+      ),
+    ];
+
+    final legalName = snapshot.identification.legalName?.trim();
+    if (legalName != null && legalName.isNotEmpty) {
+      items.add(QuoteDetailItem(label: 'Razão social', value: legalName));
+    }
+
+    final cnpjDigits = snapshot.identification.cnpjDigits;
+    if (cnpjDigits != null && cnpjDigits.isNotEmpty) {
+      items.add(
+        QuoteDetailItem(
+          label: 'CNPJ',
+          value: formatCompanyCnpj(cnpjDigits),
+        ),
+      );
+    }
+
+    final stateRegistration =
+        snapshot.identification.stateRegistration?.trim();
+    if (stateRegistration != null && stateRegistration.isNotEmpty) {
+      items.add(
+        QuoteDetailItem(
+          label: 'Inscrição estadual',
+          value: stateRegistration,
+        ),
+      );
+    }
+
+    final contact = formatCompanyPrimaryContact(snapshot.contact);
+    if (contact != null) {
+      items.add(QuoteDetailItem(label: 'Contato', value: contact));
+    }
+
+    final address = formatCompanyAddress(snapshot.address);
+    if (address != null) {
+      items.add(QuoteDetailItem(label: 'Endereço', value: address));
+    }
+
+    items.add(
+      QuoteDetailItem(
+        label: 'Status dos dados',
+        value: companyIssuerStatusLabel(snapshot.captureStatus),
+      ),
+    );
+
+    return items;
   }
 
   static String _maskDigits(String digits, String mask) {

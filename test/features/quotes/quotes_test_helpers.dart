@@ -6,7 +6,12 @@ import 'package:eventpro/features/catalog/catalog_item_type.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
 import 'package:eventpro/features/quotes/models/quote.dart';
 import 'package:eventpro/features/quotes/models/quote_client_snapshot.dart';
+import 'package:eventpro/features/quotes/models/quote_company_capture_status.dart';
+import 'package:eventpro/features/quotes/models/quote_company_snapshot.dart';
 import 'package:eventpro/features/quotes/models/quote_event_snapshot.dart';
+import 'package:eventpro/features/settings/models/company_address.dart';
+import 'package:eventpro/features/settings/models/company_profile.dart';
+import 'package:eventpro/features/settings/models/legal_representative.dart';
 import 'package:eventpro/features/quotes/models/quote_line_item.dart';
 import 'package:eventpro/features/quotes/models/quote_status.dart';
 import 'package:eventpro/features/quotes/models/quote_status_history_entry.dart';
@@ -82,6 +87,7 @@ Quote sampleQuoteDraft({
   List<QuoteStatusHistoryEntry>? statusHistory,
   QuoteStatus status = QuoteStatus.sent,
   DateTime? createdAt,
+  QuoteCompanySnapshot? companySnapshot,
 }) {
   final created = createdAt ?? DateTime(2020, 1, 1);
   return Quote(
@@ -103,9 +109,85 @@ Quote sampleQuoteDraft({
             changedAt: created,
           ),
         ],
+    companySnapshot: companySnapshot,
     createdAt: created,
     updatedAt: created,
     approvedAt: DateTime(2020, 1, 1),
+  );
+}
+
+QuoteCompanySnapshot sampleCompanySnapshot({
+  DateTime? capturedAt,
+  String tradeName = 'DJ Marcelo PP',
+  QuoteCompanyCaptureStatus captureStatus =
+      QuoteCompanyCaptureStatus.configured,
+  String? logoReference,
+}) {
+  final captured = capturedAt ?? DateTime(2026, 7, 13, 10, 0);
+  return QuoteCompanySnapshot(
+    identification: QuoteCompanyIdentification(
+      tradeName: tradeName,
+      legalName: 'Marcelo PP Festas LTDA',
+      cnpjDigits: '11222333000181',
+    ),
+    contact: const QuoteCompanyContact(
+      phoneDigits: '67999990000',
+      whatsAppDigits: '67988887777',
+      email: 'contato@djmarcelo.com',
+    ),
+    address: const QuoteCompanyAddress(
+      postalCode: '79002010',
+      street: 'Rua Example',
+      number: '100',
+      city: 'Campo Grande',
+      state: 'MS',
+    ),
+    legalRepresentative: const QuoteCompanyLegalRepresentative(
+      fullName: 'Marcelo PP',
+      cpfDigits: '52998224725',
+    ),
+    logoReference: logoReference,
+    captureStatus: captureStatus,
+    capturedAt: captured,
+  );
+}
+
+CompanyProfile sampleConfiguredCompanyProfile({
+  DateTime? timestamp,
+  String? logoReference,
+}) {
+  final now = timestamp ?? DateTime(2026, 7, 13, 10, 0);
+  return CompanyProfile(
+    tradeName: 'DJ Marcelo PP',
+    legalName: 'Marcelo PP Festas LTDA',
+    cnpjDigits: '11222333000181',
+    phoneDigits: '67999990000',
+    whatsAppDigits: '67988887777',
+    email: 'contato@djmarcelo.com',
+    logoReference: logoReference,
+    address: const CompanyAddress(
+      postalCode: '79002010',
+      street: 'Rua Example',
+      number: '100',
+      city: 'Campo Grande',
+      state: 'MS',
+    ),
+    legalRepresentative: const LegalRepresentative(
+      fullName: 'Marcelo PP',
+      cpfDigits: '52998224725',
+    ),
+    createdAt: now,
+    updatedAt: now,
+  );
+}
+
+CompanyProfile sampleIncompleteCompanyProfile({DateTime? timestamp}) {
+  final now = timestamp ?? DateTime(2026, 7, 13, 10, 0);
+  return CompanyProfile(
+    tradeName: 'DJ Marcelo PP',
+    phoneDigits: '67999990000',
+    createdAt: now,
+    updatedAt: now,
   );
 }
 

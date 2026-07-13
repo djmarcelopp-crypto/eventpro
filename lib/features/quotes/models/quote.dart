@@ -1,4 +1,5 @@
 import 'quote_client_snapshot.dart';
+import 'quote_company_snapshot.dart';
 import 'quote_event_snapshot.dart';
 import 'quote_line_item.dart';
 import 'quote_status.dart';
@@ -20,6 +21,7 @@ class Quote {
     this.validUntil,
     this.notes,
     this.internalNotes,
+    this.companySnapshot,
     required this.createdAt,
     required this.updatedAt,
     this.approvedAt,
@@ -40,6 +42,7 @@ class Quote {
   final DateTime? validUntil;
   final String? notes;
   final String? internalNotes;
+  final QuoteCompanySnapshot? companySnapshot;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? approvedAt;
@@ -61,6 +64,7 @@ class Quote {
     DateTime? validUntil,
     String? notes,
     String? internalNotes,
+    QuoteCompanySnapshot? companySnapshot,
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? approvedAt,
@@ -85,6 +89,7 @@ class Quote {
       notes: clearNotes ? null : (notes ?? this.notes),
       internalNotes:
           clearInternalNotes ? null : (internalNotes ?? this.internalNotes),
+      companySnapshot: companySnapshot ?? this.companySnapshot,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       approvedAt: clearApprovedAt ? null : (approvedAt ?? this.approvedAt),

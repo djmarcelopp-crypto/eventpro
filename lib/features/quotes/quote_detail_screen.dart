@@ -13,6 +13,7 @@ import 'providers/quotes_provider.dart';
 import 'quote_list_feedback.dart';
 import 'utils/quote_detail_presenter.dart';
 import 'utils/quotes_navigation.dart';
+import 'widgets/quote_company_snapshot_missing_notice.dart';
 import 'widgets/quote_detail_row.dart';
 import 'widgets/quote_detail_section.dart';
 import 'widgets/quote_not_found_state.dart';
@@ -168,6 +169,11 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
     final eventItems =
         QuoteDetailPresenter.eventItems(resolvedQuote.eventSnapshot);
     final financialItems = QuoteDetailPresenter.financialItems(resolvedQuote);
+    final companyIssuerItems = resolvedQuote.companySnapshot == null
+        ? const <QuoteDetailItem>[]
+        : QuoteDetailPresenter.companyIssuerItems(
+            resolvedQuote.companySnapshot!,
+          );
     final notes = resolvedQuote.notes?.trim();
     final internalNotes = resolvedQuote.internalNotes?.trim();
 
@@ -221,6 +227,17 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                       title: 'Cliente',
                       items: clientItems,
                     ),
+                    if (companyIssuerItems.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      QuoteDetailSection(
+                        key: const Key('quote_company_issuer_section'),
+                        title: 'Empresa emissora',
+                        items: companyIssuerItems,
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 16),
+                      const QuoteCompanySnapshotMissingNotice(),
+                    ],
                     if (eventItems.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       QuoteDetailSection(

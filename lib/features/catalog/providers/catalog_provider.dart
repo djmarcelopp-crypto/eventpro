@@ -19,7 +19,7 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
     return null;
   }
 
-  void updateItem(CatalogItem item) {
+  void updateItem(CatalogItem item, {bool clearImageReference = false}) {
     final existing = findById(item.id);
     if (existing == null) {
       return;
@@ -28,7 +28,10 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
     final updated = item.copyWith(
       id: existing.id,
       createdAt: existing.createdAt,
-      imageReference: item.imageReference ?? existing.imageReference,
+      clearImageReference: clearImageReference,
+      imageReference: clearImageReference
+          ? null
+          : (item.imageReference ?? existing.imageReference),
     );
 
     state = [

@@ -11,7 +11,7 @@ import 'models/catalog_item.dart';
 import 'providers/catalog_provider.dart';
 import 'utils/catalog_detail_presenter.dart';
 import 'widgets/catalog_detail_row.dart';
-import 'widgets/catalog_item_image_placeholder.dart';
+import 'widgets/catalog_item_image_view.dart';
 
 class CatalogItemDetailScreen extends ConsumerWidget {
   const CatalogItemDetailScreen({
@@ -135,10 +135,7 @@ class CatalogItemDetailScreen extends ConsumerWidget {
             key: const Key('catalog_edit_button'),
             icon: const Icon(Icons.edit_outlined),
             tooltip: 'Editar',
-            onPressed: () => context.push(
-              AppRoutes.catalogEdit(itemId),
-              extra: resolvedItem,
-            ),
+            onPressed: () => context.push(AppRoutes.catalogEdit(itemId)),
           ),
         ],
       ),
@@ -157,8 +154,9 @@ class CatalogItemDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Center(
-                            child: CatalogItemImagePlaceholder(
+                          Center(
+                            child: CatalogItemImageView(
+                              imageReference: resolvedItem.imageReference,
                               width: 200,
                               height: 150,
                             ),

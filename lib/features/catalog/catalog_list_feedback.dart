@@ -16,15 +16,32 @@ abstract class CatalogListFeedbackPresenter {
     };
   }
 
-  static void showSnackBar(CatalogListFeedback feedback) {
-    EventProApp.scaffoldMessengerKey.currentState?.showSnackBar(
-      SnackBar(
-        content: Text(
-          message(feedback),
-          style: const TextStyle(color: AppColors.white),
+  static void showSnackBar(
+    CatalogListFeedback feedback, {
+    int retryCount = 0,
+  }) {
+    final messenger = EventProApp.scaffoldMessengerKey.currentState;
+    if (messenger == null) {
+      if (retryCount >= 5) {
+        return;
+      }
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showSnackBar(feedback, retryCount: retryCount + 1);
+      });
+      return;
+    }
+
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            message(feedback),
+            style: const TextStyle(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.success,
         ),
-        backgroundColor: AppColors.success,
-      ),
-    );
+      );
   }
 }

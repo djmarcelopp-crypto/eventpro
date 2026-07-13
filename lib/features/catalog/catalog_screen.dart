@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'catalog_list_feedback.dart';
 import 'providers/catalog_provider.dart';
+import 'utils/catalog_navigation.dart';
 import 'widgets/catalog_empty_state.dart';
 import 'widgets/catalog_list_item.dart';
 
@@ -20,8 +23,8 @@ class CatalogScreen extends ConsumerStatefulWidget {
 class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   static const _maxContentWidth = 960.0;
 
-  void _openItemDetail(String itemId) {
-    context.push(AppRoutes.catalogDetail(itemId));
+  Future<void> _openItemDetail(String itemId) async {
+    await context.push<void>(AppRoutes.catalogDetail(itemId));
   }
 
   Future<void> _openNewItem() async {
@@ -57,7 +60,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Voltar',
-          onPressed: () => context.pop(),
+          onPressed: () => CatalogNavigation.leaveCatalog(context),
         ),
         title: Text(
           'Catálogo',
@@ -112,7 +115,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                         final item = items[index];
                         return CatalogListItem(
                           item: item,
-                          onTap: () => _openItemDetail(item.id),
+                          onTap: () => unawaited(_openItemDetail(item.id)),
                         );
                       },
                     ),

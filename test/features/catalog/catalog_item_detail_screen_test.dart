@@ -5,8 +5,11 @@ import 'package:eventpro/features/catalog/catalog_category.dart';
 import 'package:eventpro/features/catalog/catalog_item_detail_screen.dart';
 import 'package:eventpro/features/catalog/catalog_item_type.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
+import 'package:eventpro/features/catalog/providers/catalog_image_services_provider.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/widgets/catalog_list_item.dart';
+
+import 'fakes/fake_catalog_image_storage_service.dart';
 
 void main() {
   CatalogItem sampleItem({
@@ -31,7 +34,11 @@ void main() {
     required CatalogItem item,
   }) async {
     final container = ProviderContainer(
-      overrides: [],
+      overrides: [
+        catalogImageStorageProvider.overrideWithValue(
+          FakeCatalogImageStorageService(),
+        ),
+      ],
     );
     container.read(catalogProvider.notifier).addItem(item);
 
@@ -97,11 +104,18 @@ void main() {
       final item = sampleItem();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: CatalogListItem(
-              item: item,
-              onTap: () => tapped = true,
+        ProviderScope(
+          overrides: [
+            catalogImageStorageProvider.overrideWithValue(
+              FakeCatalogImageStorageService(),
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: CatalogListItem(
+                item: item,
+                onTap: () => tapped = true,
+              ),
             ),
           ),
         ),

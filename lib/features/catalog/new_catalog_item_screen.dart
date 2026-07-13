@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -11,13 +12,18 @@ import 'catalog_billing_unit.dart';
 import 'catalog_category.dart';
 import 'catalog_form_validators.dart';
 import 'catalog_item_type.dart';
-import 'catalog_list_feedback.dart';
+import 'data/exceptions/catalog_image_pick_exception.dart';
+import 'data/services/catalog_image_picker_service.dart';
+import 'data/services/catalog_image_storage_service.dart';
 import 'models/catalog_item.dart';
+import 'data/utils/catalog_image_validator.dart';
+import 'providers/catalog_image_services_provider.dart';
 import 'providers/catalog_provider.dart';
 import 'utils/brazilian_currency_input_formatter.dart';
 import 'utils/catalog_form_initializer.dart';
+import 'utils/catalog_navigation.dart';
 import 'utils/catalog_price_formatter.dart';
-import 'widgets/catalog_item_image_placeholder.dart';
+import 'widgets/catalog_item_image_form_section.dart';
 
 class NewCatalogItemScreen extends ConsumerStatefulWidget {
   const NewCatalogItemScreen({
@@ -48,7 +54,26 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
   bool _active = true;
   bool _initializedForEdit = false;
 
+  String? _originalImageReference;
+  String? _stagedImageReference;
+  bool _removeImageRequested = false;
+  bool _formSaved = false;
+  bool _pickingImage = false;
+  bool _saving = false;
+  CatalogImageStorageService? _imageStorage;
+  CatalogImagePickerService? _imagePicker;
+
   bool get _isEditing => widget.itemId != null;
+
+  String? get _previewImageReference {
+    if (_stagedImageReference != null) {
+      return _stagedImageReference;
+    }
+    if (_removeImageRequested) {
+      return null;
+    }
+    return _originalImageReference;
+  }
 
   @override
   void initState() {
@@ -63,6 +88,8 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _imageStorage ??= ref.read(catalogImageStorageProvider);
+    _imagePicker ??= ref.read(catalogImagePickerProvider);
     _initializeForEditIfNeeded();
   }
 
@@ -90,12 +117,16 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       _category = values.category;
       _billingUnit = values.billingUnit;
       _active = values.active;
+      _originalImageReference = item.imageReference;
       _initializedForEdit = true;
     });
   }
 
   @override
   void dispose() {
+    if (!_formSaved) {
+      unawaited(_discardStagedOnly());
+    }
     _nameController.dispose();
     _descriptionController.dispose();
     _customUnitController.dispose();
@@ -103,20 +134,119 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
     super.dispose();
   }
 
-  void _onBillingUnitChanged(CatalogBillingUnit? value) {
-    if (value == null) {
+  Future<void> _discardStagedOnly() async {
+    final stagedReference = _stagedImageReference;
+    final storage = _imageStorage;
+    if (stagedReference == null || storage == null) {
+      return;
+    }
+
+    await storage.discardStaged(stagedReference);
+    _stagedImageReference = null;
+  }
+
+  void _showImageError(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            message,
+            style: const TextStyle(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+  }
+
+  Future<void> _handleSelectPhoto() async {
+    if (_pickingImage || _saving) {
+      return;
+    }
+
+    setState(() => _pickingImage = true);
+
+    try {
+      final picker = _imagePicker;
+      if (picker == null) {
+        _showImageError('Não foi possível abrir o seletor de imagens. Tente novamente.');
+        return;
+      }
+
+      final pickResult = await picker.pickImage();
+      if (pickResult == null || !mounted) {
+        return;
+      }
+
+      final validation = await CatalogImageValidator.validate(pickResult.bytes);
+      if (!validation.isValid) {
+        _showImageError(validation.errorMessage!);
+        return;
+      }
+
+      final storage = _imageStorage;
+      if (storage == null) {
+        _showImageError('Não foi possível salvar a foto. Tente novamente.');
+        return;
+      }
+
+      if (_stagedImageReference != null) {
+        await storage.discardStaged(_stagedImageReference);
+      }
+
+      final stagedReference = await storage.stageFromPick(
+        bytes: pickResult.bytes,
+        extension: pickResult.extension,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _stagedImageReference = stagedReference;
+        _removeImageRequested = false;
+      });
+    } on CatalogImagePickException catch (error) {
+      if (mounted) {
+        _showImageError(error.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showImageError('Não foi possível selecionar a foto. Tente novamente.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _pickingImage = false);
+      }
+    }
+  }
+
+  Future<void> _handleRemovePhoto() async {
+    if (_pickingImage || _saving) {
+      return;
+    }
+
+    await _discardStagedOnly();
+    if (!mounted) {
       return;
     }
 
     setState(() {
-      if (_billingUnit.isOther && !value.isOther) {
-        _customUnitController.clear();
-      }
-      _billingUnit = value;
+      _stagedImageReference = null;
+      _removeImageRequested = true;
     });
   }
 
-  void _save() {
+  Future<void> _save() async {
+    if (_saving) {
+      return;
+    }
+
     final isValid = _formKey.currentState?.validate() ?? false;
     if (!isValid) {
       return;
@@ -140,32 +270,93 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       return;
     }
 
-    final item = CatalogItem.fromForm(
-      type: _type,
-      name: _nameController.text,
-      category: _category,
-      unit: unit,
-      price: price,
-      active: _active,
-      description: _descriptionController.text,
-      imageReference: existingItem?.imageReference,
-      id: existingItem?.id,
-      createdAt: existingItem?.createdAt,
-    );
+    setState(() => _saving = true);
 
-    if (_isEditing) {
-      ref.read(catalogProvider.notifier).updateItem(item);
-      context.go(AppRoutes.catalog);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          CatalogListFeedbackPresenter.showSnackBar(CatalogListFeedback.updated);
-        });
-      });
-      return;
+    final storage = _imageStorage!;
+    final originalToDelete = _originalImageReference;
+    String? committedReference;
+    String? rollbackReference;
+
+    try {
+      final itemId =
+          existingItem?.id ?? DateTime.now().microsecondsSinceEpoch.toString();
+      String? finalImageReference;
+      var clearImageReference = false;
+
+      if (_stagedImageReference != null) {
+        committedReference = await storage.commitStaged(
+          stagedReference: _stagedImageReference!,
+          itemId: itemId,
+        );
+        rollbackReference = committedReference;
+        finalImageReference = committedReference;
+        _stagedImageReference = null;
+      } else if (_removeImageRequested) {
+        finalImageReference = null;
+        clearImageReference = _isEditing;
+      } else {
+        finalImageReference = _originalImageReference;
+      }
+
+      final item = CatalogItem.fromForm(
+        type: _type,
+        name: _nameController.text,
+        category: _category,
+        unit: unit,
+        price: price,
+        active: _active,
+        description: _descriptionController.text,
+        imageReference: finalImageReference,
+        id: itemId,
+        createdAt: existingItem?.createdAt,
+      );
+
+      if (_isEditing) {
+        ref.read(catalogProvider.notifier).updateItem(
+              item,
+              clearImageReference: clearImageReference,
+            );
+        _formSaved = true;
+
+        if (_removeImageRequested && originalToDelete != null) {
+          await storage.deleteCommitted(originalToDelete);
+        } else if (committedReference != null &&
+            originalToDelete != null &&
+            originalToDelete != committedReference) {
+          await storage.deleteCommitted(originalToDelete);
+        }
+
+        if (!mounted) {
+          return;
+        }
+
+        CatalogNavigation.popToCatalogList(
+          context,
+          showUpdatedFeedback: true,
+        );
+        return;
+      }
+
+      ref.read(catalogProvider.notifier).addItem(item);
+      _formSaved = true;
+
+      if (!mounted) {
+        return;
+      }
+
+      context.pop(true);
+    } catch (_) {
+      if (rollbackReference != null) {
+        await storage.deleteCommitted(rollbackReference);
+      }
+      if (mounted) {
+        _showImageError('Não foi possível salvar a foto. Tente novamente.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
-
-    ref.read(catalogProvider.notifier).addItem(item);
-    context.pop(true);
   }
 
   InputDecoration _dropdownDecoration(String label) {
@@ -188,195 +379,212 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          _isEditing ? 'Editar item' : 'Novo item',
-          style: AppTextStyles.headlineMedium.copyWith(
-            fontSize: 20,
+    return PopScope(
+      canPop: !_saving,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && !_formSaved) {
+          _discardStagedOnly();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            tooltip: 'Voltar',
+            onPressed: _saving ? null : () => context.pop(),
           ),
+          title: Text(
+            _isEditing ? 'Editar item' : 'Novo item',
+            style: AppTextStyles.headlineMedium.copyWith(
+              fontSize: 20,
+            ),
+          ),
+          backgroundColor: AppColors.background,
+          foregroundColor: AppColors.white,
+          elevation: 0,
         ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.white,
-        elevation: 0,
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            key: const Key('catalog_form_scroll'),
-            padding: const EdgeInsets.all(24),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: _maxContentWidth,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SegmentedButton<CatalogItemType>(
-                        segments: const [
-                          ButtonSegment(
-                            value: CatalogItemType.equipment,
-                            label: Text('Equipamento'),
-                          ),
-                          ButtonSegment(
-                            value: CatalogItemType.service,
-                            label: Text('Serviço'),
-                          ),
-                        ],
-                        selected: {_type},
-                        onSelectionChanged: (selection) {
-                          setState(() {
-                            _type = selection.first;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: _fieldSpacing),
-                      AppTextField(
-                        key: const Key('catalog_name_field'),
-                        label: 'Nome',
-                        controller: _nameController,
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.next,
-                        validator: CatalogFormValidators.validateName,
-                      ),
-                      const SizedBox(height: _fieldSpacing),
-                      KeyedSubtree(
-                        key: ValueKey(
-                          'catalog_category_dropdown_$_initializedForEdit$_category',
-                        ),
-                        child: DropdownButtonFormField<CatalogCategory>(
-                          key: const Key('catalog_category_field'),
-                          initialValue: _category,
-                          decoration: _dropdownDecoration('Categoria'),
-                          items: [
-                            for (final category in CatalogCategory.values)
-                              DropdownMenuItem(
-                                value: category,
-                                child: Text(category.label),
-                              ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              key: const Key('catalog_form_scroll'),
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: _maxContentWidth,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        SegmentedButton<CatalogItemType>(
+                          segments: const [
+                            ButtonSegment(
+                              value: CatalogItemType.equipment,
+                              label: Text('Equipamento'),
+                            ),
+                            ButtonSegment(
+                              value: CatalogItemType.service,
+                              label: Text('Serviço'),
+                            ),
                           ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _category = value;
-                              });
-                            }
+                          selected: {_type},
+                          onSelectionChanged: (selection) {
+                            setState(() {
+                              _type = selection.first;
+                            });
                           },
                         ),
-                      ),
-                      const SizedBox(height: _fieldSpacing),
-                      AppTextField(
-                        key: const Key('catalog_description_field'),
-                        label: 'Descrição',
-                        controller: _descriptionController,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: _fieldSpacing),
-                      KeyedSubtree(
-                        key: ValueKey(
-                          'catalog_unit_dropdown_$_initializedForEdit$_billingUnit',
-                        ),
-                        child: DropdownButtonFormField<CatalogBillingUnit>(
-                          key: const Key('catalog_unit_field'),
-                          initialValue: _billingUnit,
-                          decoration: _dropdownDecoration('Unidade de cobrança'),
-                          items: [
-                            for (final unit in CatalogBillingUnit.values)
-                              DropdownMenuItem(
-                                value: unit,
-                                child: Text(unit.label),
-                              ),
-                          ],
-                          onChanged: _onBillingUnitChanged,
-                        ),
-                      ),
-                      if (_billingUnit.isOther) ...[
                         const SizedBox(height: _fieldSpacing),
                         AppTextField(
-                          key: const Key('catalog_unit_custom_field'),
-                          label: 'Unidade personalizada',
-                          controller: _customUnitController,
-                          keyboardType: TextInputType.text,
+                          key: const Key('catalog_name_field'),
+                          label: 'Nome',
+                          controller: _nameController,
+                          keyboardType: TextInputType.name,
                           textInputAction: TextInputAction.next,
-                          validator: (value) =>
-                              CatalogFormValidators.validateCustomUnit(
-                            unit: _billingUnit,
-                            value: value,
+                          validator: CatalogFormValidators.validateName,
+                        ),
+                        const SizedBox(height: _fieldSpacing),
+                        KeyedSubtree(
+                          key: ValueKey(
+                            'catalog_category_dropdown_$_initializedForEdit$_category',
+                          ),
+                          child: DropdownButtonFormField<CatalogCategory>(
+                            key: const Key('catalog_category_field'),
+                            initialValue: _category,
+                            decoration: _dropdownDecoration('Categoria'),
+                            items: [
+                              for (final category in CatalogCategory.values)
+                                DropdownMenuItem(
+                                  value: category,
+                                  child: Text(category.label),
+                                ),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _category = value;
+                                });
+                              }
+                            },
                           ),
                         ),
+                        const SizedBox(height: _fieldSpacing),
+                        AppTextField(
+                          key: const Key('catalog_description_field'),
+                          label: 'Descrição',
+                          controller: _descriptionController,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: _fieldSpacing),
+                        KeyedSubtree(
+                          key: ValueKey(
+                            'catalog_unit_dropdown_$_initializedForEdit$_billingUnit',
+                          ),
+                          child: DropdownButtonFormField<CatalogBillingUnit>(
+                            key: const Key('catalog_unit_field'),
+                            initialValue: _billingUnit,
+                            decoration:
+                                _dropdownDecoration('Unidade de cobrança'),
+                            items: [
+                              for (final unit in CatalogBillingUnit.values)
+                                DropdownMenuItem(
+                                  value: unit,
+                                  child: Text(unit.label),
+                                ),
+                            ],
+                            onChanged: _onBillingUnitChanged,
+                          ),
+                        ),
+                        if (_billingUnit.isOther) ...[
+                          const SizedBox(height: _fieldSpacing),
+                          AppTextField(
+                            key: const Key('catalog_unit_custom_field'),
+                            label: 'Unidade personalizada',
+                            controller: _customUnitController,
+                            keyboardType: TextInputType.text,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) =>
+                                CatalogFormValidators.validateCustomUnit(
+                              unit: _billingUnit,
+                              value: value,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: _fieldSpacing),
+                        AppTextField(
+                          key: const Key('catalog_price_field'),
+                          label: 'Preço (R\$)',
+                          hint: 'Ex.: 1.500,00',
+                          controller: _priceController,
+                          keyboardType: TextInputType.text,
+                          textInputAction: TextInputAction.done,
+                          inputFormatters: [BrazilianCurrencyInputFormatter()],
+                          validator: CatalogFormValidators.validatePrice,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Digite o valor em reais. Ex.: 1500, 1500,00 ou 1.500,00',
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                        const SizedBox(height: _fieldSpacing),
+                        CatalogItemImageFormSection(
+                          previewReference: _previewImageReference,
+                          onSelectPhoto: _handleSelectPhoto,
+                          onReplacePhoto: _handleSelectPhoto,
+                          onRemovePhoto: _handleRemovePhoto,
+                          isBusy: _pickingImage || _saving,
+                        ),
+                        const SizedBox(height: _fieldSpacing),
+                        SwitchListTile(
+                          key: const Key('catalog_active_switch'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            'Item ativo',
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                          value: _active,
+                          onChanged: _saving
+                              ? null
+                              : (value) {
+                                  setState(() {
+                                    _active = value;
+                                  });
+                                },
+                        ),
+                        const SizedBox(height: 24),
+                        PrimaryButton(
+                          key: const Key('catalog_save_button'),
+                          label: 'Salvar',
+                          onPressed: _saving ? null : _save,
+                        ),
                       ],
-                      const SizedBox(height: _fieldSpacing),
-                      AppTextField(
-                        key: const Key('catalog_price_field'),
-                        label: 'Preço (R\$)',
-                        hint: 'Ex.: 1.500,00',
-                        controller: _priceController,
-                        keyboardType: TextInputType.text,
-                        textInputAction: TextInputAction.done,
-                        inputFormatters: [BrazilianCurrencyInputFormatter()],
-                        validator: CatalogFormValidators.validatePrice,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Digite o valor em reais. Ex.: 1500, 1500,00 ou 1.500,00',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.secondaryText,
-                        ),
-                      ),
-                      const SizedBox(height: _fieldSpacing),
-                      const Align(
-                        alignment: Alignment.centerLeft,
-                        child: CatalogItemImagePlaceholder(
-                          width: 160,
-                          height: 120,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Foto em breve',
-                        style: AppTextStyles.caption.copyWith(
-                          color: AppColors.secondaryText,
-                        ),
-                      ),
-                      const SizedBox(height: _fieldSpacing),
-                      SwitchListTile(
-                        key: const Key('catalog_active_switch'),
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'Item ativo',
-                          style: AppTextStyles.bodyMedium,
-                        ),
-                        value: _active,
-                        onChanged: (value) {
-                          setState(() {
-                            _active = value;
-                          });
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      PrimaryButton(
-                        key: const Key('catalog_save_button'),
-                        label: 'Salvar',
-                        onPressed: _save,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
+  }
+
+  void _onBillingUnitChanged(CatalogBillingUnit? value) {
+    if (value == null) {
+      return;
+    }
+
+    setState(() {
+      if (_billingUnit.isOther && !value.isOther) {
+        _customUnitController.clear();
+      }
+      _billingUnit = value;
+    });
   }
 }

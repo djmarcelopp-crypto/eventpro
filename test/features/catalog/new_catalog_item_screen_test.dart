@@ -7,8 +7,14 @@ import 'package:eventpro/features/catalog/catalog_billing_unit.dart';
 import 'package:eventpro/features/catalog/catalog_category.dart';
 import 'package:eventpro/features/catalog/catalog_item_type.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
+import 'package:eventpro/features/catalog/data/exceptions/catalog_image_pick_exception.dart';
+import 'package:eventpro/features/catalog/data/models/catalog_image_pick_result.dart';
 import 'package:eventpro/features/catalog/new_catalog_item_screen.dart';
+import 'package:eventpro/features/catalog/providers/catalog_image_services_provider.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
+
+import 'fakes/fake_catalog_image_picker_service.dart';
+import 'fakes/fake_catalog_image_storage_service.dart';
 
 Future<TextEditingValue> _typeCharInField(
   WidgetTester tester,
@@ -56,6 +62,26 @@ Future<void> _tapCatalogSave(WidgetTester tester) async {
   await tester.ensureVisible(saveButton);
   await tester.pumpAndSettle();
   await tester.tap(saveButton);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _tapPhotoButton(WidgetTester tester, Key key) async {
+  final button = find.byKey(key);
+  final formScrollable = find.ancestor(
+    of: button,
+    matching: find.byType(Scrollable),
+  );
+  await tester.scrollUntilVisible(
+    button,
+    800,
+    scrollable: formScrollable,
+  );
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(button);
+  await tester.tap(button);
+  for (var attempt = 0; attempt < 30; attempt++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
   await tester.pumpAndSettle();
 }
 
@@ -286,10 +312,16 @@ void main() {
       late GoRouter router;
 
       late ProviderContainer container;
+      final storage = FakeCatalogImageStorageService();
+      storage.seedCommitted('catalog/items/mesa.jpg', kTestPngBytes);
 
       await tester.pumpWidget(
         UncontrolledProviderScope(
-          container: container = ProviderContainer(),
+          container: container = ProviderContainer(
+            overrides: [
+              catalogImageStorageProvider.overrideWithValue(storage),
+            ],
+          ),
           child: MaterialApp.router(
             routerConfig: router = GoRouter(
               initialLocation: '/',
@@ -336,6 +368,116 @@ void main() {
       expect(updated.id, 'item-edit-1');
       expect(updated.createdAt, createdAt);
       expect(updated.imageReference, 'catalog/items/mesa.jpg');
+    });
+
+    testWidgets('seleciona foto com sucesso no cadastro', (tester) async {
+      final picker = FakeCatalogImagePickerService(
+        pickResult: CatalogImagePickResult(
+          bytes: kTestPngBytes,
+          extension: 'png',
+        ),
+      );
+      final storage = FakeCatalogImageStorageService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogImagePickerProvider.overrideWithValue(picker),
+            catalogImageStorageProvider.overrideWithValue(storage),
+          ],
+          child: MaterialApp(
+            home: const NewCatalogItemScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _tapPhotoButton(tester, const Key('catalog_select_photo_button'));
+
+      expect(picker.pickCount, 1);
+      expect(storage.stageCallCount, 1);
+      expect(find.byKey(const Key('catalog_replace_photo_button')), findsOneWidget);
+      expect(picker.pickCount, 1);
+    });
+
+    testWidgets('cancelamento da seleção não exibe erro', (tester) async {
+      final picker = FakeCatalogImagePickerService(pickResult: null);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogImagePickerProvider.overrideWithValue(picker),
+            catalogImageStorageProvider.overrideWithValue(
+              FakeCatalogImageStorageService(),
+            ),
+          ],
+          child: MaterialApp(
+            home: const NewCatalogItemScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _tapPhotoButton(tester, const Key('catalog_select_photo_button'));
+
+      expect(find.byKey(const Key('catalog_select_photo_button')), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('erro real do seletor exibe mensagem amigável', (tester) async {
+      final picker = FakeCatalogImagePickerService(
+        pickException: const CatalogImagePickException(
+          'Não foi possível abrir o seletor de imagens. Tente novamente.',
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogImagePickerProvider.overrideWithValue(picker),
+            catalogImageStorageProvider.overrideWithValue(
+              FakeCatalogImageStorageService(),
+            ),
+          ],
+          child: MaterialApp(
+            home: const NewCatalogItemScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _tapPhotoButton(tester, const Key('catalog_select_photo_button'));
+
+      expect(find.text('Não foi possível abrir o seletor de imagens. Tente novamente.'), findsOneWidget);
+      expect(find.byKey(const Key('catalog_select_photo_button')), findsOneWidget);
+    });
+
+    testWidgets('remover foto volta ao placeholder', (tester) async {
+      final picker = FakeCatalogImagePickerService(
+        pickResult: CatalogImagePickResult(
+          bytes: kTestPngBytes,
+          extension: 'png',
+        ),
+      );
+      final storage = FakeCatalogImageStorageService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogImagePickerProvider.overrideWithValue(picker),
+            catalogImageStorageProvider.overrideWithValue(storage),
+          ],
+          child: MaterialApp(
+            home: const NewCatalogItemScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await _tapPhotoButton(tester, const Key('catalog_select_photo_button'));
+      await _tapPhotoButton(tester, const Key('catalog_remove_photo_button'));
+
+      expect(find.byKey(const Key('catalog_select_photo_button')), findsOneWidget);
     });
   });
 }

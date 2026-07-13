@@ -7,7 +7,7 @@ import '../catalog_category.dart';
 import '../catalog_item_type.dart';
 import '../models/catalog_item.dart';
 import '../utils/catalog_price_formatter.dart';
-import 'catalog_item_image_placeholder.dart';
+import 'catalog_item_image_view.dart';
 
 class CatalogListItem extends StatelessWidget {
   const CatalogListItem({
@@ -38,7 +38,8 @@ class CatalogListItem extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: const CatalogItemImagePlaceholder(
+                  child: CatalogItemImageView(
+                    imageReference: item.imageReference,
                     width: double.infinity,
                     height: 120,
                   ),

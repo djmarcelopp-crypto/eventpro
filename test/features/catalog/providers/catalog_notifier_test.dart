@@ -116,6 +116,22 @@ void main() {
       expect(items.single.name, 'Caixa de som');
     });
 
+    test('updateItem remove imageReference explicitamente', () {
+      final notifier = container.read(catalogProvider.notifier);
+      notifier.addItem(
+        _sampleItem(imageReference: 'catalog/images/old.jpg'),
+      );
+
+      final existing = notifier.findById('item-1')!;
+      notifier.updateItem(
+        existing.copyWith(name: 'Sem foto'),
+        clearImageReference: true,
+      );
+
+      expect(container.read(catalogProvider).single.imageReference, isNull);
+      expect(container.read(catalogProvider).single.name, 'Sem foto');
+    });
+
     test('updateItem mantém posição na lista', () {
       final notifier = container.read(catalogProvider.notifier);
       notifier.addItem(

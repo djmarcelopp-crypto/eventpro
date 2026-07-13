@@ -281,6 +281,61 @@ void main() {
     expect(find.byKey(const Key('catalog_items_grid')), findsOneWidget);
   });
 
+  testWidgets(
+    'Dashboard → Catálogo → Novo item → Salvar → Catálogo → Voltar → Dashboard',
+    (WidgetTester tester) async {
+      await _pumpAppFromSplash(tester);
+
+      await tester.tap(find.text('Entrar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Catálogo'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('catalog_new_item_button')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('catalog_name_field')),
+        'Caixa de som',
+      );
+      await tester.enterText(
+        find.byKey(const Key('catalog_price_field')),
+        '2000',
+      );
+      await _tapCatalogSave(tester);
+
+      expect(find.text('Catálogo'), findsOneWidget);
+      expect(find.text('Item cadastrado com sucesso'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Voltar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+      expect(find.text('Módulos'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Catálogo sem pilha volta ao Dashboard pelo fallback', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    AppRouter.router.go(AppRoutes.catalog);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Catálogo'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+    expect(find.text('Módulos'), findsOneWidget);
+  });
+
   testWidgets('Abre detalhes ao tocar item no Catálogo', (
     WidgetTester tester,
   ) async {
@@ -312,13 +367,77 @@ void main() {
       'Mesa atualizada',
     );
     await _tapCatalogSave(tester);
-    await tester.pumpAndSettle();
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Catálogo'), findsOneWidget);
     expect(find.text('Mesa atualizada'), findsOneWidget);
+    expect(find.text('Item atualizado com sucesso'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+    expect(find.text('Módulos'), findsOneWidget);
   });
+
+  testWidgets(
+    'Dashboard → Catálogo → Detalhes → Editar → Salvar → voltar até Dashboard',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await _pumpAppFromSplash(tester);
+
+      await tester.tap(find.text('Entrar'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Catálogo'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('catalog_new_item_button')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('catalog_name_field')),
+        'Painel LED',
+      );
+      await tester.enterText(
+        find.byKey(const Key('catalog_price_field')),
+        '3500',
+      );
+      await _tapCatalogSave(tester);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Painel LED'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('catalog_edit_button')));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('catalog_name_field')),
+        'Painel LED atualizado',
+      );
+      await _tapCatalogSave(tester);
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Catálogo'), findsOneWidget);
+      expect(find.text('Painel LED atualizado'), findsOneWidget);
+      expect(find.text('Item atualizado com sucesso'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Voltar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+      expect(find.text('Módulos'), findsOneWidget);
+    },
+  );
 
   testWidgets('Exibe feedback global após atualização do catálogo', (
     WidgetTester tester,

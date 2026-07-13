@@ -83,12 +83,21 @@ Novas categorias exigirão alteração do enum `CatalogCategory`.
 
 - Cada item pode ter **uma foto principal opcional** via `imageReference`.
 - Sem foto (`imageReference == null`): exibir placeholder Premium Dark.
-- Usos previstos em tarefas futuras:
-  - card do Catálogo;
-  - detalhes do item;
-  - opcionalmente no PDF do orçamento.
+- **Seleção por plataforma:**
+  - Android e iPhone: galeria (sem câmera nesta fase).
+  - Windows e macOS: arquivo JPG, JPEG ou PNG.
+- Formatos aceitos: JPG, JPEG e PNG, validados pelos bytes (máximo 10 MB).
+- HEIC/HEIF (comum no iPhone) **não é suportado** nesta entrega; o usuário recebe mensagem orientando JPG ou PNG.
+- A foto é copiada imediatamente para o diretório do app; o modelo guarda apenas `imageReference` opaca (sem Base64 nem caminho absoluto externo).
+- Rascunhos ficam em `catalog_images_staged/`; arquivos definitivos em `catalog_images/`.
+- Cancelar o formulário descarta apenas o rascunho; a foto salva só é removida após confirmação do salvamento.
+- Exibição: cards do catálogo, detalhes do item e formulário de cadastro/edição.
 - **Múltiplas fotos por item:** evolução futura — fora do escopo atual.
-- Upload, Firebase Storage, câmera, galeria e seletor de arquivos: tarefa dedicada futura.
+- Firebase Storage, upload em nuvem e câmera: fora do escopo atual.
+
+### Limitação de persistência
+
+O catálogo permanece em memória nesta fase. As fotos persistem no disco local do dispositivo, mas os metadados dos itens são perdidos ao reiniciar o app. Arquivos órfãos podem permanecer no disco até limpeza futura.
 
 ## Persistência
 

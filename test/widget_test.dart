@@ -205,12 +205,35 @@ void main() {
     await _openNewClientForm(tester);
 
     expect(find.text('CPF'), findsOneWidget);
+    expect(find.byKey(const Key('cnpj_lookup_hint')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.search),
+      ),
+      findsNothing,
+    );
 
     await tester.tap(find.text('Pessoa Jurídica'));
     await tester.pumpAndSettle();
 
     expect(find.text('CNPJ'), findsOneWidget);
     expect(find.text('CPF'), findsNothing);
+    expect(
+      find.text('Digite o CNPJ para buscar os dados da empresa'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('A busca automática será liberada após um CNPJ válido.'),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.search),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Exibe aviso de observações internas', (
@@ -313,6 +336,69 @@ void main() {
     await _openNewClientForm(tester);
 
     expect(find.byKey(const Key('cnpj_lookup_button')), findsNothing);
+    expect(find.byKey(const Key('cnpj_lookup_hint')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.search),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Exibe orientação de busca CNPJ em PJ antes de CNPJ válido', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await tester.tap(find.text('Pessoa Jurídica'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Digite o CNPJ para buscar os dados da empresa'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('A busca automática será liberada após um CNPJ válido.'),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    expect(find.byKey(const Key('cnpj_lookup_button')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.check_circle_outline),
+      ),
+      findsNothing,
+    );
+  });
+
+  testWidgets('Mantém orientação inicial com CNPJ inválido de 14 dígitos', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await tester.tap(find.text('Pessoa Jurídica'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('client_document_field')),
+      '12345678000199',
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('A busca automática será liberada após um CNPJ válido.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('cnpj_lookup_button')), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.check_circle_outline),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('Exibe botão de consulta CNPJ em PJ com 14 dígitos', (
@@ -323,6 +409,24 @@ void main() {
 
     expect(find.byKey(const Key('cnpj_lookup_button')), findsOneWidget);
     expect(find.text('Buscar dados da empresa'), findsOneWidget);
+    expect(
+      find.text('CNPJ válido. Você já pode buscar os dados da empresa.'),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.search),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_document_field')),
+        matching: find.byIcon(Icons.check_circle_outline),
+      ),
+      findsWidgets,
+    );
   });
 
   testWidgets('Preenche formulário após consulta CNPJ bem-sucedida', (

@@ -200,6 +200,39 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
   bool get _canLookupCep => _showCepLookupButton && !_isCepLookupLoading;
 
+  bool get _isCompanyDocument => _clientType == ClientType.company;
+
+  Widget _buildCnpjLookupOrientation() {
+    final isValid = _showCnpjLookupButton;
+    final text = isValid
+        ? 'CNPJ válido. Você já pode buscar os dados da empresa.'
+        : 'A busca automática será liberada após um CNPJ válido.';
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isValid ? Icons.check_circle_outline : Icons.info_outline,
+            size: 16,
+            color: isValid ? AppColors.success : AppColors.secondaryText,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              key: const Key('cnpj_lookup_hint'),
+              style: AppTextStyles.caption.copyWith(
+                color: isValid ? AppColors.success : AppColors.secondaryText,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   CnpjFormFieldValues get _currentFormValues {
     return CnpjFormFieldValues(
       name: _nameController.text,
@@ -698,9 +731,9 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   Widget build(BuildContext context) {
     final documentLabel =
         _clientType == ClientType.individual ? 'CPF' : 'CNPJ';
-    final documentHint = _clientType == ClientType.individual
-        ? '000.000.000-00'
-        : '00.000.000/0000-00';
+    final documentHint = _isCompanyDocument
+        ? 'Digite o CNPJ para buscar os dados da empresa'
+        : '000.000.000-00';
 
     return Scaffold(
       appBar: AppBar(
@@ -819,9 +852,22 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         key: const Key('client_document_field'),
                         label: documentLabel,
                         hint: documentHint,
+                        hintMaxLines: _isCompanyDocument ? 2 : 1,
                         controller: _documentController,
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
+                        prefixIcon: _isCompanyDocument
+                            ? const Icon(
+                                Icons.search,
+                                color: AppColors.primary,
+                              )
+                            : null,
+                        suffixIcon: _isCompanyDocument && _showCnpjLookupButton
+                            ? const Icon(
+                                Icons.check_circle_outline,
+                                color: AppColors.success,
+                              )
+                            : null,
                         inputFormatters: [
                           _clientType == ClientType.individual
                               ? CpfInputFormatter()
@@ -829,6 +875,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         ],
                         validator: _validateDocument,
                       ),
+                      if (_isCompanyDocument) _buildCnpjLookupOrientation(),
                       if (_showCnpjLookupButton) ...[
                         const SizedBox(height: 12),
                         OutlinedButton(

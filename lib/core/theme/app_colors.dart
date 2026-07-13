@@ -12,4 +12,5 @@ abstract class AppColors {
   static const Color success = Color(0xFF2E8B57);
   static const Color warning = Color(0xFFFFC107);
   static const Color error = Color(0xFFCF6679);
+  static const Color whatsapp = Color(0xFF25D366);
 }

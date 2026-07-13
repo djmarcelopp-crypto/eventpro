@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router/app_router.dart';
@@ -797,7 +798,10 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         controller: _whatsAppController,
                         keyboardType: TextInputType.phone,
                         textInputAction: TextInputAction.next,
-                        prefixIcon: const Icon(Icons.chat),
+                        prefixIcon: const FaIcon(
+                          FontAwesomeIcons.whatsapp,
+                          color: AppColors.whatsapp,
+                        ),
                         inputFormatters: [BrazilianWhatsAppInputFormatter()],
                         validator: ClientFormValidators.validateWhatsApp,
                       ),

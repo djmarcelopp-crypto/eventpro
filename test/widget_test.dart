@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:eventpro/app/router/app_router.dart';
+import 'package:eventpro/core/theme/app_colors.dart';
 import 'package:eventpro/features/clients/data/exceptions/cep_lookup_exception.dart';
 import 'package:eventpro/features/clients/data/exceptions/cnpj_lookup_exception.dart';
 import 'package:eventpro/features/clients/providers/cep_lookup_provider.dart';
@@ -444,7 +446,22 @@ void main() {
     expect(find.text('Este número também é WhatsApp'), findsOneWidget);
     expect(find.byKey(const Key('client_whatsapp_field')), findsOneWidget);
     expect(find.byIcon(Icons.phone), findsOneWidget);
-    expect(find.byIcon(Icons.chat), findsOneWidget);
+    expect(find.byIcon(Icons.chat), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('client_whatsapp_field')),
+        matching: find.byWidgetPredicate(
+          (widget) {
+            if (widget is! FaIcon || widget.color != AppColors.whatsapp) {
+              return false;
+            }
+            return widget.icon?.codePoint ==
+                FontAwesomeIcons.whatsapp.codePoint;
+          },
+        ),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Checkbox copia celular válido para WhatsApp', (

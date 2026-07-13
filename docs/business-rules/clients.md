@@ -12,4 +12,9 @@
 
 - Campo opcional destinado ao cadastro do cliente.
 - Deve ser preparado para futura integração com o módulo **Agenda**.
-- Nesta fase, a data é capturada e validada apenas no formulário, sem persistência.
+
+## Persistência
+
+- Nesta fase, os clientes existem apenas durante a sessão do aplicativo.
+- Os dados são perdidos ao fechar ou reiniciar o app.
+- A integração com Firebase será implementada em etapa futura.

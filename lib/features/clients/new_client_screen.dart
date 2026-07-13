@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -7,17 +8,19 @@ import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
 import 'client_form_validators.dart';
 import 'client_type.dart';
+import 'models/client.dart';
+import 'providers/clients_provider.dart';
 import 'utils/client_date_formatter.dart';
 import 'utils/text_input_masks.dart';
 
-class NewClientScreen extends StatefulWidget {
+class NewClientScreen extends ConsumerStatefulWidget {
   const NewClientScreen({super.key});
 
   @override
-  State<NewClientScreen> createState() => _NewClientScreenState();
+  ConsumerState<NewClientScreen> createState() => _NewClientScreenState();
 }
 
-class _NewClientScreenState extends State<NewClientScreen> {
+class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   static const _maxContentWidth = 720.0;
   static const _fieldSpacing = 16.0;
 
@@ -71,12 +74,13 @@ class _NewClientScreenState extends State<NewClientScreen> {
 
   Future<void> _pickBirthday() async {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
       locale: const Locale('pt', 'BR'),
-      initialDate: _birthday ?? DateTime(now.year - 30, now.month, now.day),
+      initialDate: _birthday ?? today,
       firstDate: DateTime(1900),
-      lastDate: now,
+      lastDate: today,
     );
 
     if (picked == null) {
@@ -109,15 +113,25 @@ class _NewClientScreenState extends State<NewClientScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Dados validados com sucesso',
-          style: TextStyle(color: AppColors.white),
-        ),
-        backgroundColor: AppColors.success,
-      ),
+    final client = Client.fromForm(
+      type: _clientType,
+      name: _nameController.text,
+      whatsApp: _whatsAppController.text,
+      email: _emailController.text,
+      document: _documentController.text,
+      street: _streetController.text,
+      number: _numberController.text,
+      complement: _complementController.text,
+      neighborhood: _neighborhoodController.text,
+      city: _cityController.text,
+      state: _stateController.text,
+      instagram: _instagramController.text,
+      birthday: _birthday,
+      internalNotes: _notesController.text,
     );
+
+    ref.read(clientsProvider.notifier).addClient(client);
+    context.pop(true);
   }
 
   String? _validateDocument(String? value) {
@@ -299,7 +313,7 @@ class _NewClientScreenState extends State<NewClientScreen> {
                       ),
                       const SizedBox(height: _fieldSpacing),
                       AppTextField(
-                        key: ValueKey('client_document_$_clientType'),
+                        key: const Key('client_document_field'),
                         label: documentLabel,
                         hint: documentHint,
                         controller: _documentController,

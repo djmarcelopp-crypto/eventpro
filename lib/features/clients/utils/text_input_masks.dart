@@ -81,6 +81,24 @@ class BrazilianWhatsAppInputFormatter extends TextInputFormatter {
     );
   }
 
+  static String formatFromDigits(String rawDigits) {
+    var digits = rawDigits.replaceAll(RegExp(r'\D'), '');
+
+    if (digits.isEmpty) {
+      return '';
+    }
+
+    if (!digits.startsWith('55')) {
+      digits = '55$digits';
+    }
+
+    if (digits.length > _maxDigits) {
+      digits = digits.substring(0, _maxDigits);
+    }
+
+    return _formatWhatsApp(digits);
+  }
+
   static String _formatWhatsApp(String digits) {
     final buffer = StringBuffer('+55');
 

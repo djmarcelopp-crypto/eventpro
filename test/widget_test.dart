@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/app/router/app_router.dart';
 import 'package:eventpro/features/clients/utils/client_date_formatter.dart';
 import 'package:eventpro/main.dart';
 
+Widget _createTestApp() {
+  return const ProviderScope(
+    child: EventProApp(),
+  );
+}
+
 Future<void> _pumpAppFromSplash(WidgetTester tester) async {
-  await tester.pumpWidget(const EventProApp());
+  await tester.pumpWidget(_createTestApp());
   await tester.pumpAndSettle();
   AppRouter.router.go(AppRoutes.splash);
   await tester.pumpAndSettle();
@@ -58,7 +65,7 @@ Future<void> _fillRequiredFields(WidgetTester tester) async {
 
 void main() {
   testWidgets('EventPro inicia corretamente', (WidgetTester tester) async {
-    await tester.pumpWidget(const EventProApp());
+    await tester.pumpWidget(_createTestApp());
     await tester.pumpAndSettle();
 
     expect(find.text('EVENTPRO'), findsOneWidget);
@@ -66,7 +73,7 @@ void main() {
   });
 
   testWidgets('Aplicativo usa locale pt-BR', (WidgetTester tester) async {
-    await tester.pumpWidget(const EventProApp());
+    await tester.pumpWidget(_createTestApp());
     await tester.pumpAndSettle();
 
     expect(find.byType(MaterialApp), findsOneWidget);
@@ -79,7 +86,7 @@ void main() {
   testWidgets('Navega para Clientes e volta ao Dashboard', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const EventProApp());
+    await tester.pumpWidget(_createTestApp());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Entrar'));
@@ -178,17 +185,54 @@ void main() {
     expect(find.text('SP'), findsOneWidget);
   });
 
-  testWidgets('Exibe sucesso e mantém formulário aberto', (
+  testWidgets('Cadastra cliente e retorna para a lista', (
     WidgetTester tester,
   ) async {
     await _openNewClientForm(tester);
 
     await _fillRequiredFields(tester);
+    await tester.enterText(
+      find.byKey(const Key('client_document_field')),
+      '12345678901',
+    );
     await _tapSave(tester);
 
-    expect(find.text('Dados validados com sucesso'), findsOneWidget);
-    expect(find.text('Salvar'), findsOneWidget);
-    expect(find.text('Observações internas'), findsOneWidget);
+    expect(find.text('Cliente cadastrado com sucesso'), findsOneWidget);
+    expect(find.text('Maria Silva'), findsOneWidget);
+    expect(find.text('Pessoa Física'), findsOneWidget);
+    expect(find.text('+55 (67) 98149-5959'), findsOneWidget);
+    expect(find.text('CPF: 123.456.789-01'), findsOneWidget);
+    expect(find.text('Salvar'), findsNothing);
+  });
+
+  testWidgets('Não exibe observações internas no card da lista', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+
+    await _fillRequiredFields(tester);
+    await tester.enterText(
+      find.byKey(const Key('client_notes_field')),
+      'Observação secreta da equipe',
+    );
+    await _tapSave(tester);
+
+    expect(find.text('Maria Silva'), findsOneWidget);
+    expect(find.text('Observação secreta da equipe'), findsNothing);
+  });
+
+  testWidgets('Data de aniversário inicia vazia', (WidgetTester tester) async {
+    await _openNewClientForm(tester);
+
+    final birthdayField = find.descendant(
+      of: find.byKey(const Key('client_birthday_field')),
+      matching: find.byType(TextFormField),
+    );
+
+    expect(
+      tester.widget<TextFormField>(birthdayField).controller?.text ?? '',
+      isEmpty,
+    );
   });
 
   testWidgets('Formata data de aniversário em português', (
@@ -204,8 +248,9 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
+    final now = DateTime.now();
     final expectedDate = ClientDateFormatter.formatBirthday(
-      DateTime(DateTime.now().year - 30, DateTime.now().month, DateTime.now().day),
+      DateTime(now.year, now.month, now.day),
     );
 
     expect(find.text(expectedDate), findsOneWidget);

@@ -159,7 +159,7 @@ Composição prevista:
 | Bloco | Origem |
 |-------|--------|
 | Orçamento aprovado | `Quote` congelado |
-| Dados da empresa | Configurações (snapshot futuro) |
+| Dados da empresa | Configurações (`CompanyProfile` em memória; snapshot congelado na geração — ver `docs/business-rules/settings.md`) |
 | Dados do cliente | `QuoteClientSnapshot` |
 | Dados do evento | `QuoteEventSnapshot` |
 | Itens e valores | `List<QuoteLineItem>` + totais em centavos |

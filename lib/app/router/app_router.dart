@@ -9,6 +9,8 @@ import '../../features/clients/new_client_screen.dart';
 import '../../features/quotes/new_quote_screen.dart';
 import '../../features/quotes/quote_detail_screen.dart';
 import '../../features/quotes/quotes_screen.dart';
+import '../../features/settings/company_profile_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../splash_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 
@@ -33,6 +35,8 @@ abstract class AppRoutes {
   static String clientsDetail(String id) => '$clients/$id';
 
   static String clientsEdit(String id) => '$clients/$id/edit';
+  static const settings = '/settings';
+  static const settingsCompany = '/settings/company';
 }
 
 abstract class AppRouter {
@@ -116,6 +120,16 @@ abstract class AppRouter {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'company',
+            builder: (context, state) => const CompanyProfileScreen(),
           ),
         ],
       ),

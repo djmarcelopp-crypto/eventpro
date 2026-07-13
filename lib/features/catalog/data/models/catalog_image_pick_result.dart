@@ -1,11 +1,3 @@
-import 'dart:typed_data';
+import 'package:eventpro/core/media/models/app_image_pick_result.dart';
 
-class CatalogImagePickResult {
-  const CatalogImagePickResult({
-    required this.bytes,
-    required this.extension,
-  });
-
-  final Uint8List bytes;
-  final String extension;
-}
+typedef CatalogImagePickResult = AppImagePickResult;

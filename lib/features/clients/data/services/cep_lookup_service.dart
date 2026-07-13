@@ -1,5 +1,1 @@
-import '../models/cep_address_data.dart';
-
-abstract class CepLookupService {
-  Future<CepAddressData> lookup(String postalCodeDigits);
-}
+export 'package:eventpro/core/lookup/services/cep_lookup_service.dart';

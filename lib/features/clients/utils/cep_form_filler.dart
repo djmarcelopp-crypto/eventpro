@@ -1,7 +1,7 @@
-import '../data/models/cep_address_data.dart';
+import 'package:eventpro/core/lookup/models/cep_address_data.dart';
 import 'cnpj_form_filler.dart';
-import 'form_fill_mode.dart';
-import 'text_input_masks.dart';
+import 'package:eventpro/core/lookup/form_fill_mode.dart';
+import 'package:eventpro/core/formatting/text_input_masks.dart';
 
 class CepFormFieldValues {
   const CepFormFieldValues({

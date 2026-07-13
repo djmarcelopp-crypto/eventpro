@@ -1,5 +1,1 @@
-import '../models/cnpj_company_data.dart';
-
-abstract class CnpjLookupService {
-  Future<CnpjCompanyData> lookup(String cnpjDigits);
-}
+export 'package:eventpro/core/lookup/services/cnpj_lookup_service.dart';

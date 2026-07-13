@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../settings/providers/company_profile_provider.dart';
+import '../settings/utils/company_profile_presenter.dart';
 import 'dashboard_modules.dart';
 import 'widgets/dashboard_shortcut_card.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   static const _maxContentWidth = 1200.0;
@@ -40,12 +43,17 @@ class DashboardScreen extends StatelessWidget {
       case DashboardModuleId.quotes:
         context.push(AppRoutes.quotes);
       case DashboardModuleId.settings:
-        break;
+        context.push(AppRoutes.settings);
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(companyProfileProvider);
+    final companyLine = profile == null
+        ? 'DJ Marcelo PP Festas e Eventos'
+        : CompanyProfilePresenter.displayName(profile);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -78,7 +86,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'DJ Marcelo PP Festas e Eventos',
+                      companyLine,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.mutedWhite,
                       ),

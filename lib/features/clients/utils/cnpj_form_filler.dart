@@ -1,6 +1,6 @@
-import '../data/models/cnpj_company_data.dart';
-import 'form_fill_mode.dart';
-import 'text_input_masks.dart';
+import 'package:eventpro/core/lookup/form_fill_mode.dart';
+import 'package:eventpro/core/lookup/models/cnpj_company_data.dart';
+import 'package:eventpro/core/formatting/text_input_masks.dart';
 
 class CnpjFormFieldValues {
   const CnpjFormFieldValues({

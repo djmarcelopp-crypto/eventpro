@@ -1,10 +1,11 @@
-import 'data/utils/brazilian_cnpj_validator.dart';
-import 'data/utils/brazilian_cpf_validator.dart';
-import 'utils/email_sanitizer.dart';
+import 'package:eventpro/core/validation/brazilian_cnpj_validator.dart';
+import 'package:eventpro/core/validation/brazilian_cpf_validator.dart';
+import 'package:eventpro/core/validation/email_sanitizer.dart';
+import 'package:eventpro/core/validation/input_digits.dart';
 
 abstract class ClientFormValidators {
   static String extractDigits(String? value) {
-    return (value ?? '').replaceAll(RegExp(r'\D'), '');
+    return InputDigits.extract(value);
   }
 
   static String? validateName(String? value) {

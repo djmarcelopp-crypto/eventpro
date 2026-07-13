@@ -1,5 +1,3 @@
-class CatalogImagePickException implements Exception {
-  const CatalogImagePickException(this.message);
+import 'package:eventpro/core/media/exceptions/app_image_pick_exception.dart';
 
-  final String message;
-}
+typedef CatalogImagePickException = AppImagePickException;

@@ -71,13 +71,11 @@ A estrutura inicial esperada dentro de core é:
 ```text
 lib/core/
   theme/
-    app_theme.dart
-    app_colors.dart
-    app_text_styles.dart
   widgets/
-    primary_button.dart
-    app_text_field.dart
-    app_card.dart
+  lookup/       # CNPJ/CEP BrasilAPI (compartilhado)
+  validation/   # CPF, CNPJ, telefone, e-mail
+  formatting/   # máscaras brasileiras
+  media/        # picker, storage, validação de imagem
 ```
 
 ### 5.3 features

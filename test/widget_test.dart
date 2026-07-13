@@ -158,6 +158,48 @@ void main() {
     expect(find.text('Módulos'), findsOneWidget);
   });
 
+  testWidgets('Navega para Catálogo e volta ao Dashboard', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+
+    await tester.tap(find.text('Catálogo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nenhum item no catálogo'), findsOneWidget);
+    expect(find.text('Novo item'), findsOneWidget);
+    expect(find.byKey(const Key('catalog_item_image_placeholder')), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+    expect(find.text('Módulos'), findsOneWidget);
+  });
+
+  testWidgets('Botão Novo item do Catálogo não abre formulário', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Catálogo'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('catalog_new_item_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Catálogo'), findsOneWidget);
+    expect(find.text('Nenhum item no catálogo'), findsOneWidget);
+  });
+
   testWidgets('Navega para o formulário Novo cliente', (
     WidgetTester tester,
   ) async {

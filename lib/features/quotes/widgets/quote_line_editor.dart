@@ -20,6 +20,7 @@ class QuoteLineEditor extends StatelessWidget {
     required this.onQuantityChanged,
     required this.onPriceChanged,
     required this.onRemove,
+    this.catalogWarning,
   });
 
   final QuoteLineDraft draft;
@@ -29,6 +30,7 @@ class QuoteLineEditor extends StatelessWidget {
   final ValueChanged<String> onQuantityChanged;
   final ValueChanged<String> onPriceChanged;
   final VoidCallback onRemove;
+  final String? catalogWarning;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +58,17 @@ class QuoteLineEditor extends StatelessWidget {
                       draft.unit,
                       style: AppTextStyles.bodyMedium,
                     ),
+                    if (draft.description?.trim().isNotEmpty == true) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        draft.description!.trim(),
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.secondaryText,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -70,6 +83,15 @@ class QuoteLineEditor extends StatelessWidget {
               ),
             ],
           ),
+          if (catalogWarning != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              catalogWarning!,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.warning,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,

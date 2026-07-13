@@ -94,7 +94,12 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
                       ),
                       itemCount: sortedQuotes.length,
                       itemBuilder: (context, index) {
-                        return QuoteListItem(quote: sortedQuotes[index]);
+                        return QuoteListItem(
+                          quote: sortedQuotes[index],
+                          onTap: () => context.push(
+                            AppRoutes.quotesDetail(sortedQuotes[index].id),
+                          ),
+                        );
                       },
                     ),
                   ),

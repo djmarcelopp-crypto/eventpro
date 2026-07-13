@@ -2,8 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/quote.dart';
 import '../models/quote_status.dart';
+import '../models/quote_status_history_entry.dart';
 import '../utils/quote_calculator.dart';
 import '../utils/quote_status_transitions.dart';
+import 'quote_clock_provider.dart';
 import 'quote_number_generator.dart';
 
 class QuotesNotifier extends Notifier<List<Quote>> {
@@ -14,8 +16,10 @@ class QuotesNotifier extends Notifier<List<Quote>> {
 
   QuoteNumberGenerator get numberGenerator => _numberGenerator;
 
+  DateTime _now() => ref.read(quoteClockProvider)();
+
   bool addQuote(Quote draft) {
-    final now = DateTime.now();
+    final now = _now();
     final items = [
       for (final item in draft.items)
         QuoteCalculator.withCalculatedLineTotal(item),
@@ -38,6 +42,13 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       discountCents: draft.discountCents,
       freightCents: draft.freightCents,
       totalCents: totalCents,
+      statusHistory: [
+        QuoteStatusHistoryEntry(
+          previousStatus: null,
+          newStatus: QuoteStatus.draft,
+          changedAt: now,
+        ),
+      ],
       validUntil: draft.validUntil,
       notes: draft.notes,
       internalNotes: draft.internalNotes,
@@ -87,11 +98,12 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       discountCents: quote.discountCents,
       freightCents: quote.freightCents,
       totalCents: totalCents,
+      statusHistory: existing.statusHistory,
       validUntil: quote.validUntil,
       notes: quote.notes,
       internalNotes: quote.internalNotes,
       createdAt: existing.createdAt,
-      updatedAt: DateTime.now(),
+      updatedAt: _now(),
       approvedAt: existing.approvedAt,
     );
 
@@ -112,11 +124,22 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       return false;
     }
 
-    final now = DateTime.now();
+    final now = _now();
+    final historyEntry = QuoteStatusHistoryEntry(
+      previousStatus: existing.status,
+      newStatus: target,
+      changedAt: now,
+    );
+
+    final reopeningForEditing = existing.status == QuoteStatus.approved &&
+        target == QuoteStatus.draft;
+
     final updated = existing.copyWith(
       status: target,
       updatedAt: now,
-      approvedAt: target == QuoteStatus.approved ? now : existing.approvedAt,
+      approvedAt: target == QuoteStatus.approved ? now : null,
+      clearApprovedAt: reopeningForEditing,
+      statusHistory: [...existing.statusHistory, historyEntry],
     );
 
     state = [

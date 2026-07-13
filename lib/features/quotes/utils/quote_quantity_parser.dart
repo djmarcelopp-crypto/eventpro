@@ -68,6 +68,32 @@ abstract class QuoteQuantityParser {
     return validateForSave(input);
   }
 
+  static String formatForInput(double quantity) {
+    if (quantity == quantity.roundToDouble()) {
+      return quantity.toInt().toString();
+    }
+
+    for (var places = 1; places <= 3; places++) {
+      final factor = _pow10(places);
+      final scaled = quantity * factor;
+      final nearest = scaled.roundToDouble();
+      if ((scaled - nearest).abs() < 1e-9) {
+        final text = quantity.toStringAsFixed(places);
+        return text.replaceAll('.', ',');
+      }
+    }
+
+    return quantity.toString().replaceAll('.', ',');
+  }
+
+  static int _pow10(int exponent) {
+    var result = 1;
+    for (var i = 0; i < exponent; i++) {
+      result *= 10;
+    }
+    return result;
+  }
+
   static String? _normalize(String text) {
     var sanitized = text.replaceAll(' ', '');
 

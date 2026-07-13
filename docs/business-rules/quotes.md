@@ -20,7 +20,7 @@ Nesta fase, os orçamentos existem apenas durante a sessão do aplicativo (provi
 
 - **Rascunho** → Enviado, Cancelado
 - **Enviado** → Aprovado, Recusado, Cancelado
-- **Aprovado** → Cancelado
+- **Aprovado** → Cancelado, **Rascunho** (reabrir para edição)
 - **Recusado** → *(nenhuma)*
 - **Cancelado** → *(nenhuma)*
 
@@ -40,7 +40,10 @@ Mudança de status **não altera** snapshots, itens nem valores financeiros.
 
 - Preenchido **somente** na transição válida para **Aprovado**.
 - Aprovação **não gera contrato** automaticamente.
-- `approvedAt` é **preservado** mesmo se o orçamento for posteriormente cancelado — marca o histórico da aprovação.
+- `approvedAt` representa a **aprovação vigente**; é **limpo** (`null`) na reabertura **Aprovado → Rascunho**.
+- `approvedAt` é **preservado** se o orçamento for posteriormente cancelado — marca a última aprovação vigente antes do cancelamento.
+- O histórico de aprovações anteriores permanece em `statusHistory`, mesmo após reabertura.
+- Nova aprovação após reabertura define um **novo** `approvedAt`.
 - `isApprovedForContract` retorna `true` quando `status == approved`.
 
 ## Snapshots
@@ -54,6 +57,7 @@ Um orçamento é um **documento congelado**. Alterações futuras em Clientes, C
 - Usa `QuoteClientType` local (individual/company), não `ClientType` do módulo Clientes.
 - Factory `fromClient` converte na criação; snapshot permanece válido se Clientes evoluir.
 - Guarda `sourceClientId` para rastreio.
+- Telefone e WhatsApp permanecem **somente dígitos** no snapshot; a formatação ocorre **somente na apresentação** (detalhes).
 - **Excluído:** `internalNotes`, `instagram`, `birthday`.
 
 ### Evento (`QuoteEventSnapshot`)
@@ -177,6 +181,61 @@ Composição prevista:
 
 - `/quotes` — listagem de orçamentos.
 - `/quotes/new` — formulário de novo orçamento (salva como rascunho).
+- `/quotes/:id` — detalhes do orçamento.
+- `/quotes/:id/edit` — edição (somente rascunho).
+
+## Histórico de status (TASK-017)
+
+- Cada orçamento possui `statusHistory` imutável (`List.unmodifiable`).
+- `addQuote` ignora qualquer histórico recebido no draft e cria exatamente uma entrada inicial: `null → draft`, com `changedAt == createdAt`.
+- `transitionStatus` válida adiciona `{ previous, new, changedAt }`.
+- Transição inválida ou repetida não adiciona entrada.
+- `updateQuote` preserva o histórico integralmente.
+
+## Detalhes e status (TASK-017)
+
+### Tela de detalhes
+
+- Resolve o orçamento pelo ID da rota via `quotesProvider` (sem `extra` como fonte oficial).
+- Exibe snapshots congelados: cliente, evento, itens, financeiro, observações e histórico.
+- Campos vazios são ocultados; observações internas ficam em seção separada com aviso de bloqueio em PDF/contrato.
+- ID inexistente exibe estado amigável com botão Voltar.
+
+### Ações por status (sem dropdown)
+
+| Status | Ações |
+|--------|-------|
+| Rascunho | Editar, Marcar como enviado, Cancelar |
+| Enviado | Aprovar, Recusar, Cancelar |
+| Aprovado | Indicação “Pronto para gerar contrato”, Gerar contrato (Em breve), **Reabrir para edição**, Cancelar |
+| Recusado / Cancelado | Somente visualização |
+
+- **Reabrir para edição** (somente em Aprovado): retorna para Rascunho via `transitionStatus`, limpa `approvedAt`, preserva dados/itens e exige novo envio e nova aprovação. Diálogo obrigatório com aviso explícito.
+
+- Toda mudança de status exige diálogo de confirmação.
+- “Marcar como enviado” é registro manual; sem envio real por WhatsApp/e-mail.
+- Duplo clique é bloqueado (`_transitioning` restaurado em `finally`).
+
+### Edição de rascunho
+
+- Reutiliza `NewQuoteScreen(quoteId)` com `QuoteFormInitializer`.
+- Bloqueada fora de `draft`.
+- `updateQuote` preserva `id`, `number`, `createdAt`, `status`, `approvedAt` e `statusHistory`.
+
+### Linhas na edição (`isExistingLine`)
+
+| Tipo | Regra no save |
+|------|---------------|
+| **Linha existente** | Preserva nome, descrição e unidade congelados do orçamento; quantidade e preço editáveis; item inativo/ausente mostra aviso mas permite salvar |
+| **Linha nova** | Somente itens ativos; captura dados atuais do Catálogo |
+
+- Nunca atualizar silenciosamente linha existente com dados novos do Catálogo.
+- Para atualizar pelo Catálogo: remover a linha e adicionar novamente.
+
+### Relógio testável
+
+- `quoteClockProvider = Provider<DateTime Function()>` usado por `QuotesNotifier`.
+- Produção: `DateTime.now`; testes: `ProviderScope` override.
 
 ## Criação de orçamento (TASK-016)
 
@@ -221,4 +280,4 @@ Se cliente ou item estiver ausente/inativo, o salvamento é bloqueado com mensag
 
 - Cards com número, cliente, status, evento, total, validade e quantidade de itens.
 - Ordenação por criação mais recente (cópia para exibição; provider não é mutado).
-- Detalhes e edição: fora de escopo nesta fase.
+- Card abre detalhes com `push` para `/quotes/:id`.

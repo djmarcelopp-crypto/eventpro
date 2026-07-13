@@ -23,11 +23,25 @@ void main() {
         ),
         isTrue,
       );
+      expect(
+        QuoteStatusTransitions.isAllowed(
+          QuoteStatus.approved,
+          QuoteStatus.draft,
+        ),
+        isTrue,
+      );
     });
 
     test('bloqueia transições inválidas', () {
       expect(
         QuoteStatusTransitions.isAllowed(QuoteStatus.draft, QuoteStatus.approved),
+        isFalse,
+      );
+      expect(
+        QuoteStatusTransitions.isAllowed(
+          QuoteStatus.sent,
+          QuoteStatus.draft,
+        ),
         isFalse,
       );
       expect(

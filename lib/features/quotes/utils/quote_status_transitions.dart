@@ -12,7 +12,8 @@ abstract class QuoteStatusTransitions {
       QuoteStatus.sent => target == QuoteStatus.approved ||
           target == QuoteStatus.rejected ||
           target == QuoteStatus.cancelled,
-      QuoteStatus.approved => target == QuoteStatus.cancelled,
+      QuoteStatus.approved => target == QuoteStatus.cancelled ||
+          target == QuoteStatus.draft,
       QuoteStatus.rejected => false,
       QuoteStatus.cancelled => false,
     };

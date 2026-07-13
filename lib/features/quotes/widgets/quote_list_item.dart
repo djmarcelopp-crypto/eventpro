@@ -11,13 +11,15 @@ class QuoteListItem extends StatelessWidget {
   const QuoteListItem({
     super.key,
     required this.quote,
+    this.onTap,
   });
 
   final Quote quote;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    final card = AppCard(
       key: Key('quote_list_item_${quote.id}'),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -67,6 +69,17 @@ class QuoteListItem extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    if (onTap == null) {
+      return card;
+    }
+
+    return InkWell(
+      key: Key('quote_list_item_tap_${quote.id}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: card,
     );
   }
 }

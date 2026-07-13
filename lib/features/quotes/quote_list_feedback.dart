@@ -5,12 +5,35 @@ import '../../main.dart';
 
 enum QuoteListFeedback {
   saved,
+  updated,
+  markedAsSent,
+  approved,
+  rejected,
+  cancelled,
+  reopenedForEditing,
+  statusChangeFailed,
 }
 
 abstract class QuoteListFeedbackPresenter {
   static String message(QuoteListFeedback feedback) {
     return switch (feedback) {
       QuoteListFeedback.saved => 'Orçamento salvo como rascunho',
+      QuoteListFeedback.updated => 'Orçamento atualizado com sucesso',
+      QuoteListFeedback.markedAsSent => 'Orçamento marcado como enviado',
+      QuoteListFeedback.approved => 'Orçamento aprovado',
+      QuoteListFeedback.rejected => 'Orçamento recusado',
+      QuoteListFeedback.cancelled => 'Orçamento cancelado',
+      QuoteListFeedback.reopenedForEditing =>
+        'Orçamento reaberto para edição',
+      QuoteListFeedback.statusChangeFailed =>
+        'Esta alteração de status não é permitida',
+    };
+  }
+
+  static Color backgroundColor(QuoteListFeedback feedback) {
+    return switch (feedback) {
+      QuoteListFeedback.statusChangeFailed => AppColors.error,
+      _ => AppColors.success,
     };
   }
 
@@ -38,7 +61,7 @@ abstract class QuoteListFeedbackPresenter {
             message(feedback),
             style: const TextStyle(color: AppColors.white),
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: backgroundColor(feedback),
         ),
       );
   }

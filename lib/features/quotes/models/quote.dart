@@ -2,6 +2,7 @@ import 'quote_client_snapshot.dart';
 import 'quote_event_snapshot.dart';
 import 'quote_line_item.dart';
 import 'quote_status.dart';
+import 'quote_status_history_entry.dart';
 
 class Quote {
   Quote({
@@ -15,13 +16,15 @@ class Quote {
     required this.discountCents,
     required this.freightCents,
     required this.totalCents,
+    required List<QuoteStatusHistoryEntry> statusHistory,
     this.validUntil,
     this.notes,
     this.internalNotes,
     required this.createdAt,
     required this.updatedAt,
     this.approvedAt,
-  }) : items = List.unmodifiable(items);
+  })  : items = List.unmodifiable(items),
+        statusHistory = List.unmodifiable(statusHistory);
 
   final String id;
   final String number;
@@ -33,6 +36,7 @@ class Quote {
   final int discountCents;
   final int freightCents;
   final int totalCents;
+  final List<QuoteStatusHistoryEntry> statusHistory;
   final DateTime? validUntil;
   final String? notes;
   final String? internalNotes;
@@ -53,6 +57,7 @@ class Quote {
     int? discountCents,
     int? freightCents,
     int? totalCents,
+    List<QuoteStatusHistoryEntry>? statusHistory,
     DateTime? validUntil,
     String? notes,
     String? internalNotes,
@@ -75,6 +80,7 @@ class Quote {
       discountCents: discountCents ?? this.discountCents,
       freightCents: freightCents ?? this.freightCents,
       totalCents: totalCents ?? this.totalCents,
+      statusHistory: statusHistory ?? this.statusHistory,
       validUntil: clearValidUntil ? null : (validUntil ?? this.validUntil),
       notes: clearNotes ? null : (notes ?? this.notes),
       internalNotes:

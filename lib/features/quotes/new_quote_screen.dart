@@ -16,12 +16,13 @@ import 'models/quote_line_item.dart';
 import 'models/quote_status.dart';
 import 'providers/quotes_provider.dart';
 import 'state/quote_form_state.dart';
+import 'utils/quote_form_initializer.dart';
+import 'utils/quote_line_draft_saver.dart';
 import 'utils/quote_date_formatter.dart';
 import 'utils/quote_draft_id_generator.dart';
 import 'utils/quote_form_validators.dart';
 import 'utils/quote_money.dart';
 import 'utils/quote_money_display.dart';
-import 'utils/quote_quantity_parser.dart';
 import 'utils/quote_time_formatter.dart';
 import 'widgets/quote_catalog_item_selector.dart';
 import 'widgets/quote_client_selector.dart';
@@ -36,7 +37,14 @@ import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
 
 class NewQuoteScreen extends ConsumerStatefulWidget {
-  const NewQuoteScreen({super.key});
+  const NewQuoteScreen({
+    super.key,
+    this.quoteId,
+  });
+
+  final String? quoteId;
+
+  bool get isEditing => quoteId != null;
 
   @override
   ConsumerState<NewQuoteScreen> createState() => _NewQuoteScreenState();
@@ -77,6 +85,8 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   bool _formSaved = false;
   bool _discardConfirmed = false;
   bool _saving = false;
+  bool _initializedForEdit = false;
+  String? _editingQuoteId;
 
   String? _clientError;
   String? _linesError;
@@ -84,15 +94,23 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   String? _validUntilError;
   String? _saveError;
 
+  bool get _isEditing => widget.quoteId != null;
+
   bool get _canPopWithoutDialog =>
       !_saving && (!_isDirty || _formSaved || _discardConfirmed);
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _validUntil = QuoteDateFormatter.addDays(now, 7);
-    _validUntilController.text = QuoteDateFormatter.format(_validUntil!);
+    if (!_isEditing) {
+      final now = DateTime.now();
+      _validUntil = QuoteDateFormatter.addDays(now, 7);
+      _validUntilController.text = QuoteDateFormatter.format(_validUntil!);
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeForEditIfNeeded();
+      });
+    }
 
     for (final controller in [
       _eventNameController,
@@ -107,6 +125,138 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
     ]) {
       controller.addListener(_markDirty);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initializeForEditIfNeeded();
+  }
+
+  void _initializeForEditIfNeeded() {
+    if (!_isEditing || _initializedForEdit) {
+      return;
+    }
+
+    final quote =
+        ref.read(quotesProvider.notifier).findById(widget.quoteId!);
+    if (quote == null) {
+      return;
+    }
+
+    if (quote.status != QuoteStatus.draft) {
+      _initializedForEdit = true;
+      return;
+    }
+
+    _applyQuoteToForm(quote);
+    _initializedForEdit = true;
+    _editingQuoteId = quote.id;
+  }
+
+  void _applyQuoteToForm(Quote quote) {
+    final values = QuoteFormInitializer.fromQuote(quote);
+
+    _selectedClientId = values.selectedClientId;
+    _validUntil = values.validUntil;
+    _eventDate = values.eventDate;
+    _startTime = _parseTime(values.eventStartTimeText);
+    _endTime = _parseTime(values.eventEndTimeText);
+
+    _eventNameController.text = values.eventName;
+    _eventTypeController.text = values.eventType;
+    _eventDateController.text = values.eventDateText;
+    _eventStartTimeController.text = values.eventStartTimeText;
+    _eventEndTimeController.text = values.eventEndTimeText;
+    _eventVenueController.text = values.eventVenueName;
+    _eventAddressController.text = values.eventAddress;
+    _guestCountController.text = values.guestCountText;
+    _discountController.text = values.discountText;
+    _freightController.text = values.freightText;
+    _validUntilController.text = values.validUntilText;
+    _notesController.text = values.notes;
+    _internalNotesController.text = values.internalNotes;
+
+    for (final controller in _quantityControllers.values) {
+      controller.dispose();
+    }
+    for (final controller in _priceControllers.values) {
+      controller.dispose();
+    }
+    _quantityControllers.clear();
+    _priceControllers.clear();
+    _lines.clear();
+
+    for (var i = 0; i < quote.items.length; i++) {
+      final draftId = _draftIdGenerator.nextLineDraftId();
+      final draft = QuoteFormInitializer.lineDraftFromItem(
+        quote.items[i],
+        draftId: draftId,
+      );
+
+      final quantityController =
+          TextEditingController(text: draft.quantityText);
+      final priceController = TextEditingController(text: draft.priceText);
+      quantityController.addListener(_markDirty);
+      priceController.addListener(_markDirty);
+
+      _quantityControllers[draftId] = quantityController;
+      _priceControllers[draftId] = priceController;
+      _lines.add(draft);
+    }
+
+    setState(() {
+      _isDirty = false;
+      _clientError = null;
+      _linesError = null;
+      _guestCountError = null;
+      _validUntilError = null;
+      _saveError = null;
+    });
+  }
+
+  TimeOfDayValue? _parseTime(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    final parts = trimmed.split(':');
+    if (parts.length != 2) {
+      return null;
+    }
+
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) {
+      return null;
+    }
+
+    return TimeOfDayValue(hour: hour, minute: minute);
+  }
+
+  CatalogItem? _findCatalogItem(String id) {
+    final items = ref.read(catalogProvider);
+    for (final item in items) {
+      if (item.id == id) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  String? _catalogWarningForLine(QuoteLineDraft draft) {
+    if (!draft.isExistingLine) {
+      return null;
+    }
+
+    final availability = QuoteLineCatalogStatus.resolve(
+      isExistingLine: draft.isExistingLine,
+      catalogItemId: draft.catalogItemId,
+      catalogItem: _findCatalogItem(draft.catalogItemId),
+    );
+
+    return QuoteLineCatalogStatus.warningMessage(availability);
   }
 
   @override
@@ -274,9 +424,11 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
           draftId: draftId,
           catalogItemId: item.id,
           name: item.name,
+          description: item.description,
           unit: item.unit,
           quantityText: '1',
           priceText: priceController.text,
+          isExistingLine: false,
         ),
       );
       _linesError = null;
@@ -499,50 +651,19 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
   }
 
   List<QuoteLineItem>? _buildLineItemsForSave() {
-    final catalogNotifier = ref.read(catalogProvider.notifier);
-    final result = <QuoteLineItem>[];
+    final result = QuoteLineDraftSaver.buildLineItems(
+      drafts: _lines,
+      findCatalogItem: _findCatalogItem,
+    );
 
-    for (final draft in _lines) {
-      final item = catalogNotifier.findById(draft.catalogItemId);
-      if (item == null) {
-        setState(() {
-          _saveError =
-              'O item "${draft.name}" não está mais disponível.';
-        });
-        return null;
-      }
-
-      if (!item.active) {
-        setState(() {
-          _saveError =
-              'O item "${draft.name}" está inativo e não pode ser incluído.';
-        });
-        return null;
-      }
-
-      final quantity = QuoteQuantityParser.tryParse(draft.quantityText);
-      final unitPriceCents = QuoteMoneyDisplay.parseToCents(draft.priceText);
-      if (quantity == null || unitPriceCents == null) {
-        setState(() {
-          _saveError = 'Revise as quantidades e preços antes de salvar.';
-        });
-        return null;
-      }
-
-      result.add(
-        QuoteLineItem(
-          catalogItemId: item.id,
-          name: item.name,
-          description: item.description,
-          unit: item.unit,
-          quantity: quantity,
-          unitPriceCents: unitPriceCents,
-          lineTotalCents: 0,
-        ),
-      );
+    if (!result.isSuccess) {
+      setState(() {
+        _saveError = result.errorMessage;
+      });
+      return null;
     }
 
-    return result;
+    return result.items;
   }
 
   Future<void> _save() async {
@@ -574,7 +695,9 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
     });
 
     final draft = Quote(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: _isEditing
+          ? _editingQuoteId!
+          : DateTime.now().microsecondsSinceEpoch.toString(),
       number: 'IGNORED',
       status: QuoteStatus.draft,
       clientSnapshot: QuoteClientSnapshot.fromClient(client),
@@ -584,6 +707,7 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
       discountCents: _summary.discountCents,
       freightCents: _summary.freightCents,
       totalCents: 0,
+      statusHistory: const [],
       validUntil: _validUntil,
       notes: _optionalText(_notesController.text),
       internalNotes: _optionalText(_internalNotesController.text),
@@ -591,7 +715,22 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
       updatedAt: DateTime.now(),
     );
 
-    ref.read(quotesProvider.notifier).addQuote(draft);
+    final success = _isEditing
+        ? ref.read(quotesProvider.notifier).updateQuote(draft)
+        : ref.read(quotesProvider.notifier).addQuote(draft);
+
+    if (!success) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _saving = false;
+        _saveError = _isEditing
+            ? 'Não foi possível atualizar o orçamento.'
+            : 'Não foi possível salvar o orçamento.';
+      });
+      return;
+    }
 
     if (!mounted) {
       return;
@@ -637,8 +776,75 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
     ref.watch(clientsProvider);
     ref.watch(catalogProvider);
 
+    if (_isEditing) {
+      final quote =
+          ref.read(quotesProvider.notifier).findById(widget.quoteId!);
+      if (quote == null) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Voltar',
+              onPressed: _saving ? null : _handleBack,
+            ),
+            title: Text(
+              'Editar orçamento',
+              style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
+            ),
+            backgroundColor: AppColors.background,
+            foregroundColor: AppColors.white,
+            elevation: 0,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Orçamento não encontrado',
+                style: AppTextStyles.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        );
+      }
+
+      if (quote.status != QuoteStatus.draft) {
+        return Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'Voltar',
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                }
+              },
+            ),
+            title: Text(
+              'Editar orçamento',
+              style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
+            ),
+            backgroundColor: AppColors.background,
+            foregroundColor: AppColors.white,
+            elevation: 0,
+          ),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'Somente orçamentos em rascunho podem ser editados.',
+                style: AppTextStyles.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
     final selectedClient = _selectedClient;
     final summary = _summary;
+    final pageTitle = _isEditing ? 'Editar orçamento' : 'Novo orçamento';
 
     return PopScope(
       canPop: _canPopWithoutDialog,
@@ -656,7 +862,7 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
             onPressed: _saving ? null : _handleBack,
           ),
           title: Text(
-            'Novo orçamento',
+            pageTitle,
             style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
           ),
           backgroundColor: AppColors.background,
@@ -734,6 +940,7 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
                                 );
                               },
                               onRemove: () => _removeLine(draft.draftId),
+                              catalogWarning: _catalogWarningForLine(draft),
                             ),
                           );
                         }),
@@ -800,7 +1007,9 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
                         const SizedBox(height: 32),
                         PrimaryButton(
                           key: const Key('quote_save_button'),
-                          label: 'Salvar rascunho',
+                          label: _isEditing
+                              ? 'Salvar alterações'
+                              : 'Salvar rascunho',
                           onPressed: _saving ? null : _save,
                         ),
                       ],

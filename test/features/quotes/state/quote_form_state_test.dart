@@ -12,6 +12,7 @@ void main() {
         unit: 'Unidade',
         quantityText: '',
         priceText: '1.500,00',
+        isExistingLine: false,
       );
 
       final calculation = QuoteFormState.calculateLine(draft);
@@ -35,6 +36,7 @@ void main() {
         unit: 'Unidade',
         quantityText: '2',
         priceText: '1.000,00',
+        isExistingLine: false,
       );
 
       final summary = QuoteFormState.calculateSummary(
@@ -57,6 +59,7 @@ void main() {
         unit: 'Unidade',
         quantityText: '1',
         priceText: '100,00',
+        isExistingLine: false,
       );
 
       final summary = QuoteFormState.calculateSummary(
@@ -79,6 +82,7 @@ void main() {
         unit: 'Unidade',
         quantityText: '1',
         priceText: '100,00',
+        isExistingLine: false,
       );
 
       final withDiscount = QuoteFormState.calculateSummary(
@@ -106,6 +110,7 @@ void main() {
         unit: 'Unidade',
         quantityText: '1',
         priceText: '100,00',
+        isExistingLine: false,
       );
 
       final summary = QuoteFormState.calculateSummary(

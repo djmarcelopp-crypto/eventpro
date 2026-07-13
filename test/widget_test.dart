@@ -336,6 +336,84 @@ void main() {
     expect(find.text('Módulos'), findsOneWidget);
   });
 
+  testWidgets('Exibe card Orçamentos no Dashboard', (WidgetTester tester) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Orçamentos'), findsOneWidget);
+    expect(find.text('Crie e envie orçamentos'), findsOneWidget);
+  });
+
+  testWidgets('Navega para Orçamentos e volta ao Dashboard', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Orçamentos'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Orçamentos'), findsOneWidget);
+    expect(find.text('Nenhum orçamento cadastrado'), findsOneWidget);
+    expect(
+      find.text(
+        'Crie orçamentos profissionais com clientes e itens do catálogo',
+      ),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('quotes_new_quote_button')), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+    expect(find.text('Módulos'), findsOneWidget);
+  });
+
+  testWidgets('Orçamentos sem pilha volta ao Dashboard pelo fallback', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    AppRouter.router.go(AppRoutes.quotes);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Orçamentos'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+    expect(find.text('Módulos'), findsOneWidget);
+  });
+
+  testWidgets('Botão Novo orçamento não abre formulário', (
+    WidgetTester tester,
+  ) async {
+    await _pumpAppFromSplash(tester);
+
+    await tester.tap(find.text('Entrar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Orçamentos'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('quotes_new_quote_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Orçamentos'), findsOneWidget);
+    expect(find.text('Nenhum orçamento cadastrado'), findsOneWidget);
+    expect(find.text('Novo orçamento'), findsOneWidget);
+    expect(find.text('Salvar'), findsNothing);
+  });
+
   testWidgets('Abre detalhes ao tocar item no Catálogo', (
     WidgetTester tester,
   ) async {

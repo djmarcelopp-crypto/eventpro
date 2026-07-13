@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 enum DashboardModuleId {
   clients,
   catalog,
-  budgets,
+  quotes,
   settings,
 }
 
@@ -35,7 +35,7 @@ const List<DashboardModule> dashboardModules = [
     icon: Icons.inventory_2_outlined,
   ),
   DashboardModule(
-    id: DashboardModuleId.budgets,
+    id: DashboardModuleId.quotes,
     title: 'Orçamentos',
     description: 'Crie e envie orçamentos',
     icon: Icons.request_quote_outlined,

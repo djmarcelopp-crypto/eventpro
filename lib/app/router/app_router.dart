@@ -6,6 +6,7 @@ import '../../features/catalog/new_catalog_item_screen.dart';
 import '../../features/clients/client_detail_screen.dart';
 import '../../features/clients/clients_screen.dart';
 import '../../features/clients/new_client_screen.dart';
+import '../../features/quotes/quotes_screen.dart';
 import '../splash_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 
@@ -14,6 +15,7 @@ abstract class AppRoutes {
   static const dashboard = '/dashboard';
   static const clients = '/clients';
   static const catalog = '/catalog';
+  static const quotes = '/quotes';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -61,6 +63,10 @@ abstract class AppRouter {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AppRoutes.quotes,
+        builder: (context, state) => const QuotesScreen(),
       ),
       GoRoute(
         path: AppRoutes.clients,

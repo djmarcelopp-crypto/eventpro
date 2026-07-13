@@ -37,7 +37,8 @@ class DashboardScreen extends StatelessWidget {
         context.push(AppRoutes.clients);
       case DashboardModuleId.catalog:
         context.push(AppRoutes.catalog);
-      case DashboardModuleId.budgets:
+      case DashboardModuleId.quotes:
+        context.push(AppRoutes.quotes);
       case DashboardModuleId.settings:
         break;
     }

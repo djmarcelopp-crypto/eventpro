@@ -8,6 +8,7 @@ import 'package:eventpro/features/clients/data/exceptions/cnpj_lookup_exception.
 import 'package:eventpro/features/clients/providers/cep_lookup_provider.dart';
 import 'package:eventpro/features/clients/providers/cnpj_lookup_provider.dart';
 import 'package:eventpro/features/clients/utils/client_date_formatter.dart';
+import 'package:eventpro/features/clients/client_list_feedback.dart';
 import 'package:eventpro/main.dart';
 
 import 'features/clients/fakes/fake_cep_lookup_service.dart';
@@ -49,7 +50,7 @@ Future<void> _openNewClientForm(
 }) async {
   await _openClientsScreen(tester, overrides: overrides);
 
-  tester.view.physicalSize = const Size(800, 1200);
+  tester.view.physicalSize = const Size(800, 2000);
   tester.view.devicePixelRatio = 1.0;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -70,14 +71,20 @@ Future<void> _selectCompanyAndEnterCnpj(WidgetTester tester) async {
 }
 
   Future<void> _tapSave(WidgetTester tester) async {
-    final saveButton = find.text('Salvar');
+    final saveButton = find.byKey(const Key('client_save_button'));
+    final formScrollable = find.ancestor(
+      of: saveButton,
+      matching: find.byType(Scrollable),
+    );
     await tester.scrollUntilVisible(
       saveButton,
       800,
-      scrollable: find.byType(Scrollable).first,
+      scrollable: formScrollable,
     );
     await tester.pumpAndSettle();
-    await tester.tap(saveButton, warnIfMissed: false);
+    await tester.ensureVisible(saveButton);
+    await tester.pumpAndSettle();
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
   }
 
@@ -90,6 +97,19 @@ Future<void> _fillRequiredFields(WidgetTester tester) async {
     find.byKey(const Key('client_whatsapp_field')),
     '67981495959',
   );
+}
+
+Future<void> _createClientAndOpenDetail(WidgetTester tester) async {
+  await _openNewClientForm(tester);
+  await _fillRequiredFields(tester);
+  await tester.enterText(
+    find.byKey(const Key('client_document_field')),
+    '52998224725',
+  );
+  await _tapSave(tester);
+
+  await tester.tap(find.text('Maria Silva'));
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -620,5 +640,94 @@ void main() {
       'Rua Manual',
     );
     expect(find.text('Salvar'), findsOneWidget);
+  });
+
+  testWidgets('Abre detalhes ao tocar cliente na lista', (
+    WidgetTester tester,
+  ) async {
+    await _createClientAndOpenDetail(tester);
+
+    expect(find.text('Identificação'), findsOneWidget);
+    expect(find.text('Contato'), findsOneWidget);
+    expect(find.byKey(const Key('client_edit_button')), findsOneWidget);
+    expect(find.byKey(const Key('client_delete_button')), findsOneWidget);
+    expect(find.text('529.982.247-25'), findsOneWidget);
+  });
+
+  testWidgets('Exibe observações internas somente nos detalhes', (
+    WidgetTester tester,
+  ) async {
+    await _openNewClientForm(tester);
+    await _fillRequiredFields(tester);
+    await tester.enterText(
+      find.byKey(const Key('client_notes_field')),
+      'Observação secreta da equipe',
+    );
+    await _tapSave(tester);
+
+    await tester.tap(find.text('Maria Silva'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Observações internas'), findsOneWidget);
+    expect(find.text('Observação secreta da equipe'), findsOneWidget);
+  });
+
+  testWidgets('Exibe feedback global após atualização', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_createTestApp());
+    await tester.pumpAndSettle();
+
+    ClientListFeedbackPresenter.showSnackBar(ClientListFeedback.updated);
+    await tester.pump();
+
+    expect(find.text('Cliente atualizado com sucesso'), findsOneWidget);
+  });
+
+  testWidgets('Edita cliente e retorna à lista com feedback', (
+    WidgetTester tester,
+  ) async {
+    await _createClientAndOpenDetail(tester);
+
+    await tester.tap(find.byKey(const Key('client_edit_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Editar cliente'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('client_name_field')),
+      'Maria Atualizada',
+    );
+    await tester.enterText(
+      find.byKey(const Key('client_whatsapp_field')),
+      '67981495959',
+    );
+    await _tapSave(tester);
+
+    expect(find.text('Clientes'), findsOneWidget);
+    expect(find.text('Maria Atualizada'), findsOneWidget);
+  });
+
+  testWidgets('Exclui cliente após confirmação com nome', (
+    WidgetTester tester,
+  ) async {
+    await _createClientAndOpenDetail(tester);
+
+    await tester.tap(find.byKey(const Key('client_delete_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Excluir cliente'), findsOneWidget);
+    expect(
+      find.textContaining('Deseja excluir "Maria Silva"?'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('Excluir'));
+    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Nenhum cliente cadastrado'), findsOneWidget);
+    expect(find.text('Maria Silva'), findsNothing);
   });
 }

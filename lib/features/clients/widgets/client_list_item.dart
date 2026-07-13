@@ -10,9 +10,11 @@ class ClientListItem extends StatelessWidget {
   const ClientListItem({
     super.key,
     required this.client,
+    required this.onTap,
   });
 
   final Client client;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -21,52 +23,59 @@ class ClientListItem extends StatelessWidget {
     final hasTradeName = tradeName != null && tradeName.isNotEmpty;
     final primaryName = hasTradeName ? tradeName : client.name;
 
-    return AppCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  primaryName,
-                  style: AppTextStyles.titleSmall,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      primaryName,
+                      style: AppTextStyles.titleSmall,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    client.type.label,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
+              if (hasTradeName) ...[
+                const SizedBox(height: 4),
+                Text(
+                  client.name,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 8),
               Text(
-                client.type.label,
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.primary,
-                ),
+                ClientDisplayFormatter.formatWhatsApp(client.whatsApp),
+                style: AppTextStyles.bodyMedium,
               ),
+              if (documentDigits.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '${ClientDisplayFormatter.documentLabel(client.type)}: '
+                  '${ClientDisplayFormatter.formatDocument(client.type, documentDigits)}',
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ],
             ],
           ),
-          if (hasTradeName) ...[
-            const SizedBox(height: 4),
-            Text(
-              client.name,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.secondaryText,
-              ),
-            ),
-          ],
-          const SizedBox(height: 8),
-          Text(
-            ClientDisplayFormatter.formatWhatsApp(client.whatsApp),
-            style: AppTextStyles.bodyMedium,
-          ),
-          if (documentDigits.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              '${ClientDisplayFormatter.documentLabel(client.type)}: '
-              '${ClientDisplayFormatter.formatDocument(client.type, documentDigits)}',
-              style: AppTextStyles.bodyMedium,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }

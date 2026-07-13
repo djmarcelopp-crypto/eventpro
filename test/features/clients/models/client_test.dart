@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/features/clients/client_type.dart';
 import 'package:eventpro/features/clients/models/client.dart';
 import 'package:eventpro/features/clients/models/client_address.dart';
+import 'package:eventpro/features/clients/utils/client_form_initializer.dart';
 
 void main() {
   group('ClientAddress', () {
@@ -50,6 +51,21 @@ void main() {
       expect(client.phone, '6732321234');
       expect(client.whatsApp, '5567981495959');
       expect(client.document, '52998224725');
+      expect(client.createdAt, isNotNull);
+    });
+
+    test('preserva id e createdAt na edição', () {
+      final createdAt = DateTime(2024, 3, 10);
+      final client = Client.fromForm(
+        type: ClientType.individual,
+        name: 'Maria Atualizada',
+        whatsApp: '5567981495959',
+        id: 'client-1',
+        createdAt: createdAt,
+      );
+
+      expect(client.id, 'client-1');
+      expect(client.createdAt, createdAt);
     });
 
     test('campos opcionais vazios ficam null', () {
@@ -92,6 +108,55 @@ void main() {
       );
 
       expect(int.tryParse(client.id), isNotNull);
+    });
+  });
+
+  group('ClientFormInitializer', () {
+    test('preenche valores formatados a partir do cliente', () {
+      final client = Client(
+        id: '1',
+        createdAt: DateTime(2024, 1, 1),
+        type: ClientType.company,
+        name: 'Empresa Ficticia LTDA',
+        tradeName: 'Marca Ficticia',
+        phone: '1133334444',
+        whatsApp: '5511987654321',
+        email: 'contato@test.com',
+        document: '11222333000181',
+        address: const ClientAddress(
+          postalCode: '12345678',
+          street: 'Rua das Flores',
+          number: '100',
+          neighborhood: 'Centro',
+          city: 'Cidade Exemplo',
+          state: 'SP',
+        ),
+        birthday: DateTime(1990, 5, 10),
+        internalNotes: 'Nota interna',
+      );
+
+      final values = ClientFormInitializer.fromClient(client);
+
+      expect(values.clientType, ClientType.company);
+      expect(values.tradeName, 'Marca Ficticia');
+      expect(values.phone, '(11) 3333-4444');
+      expect(values.whatsApp, '+55 (11) 98765-4321');
+      expect(values.postalCode, '12345-678');
+      expect(values.internalNotes, 'Nota interna');
+      expect(values.alsoWhatsApp, isFalse);
+    });
+
+    test('detecta telefone também usado como WhatsApp', () {
+      final client = Client(
+        id: '1',
+        createdAt: DateTime(2024, 1, 1),
+        type: ClientType.individual,
+        name: 'Maria Silva',
+        phone: '67981495959',
+        whatsApp: '5567981495959',
+      );
+
+      expect(ClientFormInitializer.isPhoneAlsoWhatsApp(client), isTrue);
     });
   });
 }

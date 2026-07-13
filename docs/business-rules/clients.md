@@ -61,3 +61,26 @@
 - Nesta fase, os clientes existem apenas durante a sessão do aplicativo.
 - Os dados são perdidos ao fechar ou reiniciar o app.
 - A integração com Firebase será implementada em etapa futura.
+
+## Detalhes do cliente
+
+- A lista de clientes é clicável e abre a tela de detalhes do registro selecionado.
+- Os detalhes exibem identificação, contato, endereço e informações adicionais preenchidas.
+- **Observações internas** aparecem somente nos detalhes e na edição; nunca na lista, orçamento ou PDF.
+- Ações disponíveis: **Editar** e **Excluir**.
+
+## Edição de cliente
+
+- O formulário de cadastro é reutilizado em modo edição, com campos pré-preenchidos.
+- Após salvar a edição, o usuário retorna diretamente à lista com feedback *"Cliente atualizado com sucesso"*.
+- O identificador (`id`) e a data de cadastro (`createdAt`) são preservados durante a atualização.
+
+## Exclusão de cliente
+
+- A exclusão exige confirmação em diálogo exibindo o nome do cliente.
+- O botão de confirmação usa estilo destrutivo (cor de erro).
+- Após confirmar, o usuário retorna à lista com feedback *"Cliente excluído com sucesso"*.
+
+## Rotas
+
+- `/clients/new` deve ser declarada **antes** da rota dinâmica `/clients/:id`, para que `new` nunca seja interpretado como ID.

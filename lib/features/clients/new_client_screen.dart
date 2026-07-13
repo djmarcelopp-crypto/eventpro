@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
 import 'client_form_validators.dart';
+import 'client_list_feedback.dart';
 import 'client_type.dart';
 import 'data/exceptions/cep_lookup_exception.dart';
 import 'data/exceptions/cnpj_lookup_exception.dart';
@@ -20,12 +22,18 @@ import 'providers/cep_lookup_provider.dart';
 import 'providers/cnpj_lookup_provider.dart';
 import 'utils/cep_form_filler.dart';
 import 'utils/client_date_formatter.dart';
+import 'utils/client_form_initializer.dart';
 import 'utils/cnpj_form_filler.dart';
 import 'utils/form_fill_mode.dart';
 import 'utils/text_input_masks.dart';
 
 class NewClientScreen extends ConsumerStatefulWidget {
-  const NewClientScreen({super.key});
+  const NewClientScreen({
+    super.key,
+    this.clientId,
+  });
+
+  final String? clientId;
 
   @override
   ConsumerState<NewClientScreen> createState() => _NewClientScreenState();
@@ -59,12 +67,68 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   bool _isCnpjLookupLoading = false;
   bool _isCepLookupLoading = false;
   bool _alsoWhatsApp = false;
+  bool _initializedForEdit = false;
+
+  bool get _isEditing => widget.clientId != null;
 
   @override
   void initState() {
     super.initState();
     _documentController.addListener(_onDocumentChanged);
     _postalCodeController.addListener(_onPostalCodeChanged);
+    if (_isEditing) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeForEditIfNeeded();
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _initializeForEditIfNeeded();
+  }
+
+  void _initializeForEditIfNeeded() {
+    if (!_isEditing || _initializedForEdit) {
+      return;
+    }
+
+    final routeClient = GoRouterState.of(context).extra;
+    final client = routeClient is Client
+        ? routeClient
+        : ref.read(clientsProvider.notifier).findById(widget.clientId!);
+    if (client == null) {
+      return;
+    }
+
+    final values = ClientFormInitializer.fromClient(client);
+    ClientFormInitializer.applyToControllers(
+      values: values,
+      nameController: _nameController,
+      tradeNameController: _tradeNameController,
+      phoneController: _phoneController,
+      whatsAppController: _whatsAppController,
+      emailController: _emailController,
+      documentController: _documentController,
+      postalCodeController: _postalCodeController,
+      streetController: _streetController,
+      numberController: _numberController,
+      complementController: _complementController,
+      neighborhoodController: _neighborhoodController,
+      cityController: _cityController,
+      stateController: _stateController,
+      instagramController: _instagramController,
+      birthdayController: _birthdayController,
+      notesController: _notesController,
+    );
+
+    setState(() {
+      _clientType = values.clientType;
+      _birthday = values.birthday;
+      _alsoWhatsApp = values.alsoWhatsApp;
+      _initializedForEdit = true;
+    });
   }
 
   void _onPostalCodeChanged() {
@@ -107,8 +171,10 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     setState(() {
       _clientType = selection.first;
-      _documentController.clear();
-      _tradeNameController.clear();
+      if (!_isEditing) {
+        _documentController.clear();
+        _tradeNameController.clear();
+      }
     });
   }
 
@@ -458,6 +524,16 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       return;
     }
 
+    final existingClient = _isEditing
+        ? (GoRouterState.of(context).extra is Client
+            ? GoRouterState.of(context).extra as Client
+            : ref.read(clientsProvider.notifier).findById(widget.clientId!))
+        : null;
+
+    if (_isEditing && existingClient == null) {
+      return;
+    }
+
     final client = Client.fromForm(
       type: _clientType,
       name: _nameController.text,
@@ -476,7 +552,20 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       instagram: _instagramController.text,
       birthday: _birthday,
       internalNotes: _notesController.text,
+      id: existingClient?.id,
+      createdAt: existingClient?.createdAt,
     );
+
+    if (_isEditing) {
+      ref.read(clientsProvider.notifier).updateClient(client);
+      context.go(AppRoutes.clients);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ClientListFeedbackPresenter.showSnackBar(ClientListFeedback.updated);
+        });
+      });
+      return;
+    }
 
     ref.read(clientsProvider.notifier).addClient(client);
     context.pop(true);
@@ -620,7 +709,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Novo cliente',
+          _isEditing ? 'Editar cliente' : 'Novo cliente',
           style: AppTextStyles.headlineMedium.copyWith(
             fontSize: 20,
           ),
@@ -632,6 +721,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           return SingleChildScrollView(
+            key: const Key('client_form_scroll'),
             padding: const EdgeInsets.all(24),
             child: Center(
               child: ConstrainedBox(
@@ -814,6 +904,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                       ),
                       const SizedBox(height: 32),
                       PrimaryButton(
+                        key: const Key('client_save_button'),
                         label: 'Salvar',
                         onPressed: _onSave,
                       ),

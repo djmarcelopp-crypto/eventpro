@@ -17,10 +17,12 @@ class EventProApp extends StatelessWidget {
   const EventProApp({super.key});
 
   static const locale = Locale('pt', 'BR');
+  static final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'EventPro',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,

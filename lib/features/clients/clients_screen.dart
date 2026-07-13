@@ -5,33 +5,39 @@ import 'package:go_router/go_router.dart';
 import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import 'client_list_feedback.dart';
 import 'providers/clients_provider.dart';
 import 'widgets/client_list_item.dart';
 import 'widgets/clients_empty_state.dart';
 
-class ClientsScreen extends ConsumerWidget {
+class ClientsScreen extends ConsumerStatefulWidget {
   const ClientsScreen({super.key});
 
+  @override
+  ConsumerState<ClientsScreen> createState() => _ClientsScreenState();
+}
+
+class _ClientsScreenState extends ConsumerState<ClientsScreen> {
   static const _maxContentWidth = 720.0;
 
-  Future<void> _openNewClient(BuildContext context) async {
+  Future<void> _openNewClient() async {
     final created = await context.push<bool>(AppRoutes.clientsNew);
 
-    if (created == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Cliente cadastrado com sucesso',
-            style: TextStyle(color: AppColors.white),
-          ),
-          backgroundColor: AppColors.success,
-        ),
-      );
+    if (created == true && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ClientListFeedbackPresenter.showSnackBar(ClientListFeedback.created);
+        }
+      });
     }
   }
 
+  void _openClientDetail(String clientId) {
+    context.push(AppRoutes.clientsDetail(clientId));
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final clients = ref.watch(clientsProvider);
 
     return Scaffold(
@@ -55,13 +61,13 @@ class ClientsScreen extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.add),
               tooltip: 'Novo cliente',
-              onPressed: () => _openNewClient(context),
+              onPressed: _openNewClient,
             ),
         ],
       ),
       body: clients.isEmpty
           ? ClientsEmptyState(
-              onNewClient: () => _openNewClient(context),
+              onNewClient: _openNewClient,
             )
           : LayoutBuilder(
               builder: (context, constraints) {
@@ -71,12 +77,17 @@ class ClientsScreen extends ConsumerWidget {
                   separatorBuilder: (context, index) =>
                       const SizedBox(height: 16),
                   itemBuilder: (context, index) {
+                    final client = clients[index];
                     return Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(
                           maxWidth: _maxContentWidth,
                         ),
-                        child: ClientListItem(client: clients[index]),
+                        child: ClientListItem(
+                          key: Key('client_list_item_${client.id}'),
+                          client: client,
+                          onTap: () => _openClientDetail(client.id),
+                        ),
                       ),
                     );
                   },

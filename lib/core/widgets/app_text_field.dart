@@ -20,6 +20,7 @@ class AppTextField extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.maxLength,
+    this.prefixIcon,
   });
 
   final String label;
@@ -36,6 +37,7 @@ class AppTextField extends StatelessWidget {
   final bool readOnly;
   final VoidCallback? onTap;
   final int? maxLength;
+  final Widget? prefixIcon;
 
   static const _borderRadius = BorderRadius.all(Radius.circular(12));
 
@@ -58,6 +60,7 @@ class AppTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
+        prefixIcon: prefixIcon,
         errorBorder: const OutlineInputBorder(
           borderRadius: _borderRadius,
           borderSide: BorderSide(color: AppColors.error),

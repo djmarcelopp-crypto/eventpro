@@ -1,5 +1,6 @@
 class ClientAddress {
   const ClientAddress({
+    this.postalCode,
     this.street,
     this.number,
     this.complement,
@@ -8,6 +9,7 @@ class ClientAddress {
     this.state,
   });
 
+  final String? postalCode;
   final String? street;
   final String? number;
   final String? complement;
@@ -16,7 +18,8 @@ class ClientAddress {
   final String? state;
 
   bool get isEmpty {
-    return street == null &&
+    return postalCode == null &&
+        street == null &&
         number == null &&
         complement == null &&
         neighborhood == null &&
@@ -25,6 +28,7 @@ class ClientAddress {
   }
 
   static ClientAddress? fromForm({
+    required String? postalCode,
     required String? street,
     required String? number,
     required String? complement,
@@ -33,6 +37,7 @@ class ClientAddress {
     required String? state,
   }) {
     final address = ClientAddress(
+      postalCode: _optionalDigits(postalCode),
       street: _optionalText(street),
       number: _optionalText(number),
       complement: _optionalText(complement),
@@ -50,5 +55,13 @@ class ClientAddress {
       return null;
     }
     return trimmed;
+  }
+
+  static String? _optionalDigits(String? value) {
+    final digits = value?.replaceAll(RegExp(r'\D'), '') ?? '';
+    if (digits.isEmpty) {
+      return null;
+    }
+    return digits;
   }
 }

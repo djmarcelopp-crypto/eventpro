@@ -8,9 +8,20 @@ import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/primary_button.dart';
 import 'client_form_validators.dart';
 import 'client_type.dart';
+import 'data/exceptions/cep_lookup_exception.dart';
+import 'data/exceptions/cnpj_lookup_exception.dart';
+import 'data/models/cep_address_data.dart';
+import 'data/utils/brazilian_mobile_phone.dart';
+import 'data/utils/brazilian_phone.dart';
+import 'data/models/cnpj_company_data.dart';
 import 'models/client.dart';
 import 'providers/clients_provider.dart';
+import 'providers/cep_lookup_provider.dart';
+import 'providers/cnpj_lookup_provider.dart';
+import 'utils/cep_form_filler.dart';
 import 'utils/client_date_formatter.dart';
+import 'utils/cnpj_form_filler.dart';
+import 'utils/form_fill_mode.dart';
 import 'utils/text_input_masks.dart';
 
 class NewClientScreen extends ConsumerStatefulWidget {
@@ -26,9 +37,12 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _tradeNameController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _whatsAppController = TextEditingController();
   final _emailController = TextEditingController();
   final _documentController = TextEditingController();
+  final _postalCodeController = TextEditingController();
   final _streetController = TextEditingController();
   final _numberController = TextEditingController();
   final _complementController = TextEditingController();
@@ -42,13 +56,38 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   ClientType _clientType = ClientType.individual;
   DateTime? _birthday;
   String? _birthdayError;
+  bool _isCnpjLookupLoading = false;
+  bool _isCepLookupLoading = false;
+  bool _alsoWhatsApp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _documentController.addListener(_onDocumentChanged);
+    _postalCodeController.addListener(_onPostalCodeChanged);
+  }
+
+  void _onPostalCodeChanged() {
+    setState(() {});
+  }
+
+  void _onDocumentChanged() {
+    if (_clientType == ClientType.company) {
+      setState(() {});
+    }
+  }
 
   @override
   void dispose() {
+    _documentController.removeListener(_onDocumentChanged);
+    _postalCodeController.removeListener(_onPostalCodeChanged);
     _nameController.dispose();
+    _tradeNameController.dispose();
+    _phoneController.dispose();
     _whatsAppController.dispose();
     _emailController.dispose();
     _documentController.dispose();
+    _postalCodeController.dispose();
     _streetController.dispose();
     _numberController.dispose();
     _complementController.dispose();
@@ -69,7 +108,273 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
     setState(() {
       _clientType = selection.first;
       _documentController.clear();
+      _tradeNameController.clear();
     });
+  }
+
+  bool get _showCnpjLookupButton {
+    if (_clientType != ClientType.company) {
+      return false;
+    }
+
+    final digits = ClientFormValidators.extractDigits(_documentController.text);
+    return digits.length == 14 &&
+        ClientFormValidators.validateCnpj(_documentController.text) == null;
+  }
+
+  bool get _canLookupCnpj => _showCnpjLookupButton && !_isCnpjLookupLoading;
+
+  bool get _showCepLookupButton {
+    final digits = ClientFormValidators.extractDigits(_postalCodeController.text);
+    return digits.length == 8 &&
+        ClientFormValidators.validatePostalCode(_postalCodeController.text) ==
+            null;
+  }
+
+  bool get _canLookupCep => _showCepLookupButton && !_isCepLookupLoading;
+
+  CnpjFormFieldValues get _currentFormValues {
+    return CnpjFormFieldValues(
+      name: _nameController.text,
+      tradeName: _tradeNameController.text,
+      phone: _phoneController.text,
+      whatsApp: _whatsAppController.text,
+      email: _emailController.text,
+      postalCode: _postalCodeController.text,
+      street: _streetController.text,
+      number: _numberController.text,
+      complement: _complementController.text,
+      neighborhood: _neighborhoodController.text,
+      city: _cityController.text,
+      state: _stateController.text,
+    );
+  }
+
+  void _applyFormValues(CnpjFormFieldValues values) {
+    setState(() {
+      _nameController.text = values.name;
+      _tradeNameController.text = values.tradeName;
+      _phoneController.text = values.phone;
+      _whatsAppController.text = values.whatsApp;
+      _emailController.text = values.email;
+      _postalCodeController.text = values.postalCode;
+      _streetController.text = values.street;
+      _numberController.text = values.number;
+      _complementController.text = values.complement;
+      _neighborhoodController.text = values.neighborhood;
+      _cityController.text = values.city;
+      _stateController.text = values.state;
+    });
+  }
+
+  CepFormFieldValues get _currentAddressValues {
+    return CepFormFieldValues(
+      postalCode: _postalCodeController.text,
+      street: _streetController.text,
+      neighborhood: _neighborhoodController.text,
+      city: _cityController.text,
+      state: _stateController.text,
+    );
+  }
+
+  void _applyAddressValues(CepFormFieldValues values) {
+    setState(() {
+      _postalCodeController.text = values.postalCode;
+      _streetController.text = values.street;
+      _neighborhoodController.text = values.neighborhood;
+      _cityController.text = values.city;
+      _stateController.text = values.state;
+    });
+  }
+
+  Future<FormFillMode?> _showConflictDialog(
+    List<CnpjFormConflict> conflicts,
+  ) async {
+    return showDialog<FormFillMode>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Alguns campos já estão preenchidos'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final conflict in conflicts) ...[
+                  Text(
+                    conflict.fieldLabel,
+                    style: AppTextStyles.titleSmall,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '"${conflict.currentValue}" → "${conflict.newValue}"',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(
+                FormFillMode.fillEmptyOnly,
+              ),
+              child: const Text('Preencher só vazios'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(
+                FormFillMode.replaceAll,
+              ),
+              child: const Text('Substituir'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _applyCompanyData(CnpjCompanyData data) async {
+    final current = _currentFormValues;
+    final conflicts = CnpjFormFiller.findConflicts(current, data);
+
+    FormFillMode mode;
+    if (conflicts.isEmpty) {
+      mode = FormFillMode.fillEmptyOnly;
+    } else {
+      final selectedMode = await _showConflictDialog(conflicts);
+      if (!mounted || selectedMode == null) {
+        return;
+      }
+      mode = selectedMode;
+    }
+
+    _applyFormValues(
+      CnpjFormFiller.apply(current, data, mode: mode),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Dados da empresa carregados. Revise antes de salvar.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _applyCepData(CepAddressData data) async {
+    final current = _currentAddressValues;
+    final conflicts = CepFormFiller.findConflicts(current, data);
+
+    FormFillMode mode;
+    if (conflicts.isEmpty) {
+      mode = FormFillMode.fillEmptyOnly;
+    } else {
+      final selectedMode = await _showConflictDialog(conflicts);
+      if (!mounted || selectedMode == null) {
+        return;
+      }
+      mode = selectedMode;
+    }
+
+    _applyAddressValues(
+      CepFormFiller.apply(current, data, mode: mode),
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Endereço carregado. Revise antes de salvar.',
+        ),
+      ),
+    );
+  }
+
+  Future<void> _lookupAddressByCep() async {
+    if (!_canLookupCep) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isCepLookupLoading = true;
+    });
+
+    try {
+      final service = ref.read(cepLookupServiceProvider);
+      final data = await service.lookup(_postalCodeController.text);
+      await _applyCepData(data);
+    } on CepLookupException catch (error) {
+      if (mounted) {
+        _showLookupError(error.userMessage);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showLookupError(
+          const CepLookupException(CepLookupFailure.unknown).userMessage,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCepLookupLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showLookupError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+      ),
+    );
+  }
+
+  Future<void> _lookupCompanyData() async {
+    if (!_canLookupCnpj) {
+      return;
+    }
+
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _isCnpjLookupLoading = true;
+    });
+
+    try {
+      final service = ref.read(cnpjLookupServiceProvider);
+      final data = await service.lookup(_documentController.text);
+      await _applyCompanyData(data);
+    } on CnpjLookupException catch (error) {
+      if (mounted) {
+        _showLookupError(error.userMessage);
+      }
+    } catch (_) {
+      if (mounted) {
+        _showLookupError(
+          const CnpjLookupException(CnpjLookupFailure.unknown).userMessage,
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCnpjLookupLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _pickBirthday() async {
@@ -102,6 +407,46 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
     });
   }
 
+  void _onAlsoWhatsAppChanged(bool? value) {
+    if (value != true) {
+      setState(() {
+        _alsoWhatsApp = false;
+      });
+      return;
+    }
+
+    final phoneDigits = BrazilianPhone.normalizeNationalDigits(
+      _phoneController.text,
+    );
+
+    if (phoneDigits == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Informe um telefone válido antes de marcar esta opção.'),
+        ),
+      );
+      return;
+    }
+
+    if (!BrazilianMobilePhone.isValidBrazilianMobile(phoneDigits)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Telefone fixo não pode ser usado como WhatsApp automático. '
+            'Informe um celular válido no campo WhatsApp.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _alsoWhatsApp = true;
+      _whatsAppController.text =
+          BrazilianWhatsAppInputFormatter.formatFromDigits('55$phoneDigits');
+    });
+  }
+
   void _onSave() {
     final birthdayError = ClientFormValidators.validateBirthday(_birthday);
 
@@ -116,9 +461,12 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
     final client = Client.fromForm(
       type: _clientType,
       name: _nameController.text,
+      tradeName: _tradeNameController.text,
+      phone: _phoneController.text,
       whatsApp: _whatsAppController.text,
       email: _emailController.text,
       document: _documentController.text,
+      postalCode: _postalCodeController.text,
       street: _streetController.text,
       number: _numberController.text,
       complement: _complementController.text,
@@ -147,6 +495,33 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Endereço', style: AppTextStyles.titleSmall),
+        const SizedBox(height: _fieldSpacing),
+        AppTextField(
+          key: const Key('client_postal_code_field'),
+          label: 'CEP',
+          hint: '00000-000',
+          controller: _postalCodeController,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.next,
+          inputFormatters: [CepInputFormatter()],
+          validator: ClientFormValidators.validatePostalCode,
+        ),
+        if (_showCepLookupButton) ...[
+          const SizedBox(height: 12),
+          OutlinedButton(
+            key: const Key('cep_lookup_button'),
+            onPressed: _isCepLookupLoading ? null : _lookupAddressByCep,
+            child: _isCepLookupLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Text('Buscar endereço'),
+          ),
+        ],
         const SizedBox(height: _fieldSpacing),
         AppTextField(
           key: const Key('client_street_field'),
@@ -291,6 +666,39 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         textInputAction: TextInputAction.next,
                         validator: ClientFormValidators.validateName,
                       ),
+                      if (_clientType == ClientType.company) ...[
+                        const SizedBox(height: _fieldSpacing),
+                        AppTextField(
+                          key: const Key('client_trade_name_field'),
+                          label: 'Nome fantasia',
+                          controller: _tradeNameController,
+                          keyboardType: TextInputType.name,
+                          textInputAction: TextInputAction.next,
+                        ),
+                      ],
+                      const SizedBox(height: _fieldSpacing),
+                      AppTextField(
+                        key: const Key('client_phone_field'),
+                        label: 'Telefone',
+                        hint: '(00) 00000-0000',
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        textInputAction: TextInputAction.next,
+                        prefixIcon: const Icon(Icons.phone),
+                        inputFormatters: [BrazilianPhoneInputFormatter()],
+                        validator: ClientFormValidators.validatePhone,
+                      ),
+                      CheckboxListTile(
+                        key: const Key('client_also_whatsapp_checkbox'),
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: Text(
+                          'Este número também é WhatsApp',
+                          style: AppTextStyles.bodyMedium,
+                        ),
+                        value: _alsoWhatsApp,
+                        onChanged: _onAlsoWhatsAppChanged,
+                      ),
                       const SizedBox(height: _fieldSpacing),
                       AppTextField(
                         key: const Key('client_whatsapp_field'),
@@ -299,6 +707,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         controller: _whatsAppController,
                         keyboardType: TextInputType.phone,
                         textInputAction: TextInputAction.next,
+                        prefixIcon: const Icon(Icons.chat),
                         inputFormatters: [BrazilianWhatsAppInputFormatter()],
                         validator: ClientFormValidators.validateWhatsApp,
                       ),
@@ -326,6 +735,23 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         ],
                         validator: _validateDocument,
                       ),
+                      if (_showCnpjLookupButton) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          key: const Key('cnpj_lookup_button'),
+                          onPressed:
+                              _isCnpjLookupLoading ? null : _lookupCompanyData,
+                          child: _isCnpjLookupLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Buscar dados da empresa'),
+                        ),
+                      ],
                       const SizedBox(height: _fieldSpacing),
                       _buildAddressSection(constraints.maxWidth),
                       const SizedBox(height: _fieldSpacing),

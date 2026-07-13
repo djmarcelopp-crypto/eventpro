@@ -27,16 +27,24 @@ void main() {
       expect(ClientFormValidators.validateEmail('maria@email.com'), isNull);
     });
 
-    test('validateCpf valida tamanho quando preenchido', () {
-      expect(ClientFormValidators.validateCpf(null), isNull);
-      expect(ClientFormValidators.validateCpf('123'), 'CPF inválido');
-      expect(ClientFormValidators.validateCpf('123.456.789-01'), isNull);
+    test('validatePostalCode valida somente quando preenchido', () {
+      expect(ClientFormValidators.validatePostalCode(null), isNull);
+      expect(ClientFormValidators.validatePostalCode('123'), 'CEP inválido');
+      expect(ClientFormValidators.validatePostalCode('79002-050'), isNull);
     });
 
-    test('validateCnpj valida tamanho quando preenchido', () {
+    test('validateCpf valida dígitos verificadores quando preenchido', () {
+      expect(ClientFormValidators.validateCpf(null), isNull);
+      expect(ClientFormValidators.validateCpf('123'), 'CPF inválido');
+      expect(ClientFormValidators.validateCpf('123.456.789-01'), 'CPF inválido');
+      expect(ClientFormValidators.validateCpf('529.982.247-25'), isNull);
+    });
+
+    test('validateCnpj valida dígitos verificadores quando preenchido', () {
       expect(ClientFormValidators.validateCnpj(null), isNull);
       expect(ClientFormValidators.validateCnpj('123'), 'CNPJ inválido');
-      expect(ClientFormValidators.validateCnpj('12.345.678/0001-99'), isNull);
+      expect(ClientFormValidators.validateCnpj('12.345.678/0001-99'), 'CNPJ inválido');
+      expect(ClientFormValidators.validateCnpj('11.222.333/0001-81'), isNull);
     });
 
     test('validateState valida UF com 2 letras', () {

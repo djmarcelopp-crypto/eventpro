@@ -1,0 +1,4 @@
+enum FormFillMode {
+  fillEmptyOnly,
+  replaceAll,
+}

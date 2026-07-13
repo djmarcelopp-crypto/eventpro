@@ -1,3 +1,7 @@
+import 'data/utils/brazilian_cnpj_validator.dart';
+import 'data/utils/brazilian_cpf_validator.dart';
+import 'utils/email_sanitizer.dart';
+
 abstract class ClientFormValidators {
   static String extractDigits(String? value) {
     return (value ?? '').replaceAll(RegExp(r'\D'), '');
@@ -11,6 +15,25 @@ abstract class ClientFormValidators {
     if (trimmed.length < 2) {
       return 'Nome deve ter pelo menos 2 caracteres';
     }
+    return null;
+  }
+
+  static String? validatePhone(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    final digits = extractDigits(trimmed);
+    if (digits.length != 10 && digits.length != 11) {
+      return 'Telefone inválido';
+    }
+
+    final ddd = int.tryParse(digits.substring(0, 2));
+    if (ddd == null || ddd < 11 || ddd > 99) {
+      return 'Telefone inválido';
+    }
+
     return null;
   }
 
@@ -28,13 +51,16 @@ abstract class ClientFormValidators {
   }
 
   static String? validateEmail(String? value) {
-    final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) {
+    return EmailSanitizer.validateForForm(value);
+  }
+
+  static String? validatePostalCode(String? value) {
+    final digits = extractDigits(value);
+    if (digits.isEmpty) {
       return null;
     }
-    final emailPattern = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
-    if (!emailPattern.hasMatch(trimmed)) {
-      return 'E-mail inválido';
+    if (digits.length != 8) {
+      return 'CEP inválido';
     }
     return null;
   }
@@ -44,7 +70,7 @@ abstract class ClientFormValidators {
     if (digits.isEmpty) {
       return null;
     }
-    if (digits.length != 11) {
+    if (!BrazilianCpfValidator.isValid(digits)) {
       return 'CPF inválido';
     }
     return null;
@@ -55,7 +81,7 @@ abstract class ClientFormValidators {
     if (digits.isEmpty) {
       return null;
     }
-    if (digits.length != 14) {
+    if (!BrazilianCnpjValidator.isValid(digits)) {
       return 'CNPJ inválido';
     }
     return null;

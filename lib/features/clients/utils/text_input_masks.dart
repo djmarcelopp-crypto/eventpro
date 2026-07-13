@@ -48,6 +48,56 @@ class DigitMaskFormatter extends TextInputFormatter {
   }
 }
 
+class BrazilianPhoneInputFormatter extends TextInputFormatter {
+  static const _maxDigits = 11;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final limited = digits.length > _maxDigits
+        ? digits.substring(0, _maxDigits)
+        : digits;
+    final formatted = formatFromDigits(limited);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  static String formatFromDigits(String rawDigits) {
+    var digits = rawDigits.replaceAll(RegExp(r'\D'), '');
+
+    if (digits.isEmpty) {
+      return '';
+    }
+
+    if (digits.startsWith('55') && digits.length >= 12) {
+      digits = digits.substring(2);
+    }
+
+    if (digits.length > _maxDigits) {
+      digits = digits.substring(0, _maxDigits);
+    }
+
+    return _formatPhone(digits);
+  }
+
+  static String _formatPhone(String digits) {
+    final useMobileMask = _usesMobileMask(digits);
+    final mask = useMobileMask ? '(##) #####-####' : '(##) ####-####';
+    return applyDigitMask(digits, mask);
+  }
+
+  static bool _usesMobileMask(String digits) {
+    return digits.length == 11 ||
+        (digits.length >= 3 && digits[2] == '9');
+  }
+}
+
 class BrazilianWhatsAppInputFormatter extends TextInputFormatter {
   static const _maxDigits = 13;
 
@@ -154,6 +204,24 @@ class UpperCaseTextFormatter extends TextInputFormatter {
       text: limited,
       selection: TextSelection.collapsed(offset: limited.length),
     );
+  }
+}
+
+class CepInputFormatter extends DigitMaskFormatter {
+  CepInputFormatter()
+      : super(
+          mask: '#####-###',
+          maxDigits: 8,
+        );
+
+  static String formatFromDigits(String rawDigits) {
+    final digits = rawDigits.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) {
+      return '';
+    }
+
+    final limited = digits.length > 8 ? digits.substring(0, 8) : digits;
+    return applyDigitMask(limited, '#####-###');
   }
 }
 

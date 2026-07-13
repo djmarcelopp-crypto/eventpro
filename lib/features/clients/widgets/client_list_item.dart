@@ -17,6 +17,9 @@ class ClientListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final documentDigits = client.document ?? '';
+    final tradeName = client.tradeName?.trim();
+    final hasTradeName = tradeName != null && tradeName.isNotEmpty;
+    final primaryName = hasTradeName ? tradeName : client.name;
 
     return AppCard(
       padding: const EdgeInsets.all(16),
@@ -28,7 +31,7 @@ class ClientListItem extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  client.name,
+                  primaryName,
                   style: AppTextStyles.titleSmall,
                 ),
               ),
@@ -41,6 +44,15 @@ class ClientListItem extends StatelessWidget {
               ),
             ],
           ),
+          if (hasTradeName) ...[
+            const SizedBox(height: 4),
+            Text(
+              client.name,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.secondaryText,
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           Text(
             ClientDisplayFormatter.formatWhatsApp(client.whatsApp),

@@ -8,6 +8,8 @@ class Client {
     required this.type,
     required this.name,
     required this.whatsApp,
+    this.tradeName,
+    this.phone,
     this.email,
     this.document,
     this.address,
@@ -19,6 +21,8 @@ class Client {
   final String id;
   final ClientType type;
   final String name;
+  final String? tradeName;
+  final String? phone;
   final String whatsApp;
   final String? email;
   final String? document;
@@ -33,6 +37,8 @@ class Client {
     required ClientType type,
     required String name,
     required String whatsApp,
+    String? tradeName,
+    String? phone,
     String? email,
     String? document,
     String? street,
@@ -41,6 +47,7 @@ class Client {
     String? neighborhood,
     String? city,
     String? state,
+    String? postalCode,
     String? instagram,
     DateTime? birthday,
     String? internalNotes,
@@ -49,10 +56,13 @@ class Client {
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       type: type,
       name: name.trim(),
+      tradeName: _optionalText(tradeName),
+      phone: _optionalDigits(phone),
       whatsApp: ClientFormValidators.extractDigits(whatsApp),
       email: _optionalText(email),
       document: _optionalDigits(document),
       address: ClientAddress.fromForm(
+        postalCode: postalCode,
         street: street,
         number: number,
         complement: complement,

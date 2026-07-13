@@ -2,6 +2,10 @@ import '../client_type.dart';
 import 'text_input_masks.dart';
 
 abstract class ClientDisplayFormatter {
+  static String formatPhone(String digits) {
+    return BrazilianPhoneInputFormatter.formatFromDigits(digits);
+  }
+
   static String formatWhatsApp(String digits) {
     return BrazilianWhatsAppInputFormatter.formatFromDigits(digits);
   }

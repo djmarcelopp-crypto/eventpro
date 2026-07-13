@@ -1,0 +1,15 @@
+{
+  "razao_social": "Empresa Ficticia LTDA",
+  "nome_fantasia": "Marca Ficticia",
+  "descricao_tipo_de_logradouro": "RUA",
+  "logradouro": "DAS FLORES",
+  "numero": "100",
+  "complemento": "Sala 1",
+  "bairro": "Centro",
+  "municipio": "Cidade Exemplo",
+  "uf": "SP",
+  "cep": "12345678",
+  "ddd_telefone_1": "1133334444",
+  "ddd_telefone_2": "11987654321",
+  "email": "contato@empresaficticia.test"
+}

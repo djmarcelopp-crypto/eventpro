@@ -15,6 +15,7 @@ Client sampleClient({
   ClientType type = ClientType.individual,
   String name = 'Maria Silva',
   String? tradeName,
+  String? document,
   String? internalNotes,
 }) {
   return Client(
@@ -26,7 +27,7 @@ Client sampleClient({
     phone: '67999998888',
     whatsApp: '67999998888',
     email: 'maria@example.com',
-    document: '52998224725',
+    document: document ?? '52998224725',
     address: const ClientAddress(
       street: 'Rua das Flores',
       number: '100',

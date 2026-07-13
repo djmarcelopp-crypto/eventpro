@@ -109,6 +109,129 @@ Future<void> _tapSave(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Future<void> _openQuotesScreen(WidgetTester tester) async {
+  await _pumpAppFromSplash(tester);
+
+  await tester.tap(find.text('Entrar'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Orçamentos'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openNewQuoteForm(WidgetTester tester) async {
+  await _openQuotesScreen(tester);
+
+  await tester.tap(find.byKey(const Key('quotes_new_quote_button')));
+  await tester.pumpAndSettle();
+
+  expect(find.text('Novo orçamento'), findsOneWidget);
+}
+
+Future<void> _tapQuoteSave(WidgetTester tester) async {
+  final saveButton = find.byKey(const Key('quote_save_button'));
+  final formScrollable = find.ancestor(
+    of: saveButton,
+    matching: find.byType(Scrollable),
+  );
+  await tester.scrollUntilVisible(
+    saveButton,
+    800,
+    scrollable: formScrollable,
+  );
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(saveButton);
+  await tester.pumpAndSettle();
+  await tester.tap(saveButton);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _seedClientAndCatalogItem(WidgetTester tester) async {
+  await _pumpAppFromSplash(tester);
+
+  await tester.tap(find.text('Entrar'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Clientes'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Novo cliente'));
+  await tester.pumpAndSettle();
+  await _fillRequiredFields(tester);
+  await _tapSave(tester);
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.byTooltip('Voltar'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Catálogo'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const Key('catalog_new_item_button')));
+  await tester.pumpAndSettle();
+  await tester.enterText(
+    find.byKey(const Key('catalog_name_field')),
+    'Mesa de som',
+  );
+  await tester.enterText(
+    find.byKey(const Key('catalog_price_field')),
+    '1500',
+  );
+  await _tapCatalogSave(tester);
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.byTooltip('Voltar'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _selectQuoteClient(
+  WidgetTester tester, {
+  String name = 'Maria Silva',
+}) async {
+  await tester.tap(find.byKey(const Key('quote_select_client_button')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(name));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _addQuoteCatalogItem(
+  WidgetTester tester, {
+  String name = 'Mesa de som',
+}) async {
+  await tester.tap(find.byKey(const Key('quote_add_catalog_item_button')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(name));
+  await tester.pumpAndSettle();
+}
+
+String _quoteSummaryValue(WidgetTester tester, String key) {
+  final row = find.byKey(Key(key));
+  final valueText = find.descendant(
+    of: row,
+    matching: find.byType(Text),
+  );
+  return tester.widget<Text>(valueText.last).data!;
+}
+
+Future<void> _prepareQuoteFormWithSubtotal(
+  WidgetTester tester, {
+  String price = '100,00',
+}) async {
+  tester.view.physicalSize = const Size(800, 2000);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
+  await _seedClientAndCatalogItem(tester);
+  await _openNewQuoteForm(tester);
+  await _selectQuoteClient(tester);
+  await _addQuoteCatalogItem(tester);
+
+  await tester.enterText(
+    find.byKey(const Key('quote_line_price_line_1')),
+    price,
+  );
+  await tester.pumpAndSettle();
+}
+
 Future<void> _fillRequiredFields(WidgetTester tester) async {
   await tester.enterText(
     find.byKey(const Key('client_name_field')),
@@ -394,24 +517,116 @@ void main() {
     expect(find.text('Módulos'), findsOneWidget);
   });
 
-  testWidgets('Botão Novo orçamento não abre formulário', (
+  testWidgets('Abre formulário Novo orçamento', (WidgetTester tester) async {
+    await _openNewQuoteForm(tester);
+
+    expect(find.byKey(const Key('quote_client_section')), findsOneWidget);
+    expect(find.byKey(const Key('quote_items_section')), findsOneWidget);
+    expect(find.byKey(const Key('quote_save_button')), findsOneWidget);
+    expect(find.text('Salvar rascunho'), findsOneWidget);
+  });
+
+  testWidgets('Cancelar diálogo de descarte permanece no formulário', (
     WidgetTester tester,
   ) async {
-    await _pumpAppFromSplash(tester);
+    await _openNewQuoteForm(tester);
 
-    await tester.tap(find.text('Entrar'));
+    await tester.enterText(
+      find.byKey(const Key('quote_notes_field')),
+      'Observação de teste',
+    );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Orçamentos'));
+    await tester.tap(find.byTooltip('Voltar'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('quotes_new_quote_button')));
+    expect(find.text('Descartar alterações?'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('quote_discard_cancel_button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Novo orçamento'), findsOneWidget);
+    expect(find.text('Observação de teste'), findsOneWidget);
+  });
+
+  testWidgets('Confirmar descarte sai em uma única tentativa', (
+    WidgetTester tester,
+  ) async {
+    await _openNewQuoteForm(tester);
+
+    await tester.enterText(
+      find.byKey(const Key('quote_notes_field')),
+      'Observação de teste',
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('quote_discard_confirm_button')));
     await tester.pumpAndSettle();
 
     expect(find.text('Orçamentos'), findsOneWidget);
-    expect(find.text('Nenhum orçamento cadastrado'), findsOneWidget);
-    expect(find.text('Novo orçamento'), findsOneWidget);
-    expect(find.text('Salvar'), findsNothing);
+    expect(find.byKey(const Key('quote_form_scroll')), findsNothing);
+    expect(find.text('Descartar alterações?'), findsNothing);
+  });
+
+  testWidgets('Salva orçamento como rascunho e exibe na listagem', (
+    WidgetTester tester,
+  ) async {
+    await _prepareQuoteFormWithSubtotal(tester, price: '1.500,00');
+    await _tapQuoteSave(tester);
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Orçamento salvo como rascunho'), findsOneWidget);
+    expect(find.text('Orçamentos'), findsOneWidget);
+    expect(find.byKey(const Key('quotes_list_grid')), findsOneWidget);
+    expect(find.text('Maria Silva'), findsOneWidget);
+    expect(find.text('Rascunho'), findsOneWidget);
+  });
+
+  testWidgets('Resumo financeiro atualiza desconto e frete em tempo real', (
+    WidgetTester tester,
+  ) async {
+    await _prepareQuoteFormWithSubtotal(tester);
+
+    expect(_quoteSummaryValue(tester, 'quote_summary_subtotal'), 'R\$ 100,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_discount'), 'R\$ 0,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_freight'), 'R\$ 0,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_total'), 'R\$ 100,00');
+
+    final discountField = find.byKey(const Key('quote_discount_field'));
+    final freightField = find.byKey(const Key('quote_freight_field'));
+
+    for (final text in ['1', '10', '10,', '10,0', '10,00']) {
+      await tester.enterText(discountField, text);
+      await tester.pump();
+    }
+
+    expect(_quoteSummaryValue(tester, 'quote_summary_discount'), 'R\$ 10,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_total'), 'R\$ 90,00');
+
+    for (final text in ['5', '5,', '5,0', '5,00']) {
+      await tester.enterText(freightField, text);
+      await tester.pump();
+    }
+
+    expect(_quoteSummaryValue(tester, 'quote_summary_freight'), 'R\$ 5,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_total'), 'R\$ 95,00');
+
+    await tester.enterText(discountField, '');
+    await tester.pump();
+
+    expect(_quoteSummaryValue(tester, 'quote_summary_discount'), 'R\$ 0,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_total'), 'R\$ 105,00');
+
+    await tester.enterText(freightField, '');
+    await tester.pump();
+
+    expect(_quoteSummaryValue(tester, 'quote_summary_freight'), 'R\$ 0,00');
+    expect(_quoteSummaryValue(tester, 'quote_summary_total'), 'R\$ 100,00');
+    expect(find.text('Salvar rascunho'), findsOneWidget);
   });
 
   testWidgets('Abre detalhes ao tocar item no Catálogo', (

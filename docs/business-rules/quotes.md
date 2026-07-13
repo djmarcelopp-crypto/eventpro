@@ -175,4 +175,50 @@ Composição prevista:
 
 ## Rotas
 
-- `/quotes` — listagem de orçamentos (estado vazio nesta fase).
+- `/quotes` — listagem de orçamentos.
+- `/quotes/new` — formulário de novo orçamento (salva como rascunho).
+
+## Criação de orçamento (TASK-016)
+
+### Formulário
+
+- Cliente obrigatório, selecionado entre clientes cadastrados.
+- Itens obrigatórios, somente do catálogo ativo.
+- Desconto fixo em R$ (percentual: evolução futura).
+- Validade sugerida: hoje + 7 dias (não marca alterações ao abrir).
+- Validade preenchida não pode ser anterior à data atual.
+- Observações para o cliente (futuro PDF) separadas visualmente das internas.
+
+### Momento do snapshot
+
+No **Salvar**, o sistema resolve novamente `Client` e `CatalogItem` pelos IDs:
+
+| Campo da linha | Origem no save |
+|----------------|----------------|
+| Nome, descrição, unidade | Estado **atual** do item no catálogo |
+| Quantidade, preço unitário | Rascunho editado no formulário |
+| Cliente | Estado **atual** via `QuoteClientSnapshot.fromClient()` |
+
+Se cliente ou item estiver ausente/inativo, o salvamento é bloqueado com mensagem clara.
+
+### Preço no orçamento
+
+- Preço unitário editável por linha; alteração **não** modifica o Catálogo.
+- Exibição monetária reutiliza formatadores existentes via bridge de centavos.
+
+### Cálculo em tempo real
+
+- Durante digitação, linhas inválidas exibem erro sem quebrar o formulário.
+- `QuoteLineItem` só é criado após validação no Salvar.
+- Total temporário pode ser zero enquanto o usuário digita.
+
+### Quantidade
+
+- Entrada pt-BR: aceita `1,5` e `1.5`; até 3 casas decimais.
+- Modelo persiste `double`.
+
+### Listagem
+
+- Cards com número, cliente, status, evento, total, validade e quantidade de itens.
+- Ordenação por criação mais recente (cópia para exibição; provider não é mutado).
+- Detalhes e edição: fora de escopo nesta fase.

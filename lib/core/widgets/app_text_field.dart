@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
 
@@ -15,6 +16,10 @@ class AppTextField extends StatelessWidget {
     this.enabled = true,
     this.maxLines = 1,
     this.textInputAction,
+    this.inputFormatters,
+    this.readOnly = false,
+    this.onTap,
+    this.maxLength,
   });
 
   final String label;
@@ -27,6 +32,10 @@ class AppTextField extends StatelessWidget {
   final bool enabled;
   final int maxLines;
   final TextInputAction? textInputAction;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final int? maxLength;
 
   static const _borderRadius = BorderRadius.all(Radius.circular(12));
 
@@ -41,6 +50,10 @@ class AppTextField extends StatelessWidget {
       enabled: enabled,
       maxLines: maxLines,
       textInputAction: textInputAction,
+      inputFormatters: inputFormatters,
+      readOnly: readOnly,
+      onTap: onTap,
+      maxLength: maxLength,
       style: Theme.of(context).textTheme.bodyLarge,
       decoration: InputDecoration(
         labelText: label,

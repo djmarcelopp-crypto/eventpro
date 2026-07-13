@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../../features/clients/clients_screen.dart';
+import '../../features/clients/new_client_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../splash_screen.dart';
 
@@ -8,6 +9,7 @@ abstract class AppRoutes {
   static const splash = '/';
   static const dashboard = '/dashboard';
   static const clients = '/clients';
+  static const clientsNew = '/clients/new';
 }
 
 abstract class AppRouter {
@@ -25,6 +27,12 @@ abstract class AppRouter {
       GoRoute(
         path: AppRoutes.clients,
         builder: (context, state) => const ClientsScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewClientScreen(),
+          ),
+        ],
       ),
     ],
   );

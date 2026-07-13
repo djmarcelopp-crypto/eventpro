@@ -5,7 +5,12 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/primary_button.dart';
 
 class ClientsEmptyState extends StatelessWidget {
-  const ClientsEmptyState({super.key});
+  const ClientsEmptyState({
+    super.key,
+    required this.onNewClient,
+  });
+
+  final VoidCallback onNewClient;
 
   static const _maxContentWidth = 480.0;
   static const _maxButtonWidth = 320.0;
@@ -42,7 +47,7 @@ class ClientsEmptyState extends StatelessWidget {
                 constraints: const BoxConstraints(maxWidth: _maxButtonWidth),
                 child: PrimaryButton(
                   label: 'Novo cliente',
-                  onPressed: () {},
+                  onPressed: onNewClient,
                 ),
               ),
             ],

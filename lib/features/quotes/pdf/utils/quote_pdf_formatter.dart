@@ -18,8 +18,8 @@ abstract class QuotePdfFormatter {
       'Local e data: __________________________________________';
 
   static const acceptanceDisclaimerText =
-      'O status ‘Aprovado’ registra apenas o controle interno do EventPro '
-      'e não substitui a assinatura do contratante ou da contratada.';
+      'Os status registrados no EventPro servem apenas ao controle interno '
+      'e não substituem as assinaturas do contratante e da contratada.';
 
   static const contractorRoleLabel = 'Contratante';
   static const contracteeRoleLabel = 'Contratada';

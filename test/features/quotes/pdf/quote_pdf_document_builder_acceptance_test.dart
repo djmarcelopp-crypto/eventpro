@@ -70,6 +70,11 @@ void main() {
         'CPF 529.982.247-25',
       ]);
       expect(data.acceptanceSection!.approvedAtLabel, isNull);
+      expect(
+        data.acceptanceSection!.disclaimerText,
+        QuotePdfFormatter.acceptanceDisclaimerText,
+      );
+      expect(data.acceptanceSection!.disclaimerText, isNot(contains('Aprovado')));
     });
 
     test('Enviado PJ usa razão social e CNPJ do snapshot', () {

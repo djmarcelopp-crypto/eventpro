@@ -51,6 +51,22 @@ void main() {
   }
 
   group('QuotePdfFormatter acceptance helpers', () {
+    test('disclaimer usa texto genérico sem aviso específico sobre Aprovado', () {
+      expect(
+        QuotePdfFormatter.acceptanceDisclaimerText,
+        'Os status registrados no EventPro servem apenas ao controle interno '
+        'e não substituem as assinaturas do contratante e da contratada.',
+      );
+      expect(
+        QuotePdfFormatter.acceptanceDisclaimerText,
+        isNot(contains("O status ‘Aprovado’")),
+      );
+      expect(
+        QuotePdfFormatter.acceptanceDisclaimerText,
+        isNot(contains('não substitui a assinatura')),
+      );
+    });
+
     test('textos fixos não contêm assinatura eletrônica ou digital', () {
       const forbiddenTerms = [
         'assinatura eletrônica',

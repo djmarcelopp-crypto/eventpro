@@ -43,6 +43,7 @@ abstract class QuoteLineDraftSaver {
             quantity: quantity,
             unitPriceCents: unitPriceCents,
             lineTotalCents: 0,
+            packageComponents: draft.packageComponents,
           ),
         );
         continue;
@@ -72,6 +73,7 @@ abstract class QuoteLineDraftSaver {
           quantity: quantity,
           unitPriceCents: unitPriceCents,
           lineTotalCents: 0,
+          packageComponents: draft.packageComponents,
         ),
       );
     }

@@ -70,6 +70,25 @@ Um orçamento é um **documento congelado**. Alterações futuras em Clientes, C
 - `catalogItemId` opcional (`null` = item personalizado futuro).
 - Campos congelados: nome, descrição, unidade, quantidade, preço unitário, total da linha.
 - **Sem `imageReference`** nesta fase (ver seção Imagens).
+- `packageComponents` opcional (`null` = linha simples; lista imutável quando presente).
+
+#### Pacotes (`packageComponents`) — TASK-021
+
+| Conceito | Regra |
+|----------|-------|
+| Modelo | `List<QuotePackageComponentSnapshot>?` em `QuoteLineItem` |
+| Compatibilidade | Orçamentos antigos sem o campo permanecem válidos (`packageComponents == null`) |
+| Captura | Snapshots gravados no **save** a partir do Catálogo vigente |
+| Independência | Mudanças futuras no Catálogo **não alteram** orçamentos existentes |
+| Preço da linha | Preço unitário do **pacote** × quantidade de pacotes (centavos) |
+| Componentes no total | Componentes são informativos nesta fase; **não** somam ao total financeiro |
+| Quantidade efetiva | `quantityPerPackage × lineQuantity` (exibida na UI; base para checklist futuro) |
+| PDF | Pacote aparece como **linha financeira única**; sem detalhamento operacional de componentes |
+| Checklist | Conferência de saída/retorno, responsável e horário — **tarefa futura** |
+
+Cada `QuotePackageComponentSnapshot` congela: `name`, `unit`, `typeLabel`, `categoryLabel`, `quantityPerPackage` e `catalogItemId` opcional para rastreio.
+
+Na criação de linha nova, `QuotePackageComponentMapper` converte componentes do Catálogo em snapshots. Orçamentos salvos **não** dependem de `CatalogPackageComponent` em tempo de leitura.
 
 ### Empresa emissora (`QuoteCompanySnapshot`) — TASK-019
 
@@ -269,7 +288,18 @@ Proposta comercial premium: cabeçalho centralizado, tabela de itens, resumo fin
 - Aceite e assinaturas (TASK-022)
 - Representante legal no PDF
 - Fotos de itens
+- Detalhamento operacional de componentes de pacote (checklist de carregamento)
 - Envio automático por e-mail/WhatsApp
+
+## Evolução futura — checklist operacional (TASK futura)
+
+Documentado como evolução; **não implementado** na TASK-021:
+
+- Checklist de carregamento a partir dos `packageComponents` do orçamento aprovado
+- Agrupamento de componentes por categoria
+- Quantidade efetiva por componente (`quantityPerPackage × pacotes`)
+- Conferência de saída e retorno de equipamentos
+- Responsável e horário de cada etapa operacional
 
 ## Histórico de status (TASK-017)
 
@@ -343,9 +373,18 @@ No **Salvar**, o sistema resolve novamente `Client` e `CatalogItem` pelos IDs:
 |----------------|----------------|
 | Nome, descrição, unidade | Estado **atual** do item no catálogo |
 | Quantidade, preço unitário | Rascunho editado no formulário |
+| `packageComponents` | Estado **atual** dos componentes do pacote (somente linhas novas de pacote) |
 | Cliente | Estado **atual** via `QuoteClientSnapshot.fromClient()` |
 
 Se cliente ou item estiver ausente/inativo, o salvamento é bloqueado com mensagem clara.
+
+### Pacotes no formulário (TASK-021)
+
+- Pacotes ativos aparecem no seletor com badge **Pacote** e contagem de itens incluídos.
+- Ao adicionar pacote, componentes são capturados como snapshots na linha.
+- Na edição de rascunho, linhas existentes preservam snapshots originais (`isExistingLine`).
+- Linha existente de pacote: quantidade e preço editáveis; componentes congelados.
+- Para atualizar componentes pelo Catálogo: remover a linha e adicionar novamente.
 
 ### Preço no orçamento
 

@@ -98,6 +98,7 @@ abstract class QuoteFormInitializer {
       quantityText: QuoteQuantityParser.formatForInput(item.quantity),
       priceText: QuoteMoneyDisplay.formatForInput(item.unitPriceCents),
       isExistingLine: true,
+      packageComponents: item.packageComponents,
     );
   }
 }

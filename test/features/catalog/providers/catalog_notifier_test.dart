@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/catalog_category.dart';
 import 'package:eventpro/features/catalog/catalog_item_type.dart';
+import 'package:eventpro/features/catalog/models/catalog_delete_result.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
 
 CatalogItem _sampleItem({
@@ -175,6 +176,40 @@ void main() {
       final items = container.read(catalogProvider);
       expect(items.map((item) => item.id).toList(), ['item-1', 'item-2', 'item-3']);
       expect(items.first.name, 'Caixa atualizada');
+    });
+
+    test('deleteItem remove somente o item indicado preservando ordem', () {
+      final notifier = container.read(catalogProvider.notifier);
+      notifier.addItem(_sampleItem(id: 'item-1'));
+      notifier.addItem(
+        CatalogItem.fromForm(
+          type: CatalogItemType.service,
+          name: 'DJ',
+          category: CatalogCategory.dj,
+          unit: 'hora',
+          price: 500,
+          id: 'item-2',
+          createdAt: DateTime(2024, 2, 1),
+        ),
+      );
+
+      final result = notifier.deleteItem('item-1');
+
+      expect(result.status, CatalogDeleteStatus.deleted);
+      expect(
+        container.read(catalogProvider).map((item) => item.id).toList(),
+        ['item-2'],
+      );
+    });
+
+    test('deleteItem retorna notFound para ID inexistente', () {
+      final notifier = container.read(catalogProvider.notifier);
+      notifier.addItem(_sampleItem());
+
+      final result = notifier.deleteItem('missing');
+
+      expect(result.status, CatalogDeleteStatus.notFound);
+      expect(container.read(catalogProvider), hasLength(1));
     });
   });
 }

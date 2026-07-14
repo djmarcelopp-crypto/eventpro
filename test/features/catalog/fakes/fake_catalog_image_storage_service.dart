@@ -24,6 +24,7 @@ class FakeCatalogImageStorageService implements CatalogImageStorageService {
 
   var stageCallCount = 0;
   String? lastStagedReference;
+  var deleteCommittedShouldFail = false;
 
   @override
   Future<String> stageFromPick({
@@ -72,6 +73,10 @@ class FakeCatalogImageStorageService implements CatalogImageStorageService {
   Future<void> deleteCommitted(String? imageReference) async {
     if (imageReference == null) {
       return;
+    }
+
+    if (deleteCommittedShouldFail) {
+      throw StateError('Failed to delete committed image');
     }
 
     _deleteLog.add(imageReference);

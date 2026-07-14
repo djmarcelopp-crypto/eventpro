@@ -12,6 +12,10 @@ import 'catalog_billing_unit.dart';
 import 'catalog_category.dart';
 import 'catalog_form_validators.dart';
 import 'catalog_item_type.dart';
+import 'catalog_package_constants.dart';
+import 'models/catalog_package_component.dart';
+import 'utils/catalog_package_validator.dart';
+import 'utils/catalog_quantity_parser.dart';
 import 'data/exceptions/catalog_image_pick_exception.dart';
 import 'data/services/catalog_image_picker_service.dart';
 import 'data/services/catalog_image_storage_service.dart';
@@ -24,6 +28,8 @@ import 'utils/catalog_form_initializer.dart';
 import 'utils/catalog_navigation.dart';
 import 'utils/catalog_price_formatter.dart';
 import 'widgets/catalog_item_image_form_section.dart';
+import 'widgets/catalog_item_type_selector.dart';
+import 'widgets/catalog_package_components_section.dart';
 
 class NewCatalogItemScreen extends ConsumerStatefulWidget {
   const NewCatalogItemScreen({
@@ -47,12 +53,16 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
   final _descriptionController = TextEditingController();
   final _customUnitController = TextEditingController();
   final _priceController = TextEditingController();
+  final _packageUnitController =
+      TextEditingController(text: CatalogPackageConstants.unit);
 
   CatalogItemType _type = CatalogItemType.equipment;
+  CatalogItemType? _originalType;
   CatalogCategory _category = CatalogCategory.sound;
   CatalogBillingUnit _billingUnit = CatalogBillingUnit.unit;
   bool _active = true;
   bool _initializedForEdit = false;
+  final List<CatalogPackageComponentEntry> _packageComponents = [];
 
   String? _originalImageReference;
   String? _stagedImageReference;
@@ -64,6 +74,23 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
   CatalogImagePickerService? _imagePicker;
 
   bool get _isEditing => widget.itemId != null;
+
+  bool get _isPackage => _type.isPackage;
+
+  Set<CatalogItemType> get _disabledTypes {
+    if (!_isEditing || _originalType == null) {
+      return const {};
+    }
+
+    if (_originalType!.isPackage) {
+      return {
+        CatalogItemType.equipment,
+        CatalogItemType.service,
+      };
+    }
+
+    return {CatalogItemType.package};
+  }
 
   String? get _previewImageReference {
     if (_stagedImageReference != null) {
@@ -112,8 +139,29 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       priceController: _priceController,
     );
 
+    for (final entry in _packageComponents) {
+      entry.dispose();
+    }
+    _packageComponents.clear();
+
+    if (item.isPackage) {
+      for (final component in item.components) {
+        _packageComponents.add(
+          CatalogPackageComponentEntry(
+            component: component,
+            quantityController: TextEditingController(
+              text: CatalogQuantityParser.formatForInput(
+                component.quantityPerPackage,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
     setState(() {
       _type = values.type;
+      _originalType = values.type;
       _category = values.category;
       _billingUnit = values.billingUnit;
       _active = values.active;
@@ -127,10 +175,14 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
     if (!_formSaved) {
       unawaited(_discardStagedOnly());
     }
+    for (final entry in _packageComponents) {
+      entry.dispose();
+    }
     _nameController.dispose();
     _descriptionController.dispose();
     _customUnitController.dispose();
     _priceController.dispose();
+    _packageUnitController.dispose();
     super.dispose();
   }
 
@@ -145,7 +197,7 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
     _stagedImageReference = null;
   }
 
-  void _showImageError(String message) {
+  void _showFeedback(String message, {bool isError = true}) {
     if (!mounted) {
       return;
     }
@@ -158,9 +210,111 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
             message,
             style: const TextStyle(color: AppColors.white),
           ),
-          backgroundColor: AppColors.error,
+          backgroundColor: isError ? AppColors.error : AppColors.success,
         ),
       );
+  }
+
+  void _showImageError(String message) {
+    _showFeedback(message);
+  }
+
+  void _clearPackageComponents() {
+    for (final entry in _packageComponents) {
+      entry.dispose();
+    }
+    _packageComponents.clear();
+  }
+
+  Future<void> _handleTypeChanged(CatalogItemType nextType) async {
+    if (nextType == _type || _disabledTypes.contains(nextType)) {
+      return;
+    }
+
+    if (_type.isPackage && !nextType.isPackage && _packageComponents.isNotEmpty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('Alterar tipo'),
+            content: const Text(
+              'Ao sair do tipo Pacote, os itens selecionados serão descartados. '
+              'Deseja continuar?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (confirmed != true || !mounted) {
+        return;
+      }
+
+      setState(() {
+        _clearPackageComponents();
+        _type = nextType;
+      });
+      return;
+    }
+
+    setState(() => _type = nextType);
+  }
+
+  void _addPackageComponent(CatalogItem item) {
+    setState(() {
+      _packageComponents.add(
+        CatalogPackageComponentEntry(
+          component: CatalogPackageComponent.fromCatalogItem(
+            item: item,
+            quantityPerPackage: 1,
+          ),
+          quantityController: TextEditingController(text: '1'),
+        ),
+      );
+    });
+  }
+
+  void _removePackageComponent(String catalogItemId) {
+    setState(() {
+      final index = _packageComponents.indexWhere(
+        (entry) => entry.component.catalogItemId == catalogItemId,
+      );
+      if (index < 0) {
+        return;
+      }
+      _packageComponents.removeAt(index).dispose();
+    });
+  }
+
+  List<CatalogPackageComponent>? _buildPackageComponents() {
+    final components = <CatalogPackageComponent>[];
+
+    for (final entry in _packageComponents) {
+      final quantity = CatalogQuantityParser.tryParse(
+        entry.quantityController.text,
+      );
+      if (quantity == null) {
+        _showFeedback(
+          'Quantidade inválida para ${entry.component.nameSnapshot}',
+        );
+        return null;
+      }
+
+      components.add(
+        entry.component.copyWith(quantityPerPackage: quantity),
+      );
+    }
+
+    return components;
   }
 
   Future<void> _handleSelectPhoto() async {
@@ -257,16 +411,59 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       return;
     }
 
-    final unit = CatalogBillingUnitResolver.resolve(
-      unit: _billingUnit,
-      customUnit: _customUnitController.text,
-    );
+    final unit = _isPackage
+        ? CatalogPackageConstants.unit
+        : CatalogBillingUnitResolver.resolve(
+            unit: _billingUnit,
+            customUnit: _customUnitController.text,
+          );
+
+    List<CatalogPackageComponent>? packageComponents;
+    if (_isPackage) {
+      packageComponents = _buildPackageComponents();
+      if (packageComponents == null) {
+        return;
+      }
+    }
 
     final existingItem = _isEditing
         ? ref.read(catalogProvider.notifier).findById(widget.itemId!)
         : null;
 
     if (_isEditing && existingItem == null) {
+      return;
+    }
+
+    final draftItem = CatalogItem.fromForm(
+      type: _type,
+      name: _nameController.text,
+      category: _category,
+      unit: unit,
+      price: price,
+      active: _active,
+      description: _descriptionController.text,
+      imageReference: _previewImageReference,
+      id: existingItem?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      createdAt: existingItem?.createdAt,
+      components: packageComponents,
+    );
+
+    final existingComponentIds = existingItem?.components
+            .map((component) => component.catalogItemId)
+            .toSet() ??
+        const <String>{};
+
+    final validation = CatalogPackageValidator.validate(
+      item: draftItem,
+      resolveItem: ref.read(catalogProvider.notifier).findById,
+      existingComponentIds: existingComponentIds,
+    );
+
+    if (!validation.canSave) {
+      final firstError = validation.issues
+          .firstWhere((issue) => issue.isError)
+          .message;
+      _showFeedback(firstError);
       return;
     }
 
@@ -309,6 +506,7 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
         imageReference: finalImageReference,
         id: itemId,
         createdAt: existingItem?.createdAt,
+        components: packageComponents,
       );
 
       if (_isEditing) {
@@ -379,6 +577,8 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final catalogItems = ref.watch(catalogProvider);
+
     return PopScope(
       canPop: !_saving,
       onPopInvokedWithResult: (didPop, result) {
@@ -418,23 +618,10 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SegmentedButton<CatalogItemType>(
-                          segments: const [
-                            ButtonSegment(
-                              value: CatalogItemType.equipment,
-                              label: Text('Equipamento'),
-                            ),
-                            ButtonSegment(
-                              value: CatalogItemType.service,
-                              label: Text('Serviço'),
-                            ),
-                          ],
-                          selected: {_type},
-                          onSelectionChanged: (selection) {
-                            setState(() {
-                              _type = selection.first;
-                            });
-                          },
+                        CatalogItemTypeSelector(
+                          selected: _type,
+                          disabledTypes: _disabledTypes,
+                          onChanged: _saving ? (_) {} : _handleTypeChanged,
                         ),
                         const SizedBox(height: _fieldSpacing),
                         AppTextField(
@@ -480,39 +667,48 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
                           maxLines: 3,
                         ),
                         const SizedBox(height: _fieldSpacing),
-                        KeyedSubtree(
-                          key: ValueKey(
-                            'catalog_unit_dropdown_$_initializedForEdit$_billingUnit',
-                          ),
-                          child: DropdownButtonFormField<CatalogBillingUnit>(
-                            key: const Key('catalog_unit_field'),
-                            initialValue: _billingUnit,
-                            decoration:
-                                _dropdownDecoration('Unidade de cobrança'),
-                            items: [
-                              for (final unit in CatalogBillingUnit.values)
-                                DropdownMenuItem(
-                                  value: unit,
-                                  child: Text(unit.label),
-                                ),
-                            ],
-                            onChanged: _onBillingUnitChanged,
-                          ),
-                        ),
-                        if (_billingUnit.isOther) ...[
-                          const SizedBox(height: _fieldSpacing),
+                        if (_isPackage) ...[
                           AppTextField(
-                            key: const Key('catalog_unit_custom_field'),
-                            label: 'Unidade personalizada',
-                            controller: _customUnitController,
-                            keyboardType: TextInputType.text,
-                            textInputAction: TextInputAction.next,
-                            validator: (value) =>
-                                CatalogFormValidators.validateCustomUnit(
-                              unit: _billingUnit,
-                              value: value,
+                            key: const Key('catalog_package_unit_field'),
+                            label: 'Unidade de cobrança',
+                            controller: _packageUnitController,
+                            readOnly: true,
+                          ),
+                        ] else ...[
+                          KeyedSubtree(
+                            key: ValueKey(
+                              'catalog_unit_dropdown_$_initializedForEdit$_billingUnit',
+                            ),
+                            child: DropdownButtonFormField<CatalogBillingUnit>(
+                              key: const Key('catalog_unit_field'),
+                              initialValue: _billingUnit,
+                              decoration:
+                                  _dropdownDecoration('Unidade de cobrança'),
+                              items: [
+                                for (final unit in CatalogBillingUnit.values)
+                                  DropdownMenuItem(
+                                    value: unit,
+                                    child: Text(unit.label),
+                                  ),
+                              ],
+                              onChanged: _onBillingUnitChanged,
                             ),
                           ),
+                          if (_billingUnit.isOther) ...[
+                            const SizedBox(height: _fieldSpacing),
+                            AppTextField(
+                              key: const Key('catalog_unit_custom_field'),
+                              label: 'Unidade personalizada',
+                              controller: _customUnitController,
+                              keyboardType: TextInputType.text,
+                              textInputAction: TextInputAction.next,
+                              validator: (value) =>
+                                  CatalogFormValidators.validateCustomUnit(
+                                unit: _billingUnit,
+                                value: value,
+                              ),
+                            ),
+                          ],
                         ],
                         const SizedBox(height: _fieldSpacing),
                         AppTextField(
@@ -533,6 +729,16 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
                           ),
                         ),
                         const SizedBox(height: _fieldSpacing),
+                        if (_isPackage) ...[
+                          CatalogPackageComponentsSection(
+                            entries: _packageComponents,
+                            catalogItems: catalogItems,
+                            enabled: !_saving,
+                            onAdd: _addPackageComponent,
+                            onRemove: _removePackageComponent,
+                          ),
+                          const SizedBox(height: _fieldSpacing),
+                        ],
                         CatalogItemImageFormSection(
                           previewReference: _previewImageReference,
                           onSelectPhoto: _handleSelectPhoto,

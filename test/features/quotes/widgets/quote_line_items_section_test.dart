@@ -149,5 +149,16 @@ void main() {
       );
       expect(row, findsWidgets);
     });
+
+    testWidgets('equipamento simples continua sem badge de pacote', (tester) async {
+      await tester.pumpWidget(
+        buildSection(
+          items: [buildItem(id: 'item-1')],
+        ),
+      );
+
+      expect(find.byKey(const Key('quote_package_badge')), findsNothing);
+      expect(find.text('Caixa de som'), findsOneWidget);
+    });
   });
 }

@@ -1,8 +1,10 @@
 import '../catalog_category.dart';
 import '../catalog_item_type.dart';
+import '../catalog_package_constants.dart';
+import 'catalog_package_component.dart';
 
 class CatalogItem {
-  const CatalogItem({
+  CatalogItem({
     required this.id,
     required this.createdAt,
     required this.type,
@@ -13,7 +15,13 @@ class CatalogItem {
     required this.active,
     this.description,
     this.imageReference,
-  });
+    List<CatalogPackageComponent>? components,
+  }) : components = List.unmodifiable(
+          _normalizedComponents(
+            type: type,
+            components: components,
+          ),
+        );
 
   final String id;
   final DateTime createdAt;
@@ -24,10 +32,10 @@ class CatalogItem {
   final String unit;
   final double price;
   final bool active;
-
-  /// Optional main image reference for catalog card, details and future PDF use.
-  /// Upload and storage are handled in a future task.
   final String? imageReference;
+  final List<CatalogPackageComponent> components;
+
+  bool get isPackage => type.isPackage;
 
   factory CatalogItem.fromForm({
     required CatalogItemType type,
@@ -40,18 +48,26 @@ class CatalogItem {
     String? imageReference,
     String? id,
     DateTime? createdAt,
+    List<CatalogPackageComponent>? components,
   }) {
+    final normalizedComponents = _normalizedComponents(
+      type: type,
+      components: components,
+    );
+    final normalizedUnit = type.isPackage ? CatalogPackageConstants.unit : unit.trim();
+
     return CatalogItem(
       id: id ?? DateTime.now().microsecondsSinceEpoch.toString(),
       createdAt: createdAt ?? DateTime.now(),
       type: type,
       name: name.trim(),
       category: category,
-      unit: unit.trim(),
+      unit: normalizedUnit,
       price: price,
       active: active,
       description: _optionalText(description),
       imageReference: _optionalText(imageReference),
+      components: normalizedComponents,
     );
   }
 
@@ -66,22 +82,47 @@ class CatalogItem {
     bool? active,
     String? description,
     String? imageReference,
+    List<CatalogPackageComponent>? components,
     bool clearDescription = false,
     bool clearImageReference = false,
+    bool clearComponents = false,
   }) {
+    final resolvedType = type ?? this.type;
+    final resolvedComponents = clearComponents
+        ? const <CatalogPackageComponent>[]
+        : (components ?? this.components);
+
     return CatalogItem(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
-      type: type ?? this.type,
+      type: resolvedType,
       name: name ?? this.name,
       category: category ?? this.category,
-      unit: unit ?? this.unit,
+      unit: resolvedType.isPackage
+          ? CatalogPackageConstants.unit
+          : (unit ?? this.unit),
       price: price ?? this.price,
       active: active ?? this.active,
       description: clearDescription ? null : (description ?? this.description),
       imageReference:
           clearImageReference ? null : (imageReference ?? this.imageReference),
+      components: _normalizedComponents(
+        type: resolvedType,
+        components: resolvedComponents,
+      ),
     );
+  }
+
+  static List<CatalogPackageComponent> _normalizedComponents({
+    required CatalogItemType type,
+    required List<CatalogPackageComponent>? components,
+  }) {
+    final source = components ?? const <CatalogPackageComponent>[];
+    if (!type.isPackage) {
+      return const [];
+    }
+
+    return List.unmodifiable(source);
   }
 
   static String? _optionalText(String? value) {

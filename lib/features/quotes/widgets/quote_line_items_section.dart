@@ -5,6 +5,8 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_card.dart';
 import '../models/quote_line_item.dart';
 import '../utils/quote_detail_presenter.dart';
+import '../utils/quote_package_line_presenter.dart';
+import 'quote_line_package_components.dart';
 
 class QuoteLineItemsSection extends StatefulWidget {
   const QuoteLineItemsSection({
@@ -121,7 +123,7 @@ class _QuoteLineItemsSectionState extends State<QuoteLineItemsSection> {
   }
 }
 
-class QuoteLineItemCard extends StatelessWidget {
+class QuoteLineItemCard extends StatefulWidget {
   const QuoteLineItemCard({
     super.key,
     required this.item,
@@ -130,7 +132,13 @@ class QuoteLineItemCard extends StatelessWidget {
   final QuoteLineItem item;
 
   @override
+  State<QuoteLineItemCard> createState() => _QuoteLineItemCardState();
+}
+
+class _QuoteLineItemCardState extends State<QuoteLineItemCard> {
+  @override
   Widget build(BuildContext context) {
+    final item = widget.item;
     final description = item.description?.trim();
 
     return AppCard(
@@ -139,12 +147,32 @@ class QuoteLineItemCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            item.name,
-            style: AppTextStyles.titleSmall,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (item.isPackageLine) const QuotePackageBadge(),
+              Text(
+                item.name,
+                style: AppTextStyles.titleSmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
+          if (item.isPackageLine) ...[
+            const SizedBox(height: 6),
+            Text(
+              QuotePackageLinePresenter.includedItemsSummary(
+                item.packageComponents,
+              ),
+              key: Key('quote_detail_package_summary_${item.catalogItemId}'),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.secondaryText,
+              ),
+            ),
+          ],
           if (description != null && description.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(
@@ -177,6 +205,14 @@ class QuoteLineItemCard extends StatelessWidget {
               color: AppColors.primary,
             ),
           ),
+          if (item.isPackageLine) ...[
+            const SizedBox(height: 8),
+            QuoteLinePackageComponents(
+              components: item.packageComponents!,
+              lineQuantity: item.quantity,
+              compact: true,
+            ),
+          ],
         ],
       ),
     );

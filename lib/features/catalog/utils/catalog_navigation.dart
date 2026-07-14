@@ -8,6 +8,7 @@ abstract class CatalogNavigation {
   static void popToCatalogList(
     BuildContext context, {
     bool showUpdatedFeedback = false,
+    CatalogListFeedback? deleteFeedback,
   }) {
     final router = GoRouter.of(context);
 
@@ -21,6 +22,12 @@ abstract class CatalogNavigation {
     if (showUpdatedFeedback) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         CatalogListFeedbackPresenter.showSnackBar(CatalogListFeedback.updated);
+      });
+    }
+
+    if (deleteFeedback != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        CatalogListFeedbackPresenter.showSnackBar(deleteFeedback);
       });
     }
   }

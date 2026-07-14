@@ -4,7 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/features/catalog/catalog_category.dart';
 import 'package:eventpro/features/catalog/catalog_item_detail_screen.dart';
 import 'package:eventpro/features/catalog/catalog_item_type.dart';
+import 'package:eventpro/features/catalog/catalog_package_constants.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
+import 'package:eventpro/features/catalog/models/catalog_package_component.dart';
 import 'package:eventpro/features/catalog/providers/catalog_image_services_provider.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/widgets/catalog_list_item.dart';
@@ -76,6 +78,39 @@ void main() {
 
       expect(find.text('Descrição'), findsOneWidget);
       expect(find.text('Potência 1000W'), findsOneWidget);
+    });
+
+    testWidgets('exibe componentes compactos para pacote', (tester) async {
+      final item = CatalogItem.fromForm(
+        type: CatalogItemType.package,
+        name: 'Pacote Festa',
+        category: CatalogCategory.dj,
+        unit: CatalogPackageConstants.unit,
+        price: 9000,
+        id: 'pkg-detail',
+        createdAt: DateTime(2024, 3, 5),
+        components: const [
+          CatalogPackageComponent(
+            catalogItemId: 'eq-1',
+            nameSnapshot: 'Caixa de som',
+            unitSnapshot: 'Unidade',
+            typeSnapshot: 'Equipamento',
+            categorySnapshot: 'Som',
+            quantityPerPackage: 2,
+          ),
+        ],
+      );
+
+      await pumpDetail(tester, item: item);
+
+      expect(find.text('Pacote'), findsWidgets);
+      expect(
+        find.byKey(const Key('catalog_detail_package_components_title')),
+        findsOneWidget,
+      );
+      expect(find.text('Itens incluídos (1)'), findsOneWidget);
+      expect(find.text('Caixa de som'), findsWidgets);
+      expect(find.text('Qtd. por pacote: 2'), findsOneWidget);
     });
 
     testWidgets('desativa item após confirmação e atualiza tela', (

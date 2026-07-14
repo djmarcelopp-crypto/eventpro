@@ -30,6 +30,7 @@ import 'utils/quote_date_formatter.dart';
 import 'utils/quote_draft_id_generator.dart';
 import 'utils/quote_form_validators.dart';
 import 'utils/quote_money.dart';
+import 'utils/quote_package_component_mapper.dart';
 import 'utils/quote_money_display.dart';
 import 'utils/quote_time_formatter.dart';
 import 'widgets/quote_catalog_item_selector.dart';
@@ -471,6 +472,11 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
           quantityText: '1',
           priceText: priceController.text,
           isExistingLine: false,
+          packageComponents: item.isPackage
+              ? QuotePackageComponentMapper.fromCatalogComponents(
+                  item.components,
+                )
+              : null,
         ),
       );
       _linesError = null;

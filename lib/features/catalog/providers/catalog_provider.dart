@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/catalog_item.dart';
+import '../models/catalog_delete_result.dart';
 
 class CatalogNotifier extends Notifier<List<CatalogItem>> {
   @override
@@ -38,6 +39,20 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
       for (final current in state)
         if (current.id == updated.id) updated else current,
     ];
+  }
+
+  CatalogDeleteResult deleteItem(String id) {
+    final exists = state.any((item) => item.id == id);
+    if (!exists) {
+      return const CatalogDeleteResult(status: CatalogDeleteStatus.notFound);
+    }
+
+    state = [
+      for (final current in state)
+        if (current.id != id) current,
+    ];
+
+    return const CatalogDeleteResult(status: CatalogDeleteStatus.deleted);
   }
 }
 

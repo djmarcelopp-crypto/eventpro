@@ -105,7 +105,15 @@ Future<void> scrollQuoteDetailUntilVisible(
     await tester.drag(scrollView, const Offset(0, -250));
     await tester.pumpAndSettle();
   }
+
   await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+}
+
+Future<void> expandQuoteStatusHistory(WidgetTester tester) async {
+  final toggle = find.byKey(const Key('quote_status_history_toggle'));
+  await scrollQuoteDetailUntilVisible(tester, toggle);
+  await tester.tap(toggle);
   await tester.pumpAndSettle();
 }
 

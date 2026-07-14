@@ -7,16 +7,16 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_card.dart';
 import 'models/quote.dart';
-import 'models/quote_line_item.dart';
 import 'models/quote_status.dart';
 import 'providers/quotes_provider.dart';
 import 'quote_list_feedback.dart';
 import 'utils/quote_detail_presenter.dart';
 import 'utils/quotes_navigation.dart';
 import 'widgets/quote_company_snapshot_missing_notice.dart';
-import 'widgets/quote_detail_row.dart';
 import 'widgets/quote_detail_section.dart';
+import 'widgets/quote_line_items_section.dart';
 import 'widgets/quote_not_found_state.dart';
+import 'widgets/quote_pdf_actions_section.dart';
 import 'widgets/quote_status_actions.dart';
 import 'widgets/quote_status_badge.dart';
 import 'widgets/quote_status_history_list.dart';
@@ -34,7 +34,7 @@ class QuoteDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
-  static const _maxContentWidth = 720.0;
+  static const _maxContentWidth = 1100.0;
 
   bool _transitioning = false;
 
@@ -223,6 +223,8 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                       items: headerItems,
                     ),
                     const SizedBox(height: 16),
+                    QuotePdfActionsSection(quote: resolvedQuote),
+                    const SizedBox(height: 16),
                     QuoteDetailSection(
                       title: 'Cliente',
                       items: clientItems,
@@ -246,7 +248,7 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    _ItemsSection(items: resolvedQuote.items),
+                    QuoteLineItemsSection(items: resolvedQuote.items),
                     const SizedBox(height: 16),
                     QuoteDetailSection(
                       title: 'Financeiro',
@@ -292,10 +294,6 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                         ),
                       ),
                     ],
-                    const SizedBox(height: 16),
-                    QuoteStatusHistoryList(
-                      entries: resolvedQuote.statusHistory,
-                    ),
                     const SizedBox(height: 24),
                     QuoteStatusActions(
                       quote: resolvedQuote,
@@ -357,6 +355,10 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                               )
                           : null,
                     ),
+                    const SizedBox(height: 16),
+                    QuoteStatusHistoryList(
+                      entries: resolvedQuote.statusHistory,
+                    ),
                   ],
                 ),
               ),
@@ -364,61 +366,6 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
           );
         },
       ),
-    );
-  }
-}
-
-class _ItemsSection extends StatelessWidget {
-  const _ItemsSection({required this.items});
-
-  final List<QuoteLineItem> items;
-
-  @override
-  Widget build(BuildContext context) {
-    if (items.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return AppCard(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Itens', style: AppTextStyles.titleSmall),
-          const SizedBox(height: 12),
-          for (var i = 0; i < items.length; i++) ...[
-            if (i > 0) const Divider(height: 24),
-            _ItemCard(item: items[i]),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _ItemCard extends StatelessWidget {
-  const _ItemCard({required this.item});
-
-  final QuoteLineItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    final lineItems = QuoteLinePresenter.lineItems(item);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          QuoteLinePresenter.lineTitle(item),
-          style: AppTextStyles.titleSmall,
-        ),
-        const SizedBox(height: 8),
-        for (final lineItem in lineItems)
-          QuoteDetailRow(
-            label: lineItem.label,
-            value: lineItem.value,
-          ),
-      ],
     );
   }
 }

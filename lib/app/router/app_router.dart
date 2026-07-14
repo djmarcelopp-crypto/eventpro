@@ -6,6 +6,7 @@ import '../../features/catalog/new_catalog_item_screen.dart';
 import '../../features/clients/client_detail_screen.dart';
 import '../../features/clients/clients_screen.dart';
 import '../../features/clients/new_client_screen.dart';
+import '../../features/quotes/pdf/quote_pdf_preview_screen.dart';
 import '../../features/quotes/new_quote_screen.dart';
 import '../../features/quotes/quote_detail_screen.dart';
 import '../../features/quotes/quotes_screen.dart';
@@ -25,6 +26,8 @@ abstract class AppRoutes {
   static String quotesDetail(String id) => '$quotes/$id';
 
   static String quotesEdit(String id) => '$quotes/$id/edit';
+
+  static String quotesPdf(String id) => '$quotes/$id/pdf';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -93,6 +96,12 @@ abstract class AppRouter {
                 path: 'edit',
                 builder: (context, state) => NewQuoteScreen(
                   quoteId: state.pathParameters['id'],
+                ),
+              ),
+              GoRoute(
+                path: 'pdf',
+                builder: (context, state) => QuotePdfPreviewScreen(
+                  quoteId: state.pathParameters['id']!,
                 ),
               ),
             ],

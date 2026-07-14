@@ -22,6 +22,7 @@ class CatalogScreen extends ConsumerStatefulWidget {
 
 class _CatalogScreenState extends ConsumerState<CatalogScreen> {
   static const _maxContentWidth = 960.0;
+  static const _cardMainAxisExtent = 315.0;
 
   Future<void> _openItemDetail(String itemId) async {
     await context.push<void>(AppRoutes.catalogDetail(itemId));
@@ -87,14 +88,12 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
             )
           : LayoutBuilder(
               builder: (context, constraints) {
-                final crossAxisCount = _crossAxisCount(constraints.maxWidth);
-                final horizontalPadding = 24.0;
-                final spacing = 16.0;
-                final availableWidth = constraints.maxWidth -
-                    (horizontalPadding * 2) -
-                    (spacing * (crossAxisCount - 1));
-                final itemWidth = availableWidth / crossAxisCount;
-                final childAspectRatio = itemWidth / 280;
+                final contentWidth = constraints.maxWidth < _maxContentWidth
+                    ? constraints.maxWidth
+                    : _maxContentWidth;
+                final crossAxisCount = _crossAxisCount(contentWidth);
+                const horizontalPadding = 24.0;
+                const spacing = 16.0;
 
                 return Center(
                   child: ConstrainedBox(
@@ -103,12 +102,12 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                     ),
                     child: GridView.builder(
                       key: const Key('catalog_items_grid'),
-                      padding: EdgeInsets.all(horizontalPadding),
+                      padding: const EdgeInsets.all(horizontalPadding),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: spacing,
                         mainAxisSpacing: spacing,
-                        childAspectRatio: childAspectRatio,
+                        mainAxisExtent: _cardMainAxisExtent,
                       ),
                       itemCount: items.length,
                       itemBuilder: (context, index) {

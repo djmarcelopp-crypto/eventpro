@@ -7,7 +7,7 @@ import '../models/quote_status.dart';
 import '../models/quote_status_history_entry.dart';
 import '../utils/quote_detail_presenter.dart';
 
-class QuoteStatusHistoryList extends StatelessWidget {
+class QuoteStatusHistoryList extends StatefulWidget {
   const QuoteStatusHistoryList({
     super.key,
     required this.entries,
@@ -16,8 +16,15 @@ class QuoteStatusHistoryList extends StatelessWidget {
   final List<QuoteStatusHistoryEntry> entries;
 
   @override
+  State<QuoteStatusHistoryList> createState() => _QuoteStatusHistoryListState();
+}
+
+class _QuoteStatusHistoryListState extends State<QuoteStatusHistoryList> {
+  var _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    if (entries.isEmpty) {
+    if (widget.entries.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -27,11 +34,34 @@ class QuoteStatusHistoryList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Histórico de status', style: AppTextStyles.titleSmall),
-          const SizedBox(height: 12),
-          for (var i = 0; i < entries.length; i++) ...[
-            if (i > 0) const SizedBox(height: 12),
-            _HistoryEntryRow(entry: entries[i]),
+          InkWell(
+            key: const Key('quote_status_history_toggle'),
+            onTap: () => setState(() => _expanded = !_expanded),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Histórico de status (${widget.entries.length})',
+                      style: AppTextStyles.titleSmall,
+                    ),
+                  ),
+                  Icon(
+                    _expanded ? Icons.expand_less : Icons.expand_more,
+                    color: AppColors.secondaryText,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_expanded) ...[
+            const SizedBox(height: 12),
+            for (var i = 0; i < widget.entries.length; i++) ...[
+              if (i > 0) const SizedBox(height: 12),
+              _HistoryEntryRow(entry: widget.entries[i]),
+            ],
           ],
         ],
       ),

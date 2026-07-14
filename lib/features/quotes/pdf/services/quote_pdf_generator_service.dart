@@ -2,12 +2,14 @@ import 'dart:typed_data';
 
 import 'package:pdf/widgets.dart' as pw;
 
+import '../models/quote_pdf_acceptance_section.dart';
 import '../models/quote_pdf_client_section.dart';
 import '../models/quote_pdf_document_data.dart';
 import '../models/quote_pdf_event_section.dart';
 import '../models/quote_pdf_financial_summary.dart';
 import '../models/quote_pdf_line_row.dart';
 import '../models/quote_pdf_payment_section.dart';
+import '../models/quote_pdf_signature_block.dart';
 import '../theme/quote_pdf_fonts.dart';
 import '../theme/quote_pdf_theme.dart';
 import '../utils/quote_pdf_formatter.dart';
@@ -74,6 +76,12 @@ class QuotePdfGeneratorService implements QuotePdfGenerator {
                 lines: [data.proposalNotes!],
                 theme: theme,
               ),
+            ),
+          ],
+          if (data.acceptanceSection != null) ...[
+            pw.SizedBox(height: QuotePdfTheme.sectionSpacing),
+            pw.Inseparable(
+              child: _buildAcceptanceSection(data.acceptanceSection!, theme),
             ),
           ],
         ],
@@ -534,6 +542,86 @@ class QuotePdfGeneratorService implements QuotePdfGenerator {
             ),
         ],
       ),
+    );
+  }
+
+  pw.Widget _buildAcceptanceSection(
+    QuotePdfAcceptanceSection section,
+    QuotePdfTheme theme,
+  ) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.all(QuotePdfTheme.blockPadding),
+      decoration: pw.BoxDecoration(
+        color: QuotePdfTheme.goldLight,
+        border: pw.Border.all(color: QuotePdfTheme.border, width: 0.6),
+        borderRadius: pw.BorderRadius.circular(4),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        children: [
+          pw.Text(section.title, style: theme.sectionTitle),
+          pw.SizedBox(height: 6),
+          pw.Text(section.declarationText, style: theme.body),
+          pw.SizedBox(height: 6),
+          pw.Text(section.localAndDateLine, style: theme.body),
+          if (section.approvedAtLabel != null) ...[
+            pw.SizedBox(height: 4),
+            pw.Text(section.approvedAtLabel!, style: theme.caption),
+          ],
+          pw.SizedBox(height: 10),
+          pw.Row(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Expanded(
+                child: _buildSignatureColumn(
+                  block: section.contractorBlock,
+                  theme: theme,
+                ),
+              ),
+              pw.SizedBox(width: 12),
+              pw.Expanded(
+                child: _buildSignatureColumn(
+                  block: section.contracteeBlock,
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+          pw.SizedBox(height: 8),
+          pw.Text(section.disclaimerText, style: theme.disclaimer),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildSignatureColumn({
+    required QuotePdfSignatureBlock block,
+    required QuotePdfTheme theme,
+  }) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+      children: [
+        pw.Text(block.roleLabel, style: theme.bodySemiBold),
+        pw.SizedBox(height: 18),
+        pw.Container(
+          height: 22,
+          decoration: pw.BoxDecoration(
+            border: pw.Border(
+              bottom: pw.BorderSide(
+                color: QuotePdfTheme.textPrimary,
+                width: 0.8,
+              ),
+            ),
+          ),
+        ),
+        pw.SizedBox(height: 6),
+        for (final line in block.identificationLines)
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: QuotePdfTheme.lineSpacing),
+            child: pw.Text(line, style: theme.caption),
+          ),
+      ],
     );
   }
 

@@ -21,6 +21,7 @@ class QuotePdfTheme {
     required this.watermarkTextStyle,
     required this.total,
     required this.compactHeaderTitle,
+    required this.disclaimer,
   });
 
   static const pageFormat = PdfPageFormat.a4;
@@ -56,6 +57,7 @@ class QuotePdfTheme {
   final pw.TextStyle watermarkTextStyle;
   final pw.TextStyle total;
   final pw.TextStyle compactHeaderTitle;
+  final pw.TextStyle disclaimer;
 
   static QuotePdfTheme create(QuotePdfFonts fonts) {
     final bodyStyle = pw.TextStyle(
@@ -137,6 +139,11 @@ class QuotePdfTheme {
         font: fonts.semiBold,
         fontSize: 9,
         color: textPrimary,
+      ),
+      disclaimer: pw.TextStyle(
+        font: fonts.regular,
+        fontSize: 7,
+        color: textSecondary,
       ),
     );
   }

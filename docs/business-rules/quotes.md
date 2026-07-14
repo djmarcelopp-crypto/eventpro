@@ -46,6 +46,13 @@ Mudança de status **não altera** snapshots, itens nem valores financeiros.
 - Nova aprovação após reabertura define um **novo** `approvedAt`.
 - `isApprovedForContract` retorna `true` quando `status == approved`.
 
+### Aprovação interna vs. assinatura (TASK-022)
+
+- Aprovação no EventPro (`status == approved`, `approvedAt`) é **controle operacional interno** — **não equivale** à assinatura física do contratante ou da contratada.
+- No PDF, `approvedAt` aparece como linha informativa (`Aprovado no sistema em: …`) somente em status **Aprovado**; não substitui as linhas de assinatura vazias.
+- **Gerar, visualizar ou exportar** o PDF **não altera** `status` nem `approvedAt`.
+- **Assinar fisicamente** o PDF impresso permanece **externo** ao estado em memória do app — o EventPro não captura nem valida essa assinatura nesta fase.
+
 ## Snapshots
 
 ### Princípio
@@ -281,12 +288,14 @@ Documentação detalhada: `docs/business-rules/pdf.md`.
 
 ### Layout
 
-Proposta comercial premium: cabeçalho centralizado, tabela de itens, resumo financeiro, pagamento, observações públicas e overlay por status (watermark/badge).
+Proposta comercial premium: cabeçalho centralizado, tabela de itens, resumo financeiro, pagamento, observações públicas, aceite bilateral (Enviado/Aprovado) e overlay por status (watermark/badge).
+
+Detalhes do aceite: `docs/business-rules/pdf.md` (seção TASK-022).
 
 ### Fora de escopo do PDF atual
 
-- Aceite e assinaturas (TASK-022)
-- Representante legal no PDF
+- Assinatura eletrônica, digital, gov.br ou ICP-Brasil
+- Captura ou validação de assinatura física no app
 - Fotos de itens
 - Detalhamento operacional de componentes de pacote (checklist de carregamento)
 - Envio automático por e-mail/WhatsApp

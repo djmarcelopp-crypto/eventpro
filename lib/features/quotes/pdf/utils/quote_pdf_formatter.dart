@@ -4,13 +4,173 @@ import '../../models/quote_client_type.dart';
 import '../../models/quote_company_snapshot.dart';
 import '../../models/quote_pix_key_type.dart';
 import '../../utils/quote_detail_presenter.dart';
+import '../models/quote_pdf_signature_block.dart';
 
 abstract class QuotePdfFormatter {
   static const proposalDateLabel = 'Data da proposta';
   static const proposalNotesLabel = 'Observações da proposta';
 
+  static const acceptanceDeclarationText =
+      'Declaro que li e estou de acordo com os itens, valores, '
+      'condições e observações desta proposta.';
+
+  static const acceptanceLocalAndDateLine =
+      'Local e data: __________________________________________';
+
+  static const acceptanceDisclaimerText =
+      'Os status registrados no EventPro servem apenas ao controle interno '
+      'e não substituem as assinaturas do contratante e da contratada.';
+
+  static const contractorRoleLabel = 'Contratante';
+  static const contracteeRoleLabel = 'Contratada';
+  static const contracteeRepresentativeRoleLabel = 'Representante da contratada';
+
   static String formatProposalDate(DateTime createdAt) {
     return _formatLongDate(createdAt);
+  }
+
+  static String formatApprovedAtSystemLabel(DateTime approvedAt) {
+    return 'Aprovado no sistema em: ${_formatLongDate(approvedAt)} '
+        'às ${_formatTime(approvedAt)}';
+  }
+
+  static QuotePdfSignatureBlock buildContractorSignatureBlock(
+    QuoteClientSnapshot client,
+  ) {
+    return QuotePdfSignatureBlock(
+      roleLabel: contractorRoleLabel,
+      identificationLines: contractorIdentificationLines(client),
+    );
+  }
+
+  static QuotePdfSignatureBlock buildContracteeSignatureBlock(
+    QuoteCompanySnapshot company,
+  ) {
+    final representative = company.legalRepresentative;
+    final hasRepresentative =
+        representative != null && !representative.isEmpty;
+
+    if (hasRepresentative) {
+      return QuotePdfSignatureBlock(
+        roleLabel: contracteeRoleLabel,
+        identificationLines: contracteeIdentificationWithRepresentative(
+          company: company,
+          representative: representative,
+        ),
+      );
+    }
+
+    return QuotePdfSignatureBlock(
+      roleLabel: contracteeRepresentativeRoleLabel,
+      identificationLines: contracteeIdentificationWithoutRepresentative(
+        company.identification,
+      ),
+    );
+  }
+
+  static List<String> contractorIdentificationLines(
+    QuoteClientSnapshot client,
+  ) {
+    final lines = <String>[];
+
+    switch (client.type) {
+      case QuoteClientType.individual:
+        lines.add(client.displayName.trim());
+        final cpf = _formattedClientDocument(client);
+        if (cpf != null) {
+          lines.add('CPF $cpf');
+        }
+      case QuoteClientType.company:
+        final name = optionalText(client.legalName) ?? client.displayName.trim();
+        lines.add(name);
+        final cnpj = _formattedClientDocument(client);
+        if (cnpj != null) {
+          lines.add('CNPJ $cnpj');
+        }
+    }
+
+    return List.unmodifiable(lines);
+  }
+
+  static List<String> contracteeIdentificationWithRepresentative({
+    required QuoteCompanySnapshot company,
+    required QuoteCompanyLegalRepresentative representative,
+  }) {
+    final lines = <String>[];
+
+    final representativeName = optionalText(representative.fullName);
+    if (representativeName != null) {
+      lines.add(representativeName);
+    }
+
+    final cpf = _formattedRepresentativeCpf(representative.cpfDigits);
+    if (cpf != null) {
+      lines.add('CPF $cpf');
+    }
+
+    final role = optionalText(representative.role);
+    if (role != null) {
+      lines.add(role);
+    }
+
+    lines.addAll(
+      _companyIdentificationLines(company.identification),
+    );
+
+    return List.unmodifiable(lines);
+  }
+
+  static List<String> contracteeIdentificationWithoutRepresentative(
+    QuoteCompanyIdentification identification,
+  ) {
+    return List.unmodifiable(_companyIdentificationLines(identification));
+  }
+
+  static String companyDisplayName(QuoteCompanyIdentification identification) {
+    return optionalText(identification.legalName) ??
+        identification.tradeName.trim();
+  }
+
+  static List<String> _companyIdentificationLines(
+    QuoteCompanyIdentification identification,
+  ) {
+    final lines = <String>[companyDisplayName(identification)];
+
+    final cnpj = formatCompanyCnpj(identification.cnpjDigits);
+    if (cnpj != null) {
+      lines.add('CNPJ $cnpj');
+    }
+
+    return lines;
+  }
+
+  static String? _formattedClientDocument(QuoteClientSnapshot client) {
+    final digits = client.document?.trim() ?? '';
+    if (digits.isEmpty) {
+      return null;
+    }
+
+    final formatted = formatClientDocument(client);
+    if (formatted == '—') {
+      return null;
+    }
+
+    return formatted;
+  }
+
+  static String? _formattedRepresentativeCpf(String? digits) {
+    final normalized = digits?.trim() ?? '';
+    if (normalized.isEmpty) {
+      return null;
+    }
+
+    return _maskDigits(normalized, '###.###.###-##');
+  }
+
+  static String _formatTime(DateTime dateTime) {
+    final hour = dateTime.hour.toString().padLeft(2, '0');
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 
   static String? formatCompanyLegalLine({

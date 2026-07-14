@@ -6,6 +6,7 @@ import '../../models/quote_event_snapshot.dart';
 import '../../models/quote_line_item.dart';
 import '../../models/quote_pix_key_type.dart';
 import '../../models/quote_status.dart';
+import '../models/quote_pdf_acceptance_section.dart';
 import '../models/quote_pdf_client_section.dart';
 import '../models/quote_pdf_company_section.dart';
 import '../models/quote_pdf_document_data.dart';
@@ -13,6 +14,8 @@ import '../models/quote_pdf_event_section.dart';
 import '../models/quote_pdf_financial_summary.dart';
 import '../models/quote_pdf_line_row.dart';
 import '../models/quote_pdf_payment_section.dart';
+import 'quote_pdf_acceptance_policy.dart';
+import 'quote_pdf_acceptance_section_assembler.dart';
 import 'quote_pdf_eligibility.dart';
 import 'quote_pdf_formatter.dart';
 import 'quote_pdf_status_policy.dart';
@@ -68,6 +71,7 @@ abstract class QuotePdfDocumentBuilder {
         ),
         payment: _buildPaymentSection(companySnapshot.payment),
         proposalNotes: QuotePdfFormatter.optionalText(quote.notes),
+        acceptanceSection: _buildAcceptanceSection(quote),
         footerProfessionalText: QuotePdfFormatter.composeFooterProfessionalText(
           tradeName: companySnapshot.identification.tradeName,
           website: companySnapshot.contact.website,
@@ -174,5 +178,21 @@ abstract class QuotePdfDocumentBuilder {
     );
 
     return section.isEmpty ? null : section;
+  }
+
+  static QuotePdfAcceptanceSection? _buildAcceptanceSection(Quote quote) {
+    if (!QuotePdfAcceptancePolicy.shouldIncludeAcceptanceSection(quote.status)) {
+      return null;
+    }
+
+    final approvedAt = quote.status == QuoteStatus.approved
+        ? quote.approvedAt
+        : null;
+
+    return QuotePdfAcceptanceSectionAssembler.assemble(
+      clientSnapshot: quote.clientSnapshot,
+      companySnapshot: quote.companySnapshot!,
+      approvedAt: approvedAt,
+    );
   }
 }

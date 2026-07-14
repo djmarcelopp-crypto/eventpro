@@ -31,8 +31,50 @@ Orçamentos legados sem empresa emissora não geram PDF até existir snapshot (a
 
 - `internalNotes` do orçamento
 - Chave PIX e dados internos nos **detalhes** da tela (PIX aparece no PDF quando presente no snapshot)
-- Representante legal (capturado no snapshot; renderização prevista na TASK-022)
 - Fotos de itens do catálogo
+
+## Aceite e assinaturas (TASK-022)
+
+### Elegibilidade da seção
+
+| Status | Seção de aceite |
+|--------|-----------------|
+| Enviado | Presente |
+| Aprovado | Presente |
+| Rascunho, Recusado, Cancelado | **Ausente** |
+
+Preview e exportação do PDF continuam disponíveis em todos os status.
+
+### Conteúdo
+
+- Título **Aceite da proposta** com declaração fixa de concordância
+- Linha **Local e data** em branco para preenchimento manual na impressão
+- Em **Aprovado** com `approvedAt`: linha operacional `Aprovado no sistema em: {data} às {hora}`
+- Duas colunas com **linhas físicas de assinatura** vazias
+- Dados de identificação impressos **abaixo** das linhas (contratante e contratada)
+- Representante legal da contratada quando capturado no snapshot
+- Aviso operacional em fonte menor (disclaimer)
+
+### Fonte de dados
+
+Somente snapshots congelados do `Quote`:
+
+- `QuoteClientSnapshot` → contratante (PF: nome + CPF; PJ: razão social + CNPJ)
+- `QuoteCompanySnapshot` → contratada e representante legal
+- `Quote.approvedAt` → label operacional (somente status Aprovado)
+
+O gerador **não consulta** Settings, Clientes, Catálogo nem providers. `createdAt` não é usado como data de assinatura. `addressSummary` não é analisado para preencher cidade.
+
+### Layout
+
+- Seção posicionada após Pagamento e Observações
+- Bloco inteiro em `pw.Inseparable` — em multipáginas, migra integralmente para a última página
+- Sem captura de assinatura, imagem de rubrica, certificado, hash ou trilha de auditoria nesta fase
+- Sem assinatura eletrônica ou digital
+
+### Disclaimer
+
+> Os status registrados no EventPro servem apenas ao controle interno e não substituem as assinaturas do contratante e da contratada.
 
 ## Status e overlay visual
 
@@ -54,7 +96,7 @@ Documento formatado como **proposta comercial premium**:
 - Folha A4 branca (economia de tinta na impressão)
 - Tabela de itens com cabeçalho dourado
 - Unidades compactas apenas na apresentação (`un.`, `m²`, etc.)
-- Seções Pagamento e Observações indivisíveis (sem título órfão em quebra de página)
+- Seções Pagamento, Observações e Aceite indivisíveis (sem título órfão em quebra de página)
 - Multipáginas com cabeçalho compacto a partir da página 2
 
 ## Preview (Premium Dark)
@@ -98,14 +140,14 @@ Motivo: `file_picker` no desktop não grava bytes de forma confiável quando pas
 
 ## Limitações atuais
 
-- Sem bloco de aceite/assinaturas (TASK-022)
-- Sem assinatura eletrônica
+- Assinatura física apenas (linhas vazias); sem assinatura eletrônica ou digital
+- PDF assinado manualmente permanece externo ao estado do app
+- Geração/exportação do PDF não altera status nem `approvedAt`
 - Sem envio automático ao cliente
 - Sem armazenamento persistente do arquivo gerado no app
 - Sem fotos de itens
 
 ## Evolução futura
 
-- TASK-022: bloco de aceite bilateral com linhas de assinatura vazias
 - Assinatura eletrônica com trilha de auditoria (fora do escopo atual)
 - Contrato PDF (módulo Contratos)

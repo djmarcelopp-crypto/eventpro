@@ -80,7 +80,7 @@ Um orçamento é um **documento congelado**. Alterações futuras em Clientes, C
 - Logo copiado para área imutável de Quotes (`quotes/company-assets/...`); referência opaca no snapshot.
 - Alterações posteriores em Configurações **não propagam** para orçamentos já salvos.
 - Ação explícita **"Atualizar dados da empresa"** no orçamento fica para etapa futura.
-- PDF e contrato usarão exclusivamente o snapshot (não implementados nesta fase).
+- PDF usa exclusivamente o snapshot (TASK-020); contrato permanece futuro.
 - Estado ainda em memória (provider); persistência Firebase em etapa futura.
 
 #### Campos capturados
@@ -233,6 +233,43 @@ Composição prevista:
 - `/quotes/new` — formulário de novo orçamento (salva como rascunho).
 - `/quotes/:id` — detalhes do orçamento.
 - `/quotes/:id/edit` — edição (somente rascunho).
+
+- `/quotes/:id/pdf` — preview do PDF do orçamento (TASK-020).
+
+## PDF de orçamento (TASK-020)
+
+Documentação detalhada: `docs/business-rules/pdf.md`.
+
+### Princípios
+
+- Geração **offline** a partir dos snapshots congelados do `Quote`.
+- **Não consulta** Settings, Clientes ou Catálogo atuais.
+- `companySnapshot` obrigatório; orçamentos legados sem empresa exibem bloqueio amigável.
+- `internalNotes` **nunca** entra no PDF.
+- Preview e exportação disponíveis em **todos** os status.
+
+### Acesso
+
+- Seção **Documento PDF** nos detalhes (`/quotes/:id`): Visualizar e Salvar/Compartilhar.
+- Preview em tela dedicada: `/quotes/:id/pdf`.
+
+### Exportação
+
+| Plataforma | Comportamento |
+|------------|---------------|
+| Android / iOS | Compartilhamento via sheet nativo |
+| Desktop | Diálogo de destino + gravação manual dos bytes (`flush: true`) |
+
+### Layout
+
+Proposta comercial premium: cabeçalho centralizado, tabela de itens, resumo financeiro, pagamento, observações públicas e overlay por status (watermark/badge).
+
+### Fora de escopo do PDF atual
+
+- Aceite e assinaturas (TASK-022)
+- Representante legal no PDF
+- Fotos de itens
+- Envio automático por e-mail/WhatsApp
 
 ## Histórico de status (TASK-017)
 

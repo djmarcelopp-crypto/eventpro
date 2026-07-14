@@ -23,6 +23,15 @@ abstract class QuotesNavigation {
     context.go(AppRoutes.quotes);
   }
 
+  static void leaveQuotePdf(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    context.go(AppRoutes.quotes);
+  }
+
   static void popToQuoteDetail(
     BuildContext context,
     String quoteId, {

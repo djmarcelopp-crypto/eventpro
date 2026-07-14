@@ -74,7 +74,7 @@ void main() {
       expect(find.text('Maria Silva'), findsWidgets);
       expect(find.text('Evento'), findsOneWidget);
       expect(find.text('Casamento Ana'), findsOneWidget);
-      expect(find.text('Itens'), findsOneWidget);
+      expect(find.text('Itens do orçamento (1)'), findsOneWidget);
       expect(find.text('Caixa de som'), findsOneWidget);
       expect(find.text('Financeiro'), findsOneWidget);
       expect(find.text('Observações para o cliente'), findsOneWidget);
@@ -84,7 +84,10 @@ void main() {
       );
       expect(find.text('Observações internas'), findsOneWidget);
       expect(find.text('Nota interna da equipe'), findsOneWidget);
-      expect(find.text('Histórico de status'), findsOneWidget);
+      expect(find.text('Histórico de status (1)'), findsOneWidget);
+
+      await expandQuoteStatusHistory(tester);
+
       expect(
         find.text('Orçamento criado como Rascunho'),
         findsOneWidget,
@@ -102,7 +105,7 @@ void main() {
       expect(find.text('Observações para o cliente'), findsNothing);
       expect(find.text('Observações internas'), findsNothing);
       expect(find.text('Cliente'), findsOneWidget);
-      expect(find.text('Itens'), findsOneWidget);
+      expect(find.text('Itens do orçamento (1)'), findsOneWidget);
       expect(find.text('Financeiro'), findsOneWidget);
     });
 
@@ -397,6 +400,7 @@ void main() {
       expect(find.text('Aprovado'), findsWidgets);
       expect(find.text('Aprovado em'), findsOneWidget);
       expect(find.text('13/julho/2026 às 10:30'), findsWidgets);
+      await expandQuoteStatusHistory(tester);
       expect(find.text('Rascunho → Enviado'), findsOneWidget);
       expect(find.text('Enviado → Aprovado'), findsOneWidget);
     });
@@ -417,6 +421,7 @@ void main() {
       final quote = container.read(quotesProvider.notifier).findById('quote-reject')!;
       expect(quote.status, QuoteStatus.rejected);
       expect(find.text('Recusado'), findsWidgets);
+      await expandQuoteStatusHistory(tester);
       expect(find.text('Enviado → Recusado'), findsOneWidget);
     });
 
@@ -730,6 +735,7 @@ void main() {
       expect(quote.statusHistory, hasLength(4));
       expect(quote.statusHistory.last.previousStatus, QuoteStatus.approved);
       expect(quote.statusHistory.last.newStatus, QuoteStatus.draft);
+      await expandQuoteStatusHistory(tester);
       expect(find.text('Aprovado → Rascunho'), findsOneWidget);
 
       await scrollQuoteDetailUntilVisible(
@@ -855,6 +861,7 @@ void main() {
         expect(finalQuote.statusHistory[2].newStatus, QuoteStatus.approved);
         expect(finalQuote.statusHistory[3].newStatus, QuoteStatus.draft);
         expect(finalQuote.statusHistory.last.newStatus, QuoteStatus.approved);
+        await expandQuoteStatusHistory(tester);
         expect(find.text('Enviado → Aprovado'), findsNWidgets(2));
         expect(find.text('Aprovado → Rascunho'), findsOneWidget);
       },

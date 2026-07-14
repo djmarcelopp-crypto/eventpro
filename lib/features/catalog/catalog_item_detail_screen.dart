@@ -12,6 +12,7 @@ import 'providers/catalog_provider.dart';
 import 'utils/catalog_detail_presenter.dart';
 import 'widgets/catalog_detail_row.dart';
 import 'widgets/catalog_item_image_view.dart';
+import 'widgets/catalog_package_detail_components.dart';
 
 class CatalogItemDetailScreen extends ConsumerWidget {
   const CatalogItemDetailScreen({
@@ -176,6 +177,12 @@ class CatalogItemDetailScreen extends ConsumerWidget {
                                   ? AppColors.warning
                                   : null,
                             ),
+                          if (resolvedItem.isPackage) ...[
+                            const SizedBox(height: 16),
+                            CatalogPackageDetailComponents(
+                              components: resolvedItem.components,
+                            ),
+                          ],
                         ],
                       ),
                     ),

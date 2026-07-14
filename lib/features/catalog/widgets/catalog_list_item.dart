@@ -19,6 +19,14 @@ class CatalogListItem extends StatelessWidget {
   final CatalogItem item;
   final VoidCallback onTap;
 
+  static String _packageSummary(CatalogItem item) {
+    final count = item.components.length;
+    if (count == 1) {
+      return '1 item incluído';
+    }
+    return '$count itens incluídos';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isActive = item.active;
@@ -96,6 +104,18 @@ class CatalogListItem extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (item.isPackage) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    _packageSummary(item),
+                    key: Key('catalog_package_summary_${item.id}'),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.secondaryText,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ],
             ),
           ),

@@ -1,10 +1,12 @@
 import '../../catalog/models/catalog_item.dart';
 import '../utils/quote_calculator.dart';
 import '../utils/quote_money.dart';
+import '../utils/quote_package_component_mapper.dart';
 import '../utils/quote_quantity_validator.dart';
+import 'quote_package_component_snapshot.dart';
 
 class QuoteLineItem {
-  const QuoteLineItem({
+  QuoteLineItem({
     this.catalogItemId,
     required this.name,
     this.description,
@@ -12,7 +14,10 @@ class QuoteLineItem {
     required this.quantity,
     required this.unitPriceCents,
     required this.lineTotalCents,
-  });
+    List<QuotePackageComponentSnapshot>? packageComponents,
+  }) : packageComponents = packageComponents == null
+            ? null
+            : List.unmodifiable(packageComponents);
 
   final String? catalogItemId;
   final String name;
@@ -21,6 +26,9 @@ class QuoteLineItem {
   final double quantity;
   final int unitPriceCents;
   final int lineTotalCents;
+  final List<QuotePackageComponentSnapshot>? packageComponents;
+
+  bool get isPackageLine => packageComponents != null;
 
   factory QuoteLineItem.fromCatalogItem(
     CatalogItem item, {
@@ -31,6 +39,10 @@ class QuoteLineItem {
     }
 
     final unitPriceCents = QuoteMoney.reaisToCents(item.price);
+    final packageComponents = item.isPackage
+        ? QuotePackageComponentMapper.fromCatalogComponents(item.components)
+        : null;
+
     return QuoteLineItem(
       catalogItemId: item.id,
       name: item.name,
@@ -42,6 +54,7 @@ class QuoteLineItem {
         quantity: quantity,
         unitPriceCents: unitPriceCents,
       ),
+      packageComponents: packageComponents,
     );
   }
 
@@ -53,9 +66,15 @@ class QuoteLineItem {
     double? quantity,
     int? unitPriceCents,
     int? lineTotalCents,
+    List<QuotePackageComponentSnapshot>? packageComponents,
     bool clearCatalogItemId = false,
     bool clearDescription = false,
+    bool clearPackageComponents = false,
   }) {
+    final resolvedPackageComponents = clearPackageComponents
+        ? null
+        : (packageComponents ?? this.packageComponents);
+
     return QuoteLineItem(
       catalogItemId:
           clearCatalogItemId ? null : (catalogItemId ?? this.catalogItemId),
@@ -65,6 +84,7 @@ class QuoteLineItem {
       quantity: quantity ?? this.quantity,
       unitPriceCents: unitPriceCents ?? this.unitPriceCents,
       lineTotalCents: lineTotalCents ?? this.lineTotalCents,
+      packageComponents: resolvedPackageComponents,
     );
   }
 }

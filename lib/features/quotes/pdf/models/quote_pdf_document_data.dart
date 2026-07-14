@@ -1,3 +1,4 @@
+import 'quote_pdf_acceptance_section.dart';
 import 'quote_pdf_client_section.dart';
 import 'quote_pdf_company_section.dart';
 import 'quote_pdf_event_section.dart';
@@ -20,6 +21,7 @@ class QuotePdfDocumentData {
     required this.financial,
     this.payment,
     this.proposalNotes,
+    this.acceptanceSection,
     required this.footerProfessionalText,
     required this.footerProposalDateLabel,
   });
@@ -36,6 +38,7 @@ class QuotePdfDocumentData {
   final QuotePdfFinancialSummary financial;
   final QuotePdfPaymentSection? payment;
   final String? proposalNotes;
+  final QuotePdfAcceptanceSection? acceptanceSection;
   final String footerProfessionalText;
   final String footerProposalDateLabel;
 }

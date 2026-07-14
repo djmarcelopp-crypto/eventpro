@@ -54,131 +54,186 @@ class _QuoteCatalogItemSelectorSheetState
   Widget build(BuildContext context) {
     final activeItems = _activeItems;
     final hasAnyActive = widget.items.any((item) => item.active);
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.85;
 
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: MediaQuery.viewInsetsOf(context).bottom + 24,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Adicionar item do catálogo',
-              style: AppTextStyles.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            AppTextField(
-              key: const Key('quote_catalog_search_field'),
-              label: 'Buscar item',
-              controller: _searchController,
-              onChanged: (value) => setState(() => _query = value),
-            ),
-            const SizedBox(height: 16),
-            if (!hasAnyActive) ...[
+      child: SizedBox(
+        height: maxHeight,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.viewInsetsOf(context).bottom + 24,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               Text(
-                'Nenhum item ativo no catálogo. Cadastre um item para '
-                'continuar o orçamento.',
-                style: AppTextStyles.bodyMedium,
+                'Adicionar item do cat?logo',
+                style: AppTextStyles.titleMedium,
               ),
               const SizedBox(height: 16),
-              PrimaryButton(
-                key: const Key('quote_register_catalog_item_button'),
-                label: 'Cadastrar item',
-                onPressed: _openNewCatalogItem,
+              AppTextField(
+                key: const Key('quote_catalog_search_field'),
+                label: 'Buscar item',
+                controller: _searchController,
+                onChanged: (value) => setState(() => _query = value),
               ),
-            ] else if (activeItems.isEmpty) ...[
-              Text(
-                'Nenhum item encontrado para a busca.',
-                style: AppTextStyles.bodyMedium,
-              ),
-            ] else
-              Flexible(
-                child: ListView.separated(
-                  shrinkWrap: true,
-                  itemCount: activeItems.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final item = activeItems[index];
-                    final isDuplicate =
-                        widget.existingCatalogItemIds.contains(item.id);
+              const SizedBox(height: 16),
+              if (!hasAnyActive) ...[
+                Text(
+                  'Nenhum item ativo no cat?logo. Cadastre um item para '
+                  'continuar o or?amento.',
+                  style: AppTextStyles.bodyMedium,
+                ),
+                const SizedBox(height: 16),
+                PrimaryButton(
+                  key: const Key('quote_register_catalog_item_button'),
+                  label: 'Cadastrar item',
+                  onPressed: _openNewCatalogItem,
+                ),
+              ] else if (activeItems.isEmpty) ...[
+                Text(
+                  'Nenhum item encontrado para a busca.',
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ] else
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: activeItems.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final item = activeItems[index];
+                      final isDuplicate =
+                          widget.existingCatalogItemIds.contains(item.id);
 
-                    return Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        key: Key('quote_catalog_option_${item.id}'),
-                        borderRadius: BorderRadius.circular(12),
-                        onTap: isDuplicate
-                            ? null
-                            : () => Navigator.of(context).pop(item),
-                        child: Opacity(
-                          opacity: isDuplicate ? 0.5 : 1,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CatalogItemImageView(
-                                    imageReference: item.imageReference,
-                                    width: 56,
-                                    height: 56,
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          key: Key('quote_catalog_option_${item.id}'),
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: isDuplicate
+                              ? null
+                              : () => Navigator.of(context).pop(item),
+                          child: Opacity(
+                            opacity: isDuplicate ? 0.5 : 1,
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CatalogItemImageView(
+                                      imageReference: item.imageReference,
+                                      width: 56,
+                                      height: 56,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.name,
-                                        style: AppTextStyles.titleSmall,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${item.category.label} • ${item.type.label}',
-                                        style: AppTextStyles.caption,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${CatalogPriceFormatter.format(item.price)} / ${item.unit}',
-                                        style: AppTextStyles.bodyMedium,
-                                      ),
-                                      if (isDuplicate) ...[
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.name,
+                                          style: AppTextStyles.titleSmall,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            if (item.isPackage) ...[
+                                              Container(
+                                                key: Key(
+                                                  'quote_catalog_package_badge_${item.id}',
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      AppColors.surfaceVariant,
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: AppColors.border,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  'Pacote',
+                                                  style: AppTextStyles.caption
+                                                      .copyWith(
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                            ],
+                                            Expanded(
+                                              child: Text(
+                                                '${item.category.label} ? ${item.type.label}',
+                                                style: AppTextStyles.caption,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        if (item.isPackage) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            item.components.length == 1
+                                                ? '1 item inclu?do'
+                                                : '${item.components.length} itens inclu?dos',
+                                            key: Key(
+                                              'quote_catalog_package_summary_${item.id}',
+                                            ),
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                              color: AppColors.secondaryText,
+                                            ),
+                                          ),
+                                        ],
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Já adicionado ao orçamento',
-                                          style: AppTextStyles.caption.copyWith(
-                                            color: AppColors.warning,
-                                          ),
+                                          '${CatalogPriceFormatter.format(item.price)} / ${item.unit}',
+                                          style: AppTextStyles.bodyMedium,
                                         ),
+                                        if (isDuplicate) ...[
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'J? adicionado ao or?amento',
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                              color: AppColors.warning,
+                                            ),
+                                          ),
+                                        ],
                                       ],
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

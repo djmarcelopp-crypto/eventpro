@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "169007340701",
+    "project_id": "eventpro-dev",
+    "storage_bucket": "eventpro-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:169007340701:android:71e71186907eb9ccc88874",
+        "android_client_info": {
+          "package_name": "com.eventpro.spike.firebase_spike"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9jXKoJ4IrO7PjKGksBNtbw_lQ_230W5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

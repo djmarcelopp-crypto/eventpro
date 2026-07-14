@@ -1,0 +1,9 @@
+rules_version = '2';
+// Cloud Storage bloqueado no Checkpoint 0 — não provisionar bucket até Blaze autorizado.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

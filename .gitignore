@@ -43,3 +43,20 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase spike (Checkpoint 0)
+tool/firebase_spike/.dart_tool/
+tool/firebase_spike/build/
+tool/firebase_spike/.idea/
+tool/firebase_spike/reports/
+tool/firebase_spike/*.iml
+
+# Firebase spike local reports (optional evidence)
+tool/firebase_spike/reports/
+
+# Node modules for Cloud Functions
+functions/node_modules/
+functions/lib/
+
+# Local Firebase project binding (use .firebaserc.example as template)
+.firebaserc

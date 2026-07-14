@@ -1,0 +1,17 @@
+# Arquivos locais do spike — não versionar
+
+.dart_tool/
+build/
+.idea/
+*.iml
+reports/
+
+# Credenciais e segredos — nunca commitar
+*service-account*.json
+*.p12
+*.pem
+.env
+.env.*
+
+# Debug tokens App Check
+*debug*token*

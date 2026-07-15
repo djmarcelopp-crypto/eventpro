@@ -21,7 +21,7 @@ class FilePickerAppImagePickerService implements AppImagePickerService {
     FilePickerResult? result;
 
     try {
-      result = await FilePicker.platform.pickFiles(
+      result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: _allowedExtensions,
         withData: true,

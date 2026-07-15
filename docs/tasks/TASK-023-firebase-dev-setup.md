@@ -174,6 +174,17 @@ flutter run -d ios \
   --dart-define=SPIKE_FIRESTORE_ONLY=true
 ```
 
+### Android Emulator
+
+```bash
+flutter run -d android \
+  --dart-define=SPIKE_RUN_LIVE=true \
+  --dart-define=SPIKE_USE_ANONYMOUS=true \
+  --dart-define=SPIKE_FIRESTORE_ONLY=true
+```
+
+> Prova validada em **Android 15 / API 35 / x86_64**. Relatório salvo em `Directory.systemTemp` (caminho absoluto no terminal).
+
 ### Resultado esperado
 
 - Console exibe JSON com `success: true` e passos `auth_sign_in`, `firestore_*`, `auth_sign_out`.
@@ -186,7 +197,7 @@ flutter run -d ios \
 | macOS / Windows | `tool/firebase_spike/reports/<platform>_live_<timestamp>.json` |
 | iOS / Android | `Directory.systemTemp` — caminho **absoluto** impresso no terminal |
 
-> No iOS Simulator, o arquivo **não** fica em `reports/`; copie do caminho exibido no console se precisar arquivar localmente.
+> No iOS Simulator e no Android Emulator, o arquivo **não** fica em `reports/`; copie do caminho exibido no console se precisar arquivar localmente.
 
 **Não** considerar válido o modo documentação (placeholders) nem testes que só detectam placeholders.
 
@@ -223,7 +234,7 @@ flutter run -d ios \
 - [x] `firebase_options.dart` gerado
 - [x] Prova macOS executada — `macos_live_1784050700344.json` em `reports/`
 - [x] Prova iOS executada — `ios_live_1784052495570.json` (systemTemp; copiar se necessário)
-- [ ] Android — aguarda Android SDK
+- [x] Prova Android executada — `android_live_1784091085312.json` (Emulator API 35; systemTemp)
 - [ ] Windows — aguarda notebook Windows
 - [ ] Storage — aguarda autorização Blaze
 

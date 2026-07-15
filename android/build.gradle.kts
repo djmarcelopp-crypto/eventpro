@@ -19,6 +19,25 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// file_picker 11.0.2 omits kotlin-android when AGP >= 9; force Kotlin so
+// FilePickerPlugin (.kt) is compiled before GeneratedPluginRegistrant.java.
+subprojects {
+    if (project.name == "file_picker") {
+        project.pluginManager.withPlugin("com.android.library") {
+            if (!project.pluginManager.hasPlugin("org.jetbrains.kotlin.android")) {
+                project.pluginManager.apply("org.jetbrains.kotlin.android")
+            }
+        }
+        project.pluginManager.withPlugin("org.jetbrains.kotlin.android") {
+            project.extensions.configure<org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension> {
+                compilerOptions {
+                    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+                }
+            }
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }

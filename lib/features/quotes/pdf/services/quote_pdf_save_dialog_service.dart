@@ -9,7 +9,7 @@ class FilePickerQuotePdfSaveDialogService implements QuotePdfSaveDialogService {
 
   @override
   Future<String?> pickSavePath({required String filename}) {
-    return FilePicker.platform.saveFile(
+    return FilePicker.saveFile(
       dialogTitle: 'Salvar PDF',
       fileName: filename,
       type: FileType.custom,

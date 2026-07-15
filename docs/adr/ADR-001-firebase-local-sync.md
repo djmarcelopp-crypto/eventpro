@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 |-------|-------|
-| **Status** | **Checkpoint 0 parcialmente concluído** — **2 de 4** plataformas validadas ao vivo (macOS, iOS Simulator) |
-| **Data** | 2026-07-14 |
+| **Status** | **Checkpoint 0 parcialmente concluído** — **3 de 4** plataformas validadas ao vivo (macOS, iOS Simulator, Android Emulator) |
+| **Data** | 2026-07-15 |
 | **Decisores** | PO (Marcelo PP), CTO, Engenharia |
 | **Contexto** | TASK-023 — persistência, autenticação e sincronização |
 
@@ -98,10 +98,10 @@ Os plugins `firebase_core`, `cloud_firestore`, `firebase_auth` e `firebase_stora
 |------------|--------------------------|---------|-----------|
 | macOS | ✅ anônimo + CRUD + logout | 🚫 bloqueado (Blaze) | **Sim** |
 | iOS Simulator | ✅ anônimo + CRUD + logout | 🚫 bloqueado (Blaze) | **Sim** |
-| Android | ⏳ SDK ausente | 🚫 | **Não** |
+| Android Emulator (API 35) | ✅ anônimo + CRUD + logout | 🚫 bloqueado (Blaze) | **Sim** |
 | Windows | ⏳ notebook pendente | 🚫 | **Não** |
 
-Evidências: relatórios `macos_live_1784050700344.json` e `ios_live_1784052495570.json` com `success: true`. Storage não foi aberto nem testado.
+Evidências: relatórios `macos_live_1784050700344.json`, `ios_live_1784052495570.json` e `android_live_1784091085312.json` com `success: true`. Storage não foi aberto nem testado.
 
 ---
 

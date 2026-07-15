@@ -2,21 +2,21 @@
 
 | Campo | Valor |
 |-------|-------|
-| **Data** | 2026-07-14 (evidências ao vivo) |
-| **Ambiente** | macOS 26.5 — Xcode 26.5 — Flutter 3.44.6 |
+| **Data** | 2026-07-15 (evidências ao vivo — Android) |
+| **Ambiente** | macOS 26.5 — Xcode 26.5 — Flutter 3.44.6 — Android 15 / API 35 |
 | **Branch** | `cursor/task-023-cloud-foundation` |
 | **Status** | **Checkpoint 0 parcialmente concluído** |
-| **Plataformas validadas ao vivo** | **2 de 4** (macOS, iOS Simulator) |
+| **Plataformas validadas ao vivo** | **3 de 4** (macOS, iOS Simulator, Android Emulator) |
 
 ---
 
 ## 1. Resumo executivo
 
-O Checkpoint 0 validou **Auth anônimo + CRUD Firestore completo + logout** em **macOS** e **iOS Simulator**, com `success: true` nos relatórios JSON. **Cloud Storage não foi testado** — permanece bloqueado (exige Blaze).
+O Checkpoint 0 validou **Auth anônimo + CRUD Firestore completo + logout** em **macOS**, **iOS Simulator** e **Android Emulator** (Android 15 / API 35 / x86_64), com `success: true` nos relatórios JSON. **Cloud Storage não foi testado** — permanece bloqueado (exige Blaze).
 
-**Android** pendente (Android SDK ausente). **Windows** pendente (notebook Windows).
+**Windows** pendente (notebook Windows).
 
-**Checkpoint A não deve ser iniciado** até decisão explícita sobre encerramento do Checkpoint 0 nas quatro plataformas.
+**Checkpoint A não deve ser iniciado** até decisão explícita sobre encerramento do Checkpoint 0 nas quatro plataformas e Storage.
 
 ---
 
@@ -36,13 +36,13 @@ O Checkpoint 0 validou **Auth anônimo + CRUD Firestore completo + logout** em *
 
 ---
 
-## 3. Matriz de validação — 2 de 4 plataformas validadas ao vivo
+## 3. Matriz de validação — 3 de 4 plataformas validadas ao vivo
 
 | Plataforma | Build | Auth + Firestore real | Storage | Validada ao vivo? |
 |------------|-------|----------------------|---------|-------------------|
 | **macOS** | ✅ | ✅ Auth anônimo + CRUD + logout | 🚫 não aberto | **Sim** |
 | **iOS Simulator** | ✅ | ✅ Auth anônimo + CRUD + logout | 🚫 não aberto | **Sim** |
-| **Android** | 🚫 SDK ausente | ⏳ pendente | 🚫 | **Não** |
+| **Android Emulator** | ✅ Android 15 / API 35 / x86_64 | ✅ Auth anônimo + CRUD + logout | 🚫 não aberto | **Sim** |
 | **Windows** | ⏳ notebook indisponível | ⏳ pendente | 🚫 | **Não** |
 
 > Validação ao vivo = relatório JSON com `success: true` e passos `auth_sign_in`, `firestore_create/read/update/delete`, `auth_sign_out`. Build sozinho não conta.
@@ -57,8 +57,9 @@ Relatórios locais (gitignored em `tool/firebase_spike/reports/`). Integridade p
 |---------|------------|---------|
 | `macos_live_1784050700344.json` | macOS | `bc3f2e9e0cd072a57756f9a051c29570b30cd744cfb9a16fe99a93fdeb9cdcf9` |
 | `ios_live_1784052495570.json` | iOS Simulator | `42ebc87ed65442bbdedbbdd7ad346f1e21d1f6445099dc5e4db53dea3a4772f3` |
+| `android_live_1784091085312.json` | Android Emulator (API 35) | `c836a12e81deb6fb78198d9da93235e204a9632f8d8c5a1ed15050c29c4cbfe5` |
 
-### Passos confirmados em ambos os relatórios
+### Passos confirmados nos três relatórios
 
 | Passo | Resultado |
 |-------|-----------|
@@ -90,11 +91,11 @@ Relatórios locais (gitignored em `tool/firebase_spike/reports/`). Integridade p
 | 3 | `firebase_options.dart` gerado | ✅ |
 | 4 | Prova ao vivo macOS | ✅ |
 | 5 | Prova ao vivo iOS Simulator | ✅ |
-| 6 | Prova Android nativa | ⏳ Android SDK ausente |
+| 6 | Prova Android nativa (Emulator API 35) | ✅ |
 | 7 | Prova Windows nativa | ⏳ notebook Windows |
 | 8 | Compatibilidade Firebase 3.x sem override | ✅ |
 | 9 | Cloud Storage / Blaze | 🚫 bloqueado até autorização PO |
-| 10 | Decisão explícita sobre bloqueios Android/Windows | ⏳ aguarda PO |
+| 10 | Decisão explícita sobre Windows e Storage | ⏳ aguarda PO |
 
 ---
 
@@ -136,7 +137,6 @@ Sem `dependency_overrides`. Linha 4.x falha macOS — não usar.
 
 | Bloqueio | Impacto |
 |----------|---------|
-| Android SDK ausente | Android não validado |
 | Notebook Windows indisponível | Windows não validado |
 | Cloud Storage exige Blaze | Storage bloqueado (intencional) |
 
@@ -170,10 +170,9 @@ Sem `dependency_overrides`. Linha 4.x falha macOS — não usar.
 
 ## 10. Próximo passo
 
-1. Validar **Android** quando SDK estiver disponível.
-2. Validar **Windows** no notebook Windows.
-3. Decisão PO: encerrar Checkpoint 0 com 2/4 ou aguardar 4/4.
-4. Storage permanece bloqueado até autorização Blaze explícita.
+1. Validar **Windows** no notebook Windows.
+2. Decisão PO: encerrar Checkpoint 0 com 3/4 ou aguardar 4/4.
+3. Storage permanece bloqueado até autorização Blaze explícita.
 
 **Não iniciar Checkpoint A** nesta revisão.
 

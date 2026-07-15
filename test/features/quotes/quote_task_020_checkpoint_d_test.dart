@@ -59,16 +59,14 @@ void main() {
     }) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            ...quoteE2eOverrides(extra: pdfOverrides()),
-          ],
+          overrides: [...quoteE2eOverrides(extra: pdfOverrides())],
           child: const EventProApp(),
         ),
       );
       await tester.pumpAndSettle();
 
       final container = quoteTestContainer(tester);
-      seedQuote(container, draft);
+      await seedQuote(container, draft);
 
       if (location != null) {
         AppRouter.router.go(location);
@@ -122,7 +120,9 @@ void main() {
       }
     });
 
-    testWidgets('orçamento legado exibe aviso e desabilita botões', (tester) async {
+    testWidgets('orçamento legado exibe aviso e desabilita botões', (
+      tester,
+    ) async {
       useTallViewport(tester);
 
       await pumpAppWithQuote(
@@ -236,8 +236,9 @@ void main() {
         find.byKey(const Key('quote_detail_pdf_export_button')),
       );
 
-      final quoteBefore =
-          container.read(quotesProvider.notifier).findById('quote-export-success')!;
+      final quoteBefore = container
+          .read(quotesProvider.notifier)
+          .findById('quote-export-success')!;
       final historyLength = quoteBefore.statusHistory.length;
       final statusBefore = quoteBefore.status;
 
@@ -256,8 +257,9 @@ void main() {
       expect(fakeExport.exportCallCount, 2);
       expect(find.text('PDF salvo com sucesso'), findsOneWidget);
 
-      final quoteAfter =
-          container.read(quotesProvider.notifier).findById('quote-export-success')!;
+      final quoteAfter = container
+          .read(quotesProvider.notifier)
+          .findById('quote-export-success')!;
       expect(quoteAfter.status, statusBefore);
       expect(quoteAfter.statusHistory.length, historyLength);
     });
@@ -319,8 +321,9 @@ void main() {
         findsOneWidget,
       );
 
-      final quoteAfter =
-          container.read(quotesProvider.notifier).findById('quote-export-error')!;
+      final quoteAfter = container
+          .read(quotesProvider.notifier)
+          .findById('quote-export-error')!;
       expect(quoteAfter.statusHistory.length, historyLength);
     });
 

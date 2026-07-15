@@ -8,6 +8,7 @@ import 'database_path.dart';
 import 'tables.dart';
 
 part 'app_database.g.dart';
+part 'daos/clients_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -24,6 +25,7 @@ part 'app_database.g.dart';
     QuoteStatusHistory,
     QuoteNumberSequences,
   ],
+  daos: [ClientsDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);

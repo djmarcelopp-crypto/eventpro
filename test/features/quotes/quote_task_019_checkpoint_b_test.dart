@@ -49,7 +49,7 @@ void main() {
       );
 
       final container = quoteTestContainer(tester);
-      seedQuoteDependencies(container);
+      await seedQuoteDependencies(container);
 
       if (profile != null) {
         container.read(companyProfileProvider.notifier).save(profile);
@@ -96,10 +96,7 @@ void main() {
         quote.companySnapshot!.captureStatus,
         QuoteCompanyCaptureStatus.configured,
       );
-      expect(
-        quote.companySnapshot!.identification.tradeName,
-        'DJ Marcelo PP',
-      );
+      expect(quote.companySnapshot!.identification.tradeName, 'DJ Marcelo PP');
       expect(quote.companySnapshot!.capturedAt, quoteE2eFixedNow);
       expect(quote.companySnapshot!.logoReference, isNotNull);
       expect(
@@ -153,15 +150,12 @@ void main() {
       );
 
       final container = quoteTestContainer(tester);
-      seedQuote(
+      await seedQuote(
         container,
         sampleQuoteDraft(
           id: 'quote-edit-snap',
           companySnapshot: snapshot,
-        ).copyWith(
-          status: QuoteStatus.draft,
-          approvedAt: null,
-        ),
+        ).copyWith(status: QuoteStatus.draft, approvedAt: null),
       );
 
       AppRouter.router.go(AppRoutes.quotesEdit('quote-edit-snap'));
@@ -175,9 +169,9 @@ void main() {
 
       await tapQuoteSave(tester);
 
-      final quote = container.read(quotesProvider.notifier).findById(
-            'quote-edit-snap',
-          )!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-edit-snap')!;
       expect(quote.companySnapshot, snapshot);
       expect(quote.notes, 'Nota editada');
       expect(fakeLogoStorage.copyCallCount, 0);

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/app/router/app_router.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
+import 'package:eventpro/features/clients/providers/client_repository_provider.dart';
 import 'package:eventpro/features/clients/providers/clients_provider.dart';
 import 'package:eventpro/features/quotes/models/quote.dart';
 import 'package:eventpro/features/quotes/models/quote_status.dart';
@@ -11,6 +12,7 @@ import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/main.dart';
 
+import '../clients/fakes/fake_client_repository.dart';
 import 'quotes_test_helpers.dart';
 
 final quoteE2eFixedNow = DateTime(2026, 7, 13, 10, 30);
@@ -26,6 +28,7 @@ List<Override> quoteE2eOverrides({
   QuoteE2eMutableClock? mutableClock,
 }) {
   return [
+    clientRepositoryProvider.overrideWithValue(FakeClientRepository()),
     quoteClockProvider.overrideWithValue(
       () => mutableClock?.now ?? quoteE2eFixedNow,
     ),
@@ -33,22 +36,15 @@ List<Override> quoteE2eOverrides({
   ];
 }
 
-Future<void> pumpQuoteAppWithContainer(
-  WidgetTester tester,
-) async {
+Future<void> pumpQuoteAppWithContainer(WidgetTester tester) async {
   await tester.pumpWidget(
-    ProviderScope(
-      overrides: quoteE2eOverrides(),
-      child: const EventProApp(),
-    ),
+    ProviderScope(overrides: quoteE2eOverrides(), child: const EventProApp()),
   );
   await tester.pumpAndSettle();
 }
 
 ProviderContainer quoteTestContainer(WidgetTester tester) {
-  return ProviderScope.containerOf(
-    tester.element(find.byType(EventProApp)),
-  );
+  return ProviderScope.containerOf(tester.element(find.byType(EventProApp)));
 }
 
 Future<ProviderContainer> pumpQuoteAppSeeded(
@@ -58,7 +54,7 @@ Future<ProviderContainer> pumpQuoteAppSeeded(
 }) async {
   await pumpQuoteAppWithContainer(tester);
   final container = quoteTestContainer(tester);
-  seedQuote(container, draft);
+  await seedQuote(container, draft);
   if (location != null) {
     AppRouter.router.go(location);
     await tester.pumpAndSettle();
@@ -66,16 +62,18 @@ Future<ProviderContainer> pumpQuoteAppSeeded(
   return container;
 }
 
-void seedQuoteDependencies(ProviderContainer container) {
-  container.read(clientsProvider.notifier).addClient(sampleClient());
+Future<void> seedQuoteDependencies(ProviderContainer container) async {
+  final client = sampleClient();
+  await container.read(clientRepositoryProvider).insert(client);
+  container.read(clientsProvider.notifier).state = [
+    ...container.read(clientsProvider),
+    client,
+  ];
   container.read(catalogProvider.notifier).addItem(sampleCatalogItem());
 }
 
-Quote seedQuote(
-  ProviderContainer container,
-  Quote draft,
-) {
-  seedQuoteDependencies(container);
+Future<Quote> seedQuote(ProviderContainer container, Quote draft) async {
+  await seedQuoteDependencies(container);
   container.read(quotesProvider.notifier).addQuote(draft);
   return container.read(quotesProvider.notifier).findById(draft.id)!;
 }

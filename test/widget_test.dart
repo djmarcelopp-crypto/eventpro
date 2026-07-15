@@ -14,12 +14,13 @@ import 'package:eventpro/features/clients/client_list_feedback.dart';
 import 'package:eventpro/features/catalog/catalog_list_feedback.dart';
 import 'package:eventpro/main.dart';
 
+import 'features/clients/fakes/client_repository_test_overrides.dart';
 import 'features/clients/fakes/fake_cep_lookup_service.dart';
 import 'features/clients/fakes/fake_cnpj_lookup_service.dart';
 
 Widget _createTestApp({List<Override> overrides = const []}) {
   return ProviderScope(
-    overrides: overrides,
+    overrides: [...clientRepositoryOverrides(), ...overrides],
     child: const EventProApp(),
   );
 }
@@ -79,11 +80,7 @@ Future<void> _tapCatalogSave(WidgetTester tester) async {
     of: saveButton,
     matching: find.byType(Scrollable),
   );
-  await tester.scrollUntilVisible(
-    saveButton,
-    800,
-    scrollable: formScrollable,
-  );
+  await tester.scrollUntilVisible(saveButton, 800, scrollable: formScrollable);
   await tester.pumpAndSettle();
   await tester.ensureVisible(saveButton);
   await tester.pumpAndSettle();
@@ -97,11 +94,7 @@ Future<void> _tapSave(WidgetTester tester) async {
     of: saveButton,
     matching: find.byType(Scrollable),
   );
-  await tester.scrollUntilVisible(
-    saveButton,
-    800,
-    scrollable: formScrollable,
-  );
+  await tester.scrollUntilVisible(saveButton, 800, scrollable: formScrollable);
   await tester.pumpAndSettle();
   await tester.ensureVisible(saveButton);
   await tester.pumpAndSettle();
@@ -134,11 +127,7 @@ Future<void> _tapQuoteSave(WidgetTester tester) async {
     of: saveButton,
     matching: find.byType(Scrollable),
   );
-  await tester.scrollUntilVisible(
-    saveButton,
-    800,
-    scrollable: formScrollable,
-  );
+  await tester.scrollUntilVisible(saveButton, 800, scrollable: formScrollable);
   await tester.pumpAndSettle();
   await tester.ensureVisible(saveButton);
   await tester.pumpAndSettle();
@@ -171,10 +160,7 @@ Future<void> _seedClientAndCatalogItem(WidgetTester tester) async {
     find.byKey(const Key('catalog_name_field')),
     'Mesa de som',
   );
-  await tester.enterText(
-    find.byKey(const Key('catalog_price_field')),
-    '1500',
-  );
+  await tester.enterText(find.byKey(const Key('catalog_price_field')), '1500');
   await _tapCatalogSave(tester);
   await tester.pumpAndSettle();
 
@@ -204,10 +190,7 @@ Future<void> _addQuoteCatalogItem(
 
 String _quoteSummaryValue(WidgetTester tester, String key) {
   final row = find.byKey(Key(key));
-  final valueText = find.descendant(
-    of: row,
-    matching: find.byType(Text),
-  );
+  final valueText = find.descendant(of: row, matching: find.byType(Text));
   return tester.widget<Text>(valueText.last).data!;
 }
 
@@ -272,10 +255,7 @@ Future<void> _createCatalogItemAndOpenDetail(WidgetTester tester) async {
     find.byKey(const Key('catalog_name_field')),
     'Mesa de som',
   );
-  await tester.enterText(
-    find.byKey(const Key('catalog_price_field')),
-    '1500',
-  );
+  await tester.enterText(find.byKey(const Key('catalog_price_field')), '1500');
   await _tapCatalogSave(tester);
   await tester.pumpAndSettle();
 
@@ -297,8 +277,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(MaterialApp), findsOneWidget);
-    final materialApp =
-        tester.widget<MaterialApp>(find.byType(MaterialApp));
+    final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(materialApp.locale, EventProApp.locale);
     expect(materialApp.supportedLocales, contains(EventProApp.locale));
   });
@@ -342,7 +321,10 @@ void main() {
 
     expect(find.text('Nenhum item no catálogo'), findsOneWidget);
     expect(find.text('Novo item'), findsOneWidget);
-    expect(find.byKey(const Key('catalog_item_image_placeholder')), findsOneWidget);
+    expect(
+      find.byKey(const Key('catalog_item_image_placeholder')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byTooltip('Voltar'));
     await tester.pumpAndSettle();
@@ -459,7 +441,9 @@ void main() {
     expect(find.text('Módulos'), findsOneWidget);
   });
 
-  testWidgets('Exibe card Orçamentos no Dashboard', (WidgetTester tester) async {
+  testWidgets('Exibe card Orçamentos no Dashboard', (
+    WidgetTester tester,
+  ) async {
     await _pumpAppFromSplash(tester);
 
     await tester.tap(find.text('Entrar'));
@@ -775,9 +759,7 @@ void main() {
     await _tapSave(tester);
 
     expect(
-      find.text(
-        'Informe pelo menos um contato: telefone, WhatsApp ou e-mail.',
-      ),
+      find.text('Informe pelo menos um contato: telefone, WhatsApp ou e-mail.'),
       findsOneWidget,
     );
   });
@@ -800,9 +782,7 @@ void main() {
     expect(find.text('Clientes'), findsOneWidget);
     expect(find.text('Maria Silva'), findsOneWidget);
     expect(
-      find.text(
-        'Informe pelo menos um contato: telefone, WhatsApp ou e-mail.',
-      ),
+      find.text('Informe pelo menos um contato: telefone, WhatsApp ou e-mail.'),
       findsNothing,
     );
   });
@@ -947,10 +927,7 @@ void main() {
   testWidgets('Converte UF para maiúsculas', (WidgetTester tester) async {
     await _openNewClientForm(tester);
 
-    await tester.enterText(
-      find.byKey(const Key('client_state_field')),
-      'sp',
-    );
+    await tester.enterText(find.byKey(const Key('client_state_field')), 'sp');
     await tester.pumpAndSettle();
 
     expect(find.text('SP'), findsOneWidget);
@@ -1132,9 +1109,7 @@ void main() {
     await _openNewClientForm(
       tester,
       overrides: [
-        cnpjLookupServiceProvider.overrideWithValue(
-          FakeCnpjLookupService(),
-        ),
+        cnpjLookupServiceProvider.overrideWithValue(FakeCnpjLookupService()),
       ],
     );
     await _selectCompanyAndEnterCnpj(tester);
@@ -1174,9 +1149,7 @@ void main() {
       overrides: [
         cnpjLookupServiceProvider.overrideWithValue(
           FakeCnpjLookupService(
-            exception: const CnpjLookupException(
-              CnpjLookupFailure.notFound,
-            ),
+            exception: const CnpjLookupException(CnpjLookupFailure.notFound),
           ),
         ),
       ],
@@ -1186,10 +1159,7 @@ void main() {
     await tester.tap(find.byKey(const Key('cnpj_lookup_button')));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Empresa não encontrada para este CNPJ'),
-      findsOneWidget,
-    );
+    expect(find.text('Empresa não encontrada para este CNPJ'), findsOneWidget);
   });
 
   testWidgets('Mostra loading durante consulta CNPJ', (
@@ -1199,9 +1169,7 @@ void main() {
       tester,
       overrides: [
         cnpjLookupServiceProvider.overrideWithValue(
-          FakeCnpjLookupService(
-            delay: const Duration(milliseconds: 500),
-          ),
+          FakeCnpjLookupService(delay: const Duration(milliseconds: 500)),
         ),
       ],
     );
@@ -1220,9 +1188,7 @@ void main() {
     await _openNewClientForm(
       tester,
       overrides: [
-        cnpjLookupServiceProvider.overrideWithValue(
-          FakeCnpjLookupService(),
-        ),
+        cnpjLookupServiceProvider.overrideWithValue(FakeCnpjLookupService()),
       ],
     );
     await _selectCompanyAndEnterCnpj(tester);
@@ -1243,7 +1209,10 @@ void main() {
     await _openNewClientForm(tester);
 
     expect(find.byKey(const Key('client_phone_field')), findsOneWidget);
-    expect(find.byKey(const Key('client_also_whatsapp_checkbox')), findsOneWidget);
+    expect(
+      find.byKey(const Key('client_also_whatsapp_checkbox')),
+      findsOneWidget,
+    );
     expect(find.text('Este número também é WhatsApp'), findsOneWidget);
     expect(find.byKey(const Key('client_whatsapp_field')), findsOneWidget);
     expect(find.byIcon(Icons.phone), findsOneWidget);
@@ -1251,15 +1220,12 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(const Key('client_whatsapp_field')),
-        matching: find.byWidgetPredicate(
-          (widget) {
-            if (widget is! FaIcon || widget.color != AppColors.whatsapp) {
-              return false;
-            }
-            return widget.icon?.codePoint ==
-                FontAwesomeIcons.whatsapp.codePoint;
-          },
-        ),
+        matching: find.byWidgetPredicate((widget) {
+          if (widget is! FaIcon || widget.color != AppColors.whatsapp) {
+            return false;
+          }
+          return widget.icon?.codePoint == FontAwesomeIcons.whatsapp.codePoint;
+        }),
       ),
       findsOneWidget,
     );
@@ -1381,9 +1347,7 @@ void main() {
     await _openNewClientForm(
       tester,
       overrides: [
-        cepLookupServiceProvider.overrideWithValue(
-          FakeCepLookupService(),
-        ),
+        cepLookupServiceProvider.overrideWithValue(FakeCepLookupService()),
       ],
     );
 

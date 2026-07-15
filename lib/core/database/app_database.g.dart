@@ -9386,6 +9386,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_quote_history_quote_order',
     'CREATE INDEX idx_quote_history_quote_order ON quote_status_history (quote_id, sort_order)',
   );
+  late final ClientsDao clientsDao = ClientsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15692,4 +15693,16 @@ class $AppDatabaseManager {
       $$QuoteStatusHistoryTableTableManager(_db, _db.quoteStatusHistory);
   $$QuoteNumberSequencesTableTableManager get quoteNumberSequences =>
       $$QuoteNumberSequencesTableTableManager(_db, _db.quoteNumberSequences);
+}
+
+mixin _$ClientsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $ClientsTable get clients => attachedDatabase.clients;
+  ClientsDaoManager get managers => ClientsDaoManager(this);
+}
+
+class ClientsDaoManager {
+  final _$ClientsDaoMixin _db;
+  ClientsDaoManager(this._db);
+  $$ClientsTableTableManager get clients =>
+      $$ClientsTableTableManager(_db.attachedDatabase, _db.clients);
 }

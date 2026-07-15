@@ -60,9 +60,7 @@ void main() {
     }) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            ...quoteE2eOverrides(extra: pdfOverrides()),
-          ],
+          overrides: [...quoteE2eOverrides(extra: pdfOverrides())],
           child: const EventProApp(),
         ),
       );
@@ -70,8 +68,10 @@ void main() {
 
       if (seedQuote) {
         final container = quoteTestContainer(tester);
-        seedQuoteDependencies(container);
-        container.read(quotesProvider.notifier).addQuote(
+        await seedQuoteDependencies(container);
+        container
+            .read(quotesProvider.notifier)
+            .addQuote(
               buildRichQuoteAddDraft(id: quoteId).copyWith(
                 companySnapshot: sampleCompanySnapshot(),
                 subtotalCents: 300_000,
@@ -90,13 +90,22 @@ void main() {
         if (find.byKey(const Key('quote_pdf_preview')).evaluate().isNotEmpty) {
           return;
         }
-        if (find.byKey(const Key('quote_pdf_preview_blocked')).evaluate().isNotEmpty) {
+        if (find
+            .byKey(const Key('quote_pdf_preview_blocked'))
+            .evaluate()
+            .isNotEmpty) {
           return;
         }
-        if (find.byKey(const Key('quote_pdf_preview_not_found')).evaluate().isNotEmpty) {
+        if (find
+            .byKey(const Key('quote_pdf_preview_not_found'))
+            .evaluate()
+            .isNotEmpty) {
           return;
         }
-        if (find.byKey(const Key('quote_pdf_preview_error')).evaluate().isNotEmpty) {
+        if (find
+            .byKey(const Key('quote_pdf_preview_error'))
+            .evaluate()
+            .isNotEmpty) {
           return;
         }
       }
@@ -111,16 +120,17 @@ void main() {
       expect(find.byKey(const Key('quote_pdf_preview_screen')), findsOneWidget);
     });
 
-    testWidgets('exibe estado amigável quando orçamento não existe', (tester) async {
+    testWidgets('exibe estado amigável quando orçamento não existe', (
+      tester,
+    ) async {
       useWideViewport(tester);
-      await pumpPdfRoute(
-        tester,
-        quoteId: 'missing-quote',
-        seedQuote: false,
-      );
+      await pumpPdfRoute(tester, quoteId: 'missing-quote', seedQuote: false);
       await waitForPdfReady(tester);
 
-      expect(find.byKey(const Key('quote_pdf_preview_not_found')), findsOneWidget);
+      expect(
+        find.byKey(const Key('quote_pdf_preview_not_found')),
+        findsOneWidget,
+      );
       expect(find.text('Orçamento não encontrado'), findsOneWidget);
     });
 
@@ -128,31 +138,31 @@ void main() {
       useWideViewport(tester);
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            ...quoteE2eOverrides(extra: pdfOverrides()),
-          ],
+          overrides: [...quoteE2eOverrides(extra: pdfOverrides())],
           child: const EventProApp(),
         ),
       );
       await tester.pumpAndSettle();
 
       final container = quoteTestContainer(tester);
-      seedQuoteDependencies(container);
-      container.read(quotesProvider.notifier).addQuote(
-            buildRichQuoteAddDraft(id: 'quote-pdf-blocked'),
-          );
+      await seedQuoteDependencies(container);
+      container
+          .read(quotesProvider.notifier)
+          .addQuote(buildRichQuoteAddDraft(id: 'quote-pdf-blocked'));
 
       AppRouter.router.go(AppRoutes.quotesPdf('quote-pdf-blocked'));
       await waitForPdfReady(tester);
 
-      expect(find.byKey(const Key('quote_pdf_preview_blocked')), findsOneWidget);
       expect(
-        find.textContaining('dados congelados'),
+        find.byKey(const Key('quote_pdf_preview_blocked')),
         findsOneWidget,
       );
+      expect(find.textContaining('dados congelados'), findsOneWidget);
     });
 
-    testWidgets('exibe preview e botão de exportação após sucesso', (tester) async {
+    testWidgets('exibe preview e botão de exportação após sucesso', (
+      tester,
+    ) async {
       useWideViewport(tester);
       await pumpPdfRoute(tester, quoteId: 'quote-pdf-ready');
       await waitForPdfReady(tester);
@@ -182,19 +192,26 @@ void main() {
       );
     });
 
-    testWidgets('cancelamento de exportação não exibe snackbar', (tester) async {
+    testWidgets('cancelamento de exportação não exibe snackbar', (
+      tester,
+    ) async {
       useWideViewport(tester);
       fakeExport.nextResult = const QuotePdfExportCancelled();
 
       await pumpPdfRoute(tester, quoteId: 'quote-pdf-export-cancel');
       await waitForPdfReady(tester);
 
-      await tester.ensureVisible(find.byKey(const Key('quote_pdf_export_button')));
+      await tester.ensureVisible(
+        find.byKey(const Key('quote_pdf_export_button')),
+      );
       await tester.tap(find.byKey(const Key('quote_pdf_export_button')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.byKey(const Key('quote_pdf_export_error_snackbar')), findsNothing);
+      expect(
+        find.byKey(const Key('quote_pdf_export_error_snackbar')),
+        findsNothing,
+      );
     });
   });
 }

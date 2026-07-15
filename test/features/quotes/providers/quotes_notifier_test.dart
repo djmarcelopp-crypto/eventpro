@@ -11,6 +11,7 @@ import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/features/quotes/utils/quote_company_snapshot_builder.dart';
 import 'package:eventpro/features/settings/providers/company_profile_provider.dart';
+import '../../settings/fakes/company_profile_repository_test_overrides.dart';
 import '../quotes_test_helpers.dart';
 
 void main() {
@@ -20,9 +21,7 @@ void main() {
 
     ProviderContainer createContainer() {
       return ProviderContainer(
-        overrides: [
-          quoteClockProvider.overrideWithValue(() => fixedNow),
-        ],
+        overrides: [quoteClockProvider.overrideWithValue(() => fixedNow)],
       );
     }
 
@@ -73,25 +72,28 @@ void main() {
       expect(quote.statusHistory.single.changedAt, fixedNow);
     });
 
-    test('transitionStatus adiciona histórico e dupla transição inválida não duplica', () {
-      final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-history'));
+    test(
+      'transitionStatus adiciona histórico e dupla transição inválida não duplica',
+      () {
+        final notifier = container.read(quotesProvider.notifier);
+        notifier.addQuote(sampleQuoteDraft(id: 'quote-history'));
 
-      expect(
-        notifier.transitionStatus('quote-history', QuoteStatus.sent),
-        isTrue,
-      );
-      expect(
-        notifier.transitionStatus('quote-history', QuoteStatus.sent),
-        isFalse,
-      );
+        expect(
+          notifier.transitionStatus('quote-history', QuoteStatus.sent),
+          isTrue,
+        );
+        expect(
+          notifier.transitionStatus('quote-history', QuoteStatus.sent),
+          isFalse,
+        );
 
-      final quote = notifier.findById('quote-history')!;
-      expect(quote.statusHistory, hasLength(2));
-      expect(quote.statusHistory.last.previousStatus, QuoteStatus.draft);
-      expect(quote.statusHistory.last.newStatus, QuoteStatus.sent);
-      expect(quote.statusHistory.last.changedAt, fixedNow);
-    });
+        final quote = notifier.findById('quote-history')!;
+        expect(quote.statusHistory, hasLength(2));
+        expect(quote.statusHistory.last.previousStatus, QuoteStatus.draft);
+        expect(quote.statusHistory.last.newStatus, QuoteStatus.sent);
+        expect(quote.statusHistory.last.changedAt, fixedNow);
+      },
+    );
 
     test('findById retorna orçamento existente ou null', () {
       final notifier = container.read(quotesProvider.notifier);
@@ -144,9 +146,7 @@ void main() {
       notifier.transitionStatus('quote-2', QuoteStatus.sent);
 
       final existing = notifier.findById('quote-2')!;
-      final attempt = existing.copyWith(
-        notes: 'Tentativa de alteração',
-      );
+      final attempt = existing.copyWith(notes: 'Tentativa de alteração');
 
       expect(notifier.updateQuote(attempt), isFalse);
       expect(notifier.findById('quote-2')?.notes, isNull);
@@ -160,10 +160,7 @@ void main() {
         notifier.transitionStatus('quote-3', QuoteStatus.approved),
         isFalse,
       );
-      expect(
-        notifier.transitionStatus('quote-3', QuoteStatus.sent),
-        isTrue,
-      );
+      expect(notifier.transitionStatus('quote-3', QuoteStatus.sent), isTrue);
       expect(notifier.findById('quote-3')?.status, QuoteStatus.sent);
     });
 
@@ -235,61 +232,65 @@ void main() {
       );
     });
 
-    test('ciclo completo draft → sent → approved → draft → sent → approved', () {
-      final t1 = DateTime(2026, 7, 13, 10, 0);
-      final t2 = DateTime(2026, 7, 13, 11, 0);
-      final t3 = DateTime(2026, 7, 13, 12, 0);
-      final t4 = DateTime(2026, 7, 13, 13, 0);
-      final t5 = DateTime(2026, 7, 13, 14, 0);
-      final t6 = DateTime(2026, 7, 13, 15, 0);
+    test(
+      'ciclo completo draft → sent → approved → draft → sent → approved',
+      () {
+        final t1 = DateTime(2026, 7, 13, 10, 0);
+        final t2 = DateTime(2026, 7, 13, 11, 0);
+        final t3 = DateTime(2026, 7, 13, 12, 0);
+        final t4 = DateTime(2026, 7, 13, 13, 0);
+        final t5 = DateTime(2026, 7, 13, 14, 0);
+        final t6 = DateTime(2026, 7, 13, 15, 0);
 
-      var currentNow = t1;
-      final cycleContainer = ProviderContainer(
-        overrides: [
-          quoteClockProvider.overrideWithValue(() => currentNow),
-        ],
-      );
-      addTearDown(cycleContainer.dispose);
+        var currentNow = t1;
+        final cycleContainer = ProviderContainer(
+          overrides: [quoteClockProvider.overrideWithValue(() => currentNow)],
+        );
+        addTearDown(cycleContainer.dispose);
 
-      final notifier = cycleContainer.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-cycle'));
+        final notifier = cycleContainer.read(quotesProvider.notifier);
+        notifier.addQuote(sampleQuoteDraft(id: 'quote-cycle'));
 
-      final created = notifier.findById('quote-cycle')!;
-      final number = created.number;
-      final items = created.items;
-      final createdAt = created.createdAt;
+        final created = notifier.findById('quote-cycle')!;
+        final number = created.number;
+        final items = created.items;
+        final createdAt = created.createdAt;
 
-      currentNow = t2;
-      notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
+        currentNow = t2;
+        notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
 
-      currentNow = t3;
-      notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
-      expect(notifier.findById('quote-cycle')!.approvedAt, t3);
+        currentNow = t3;
+        notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
+        expect(notifier.findById('quote-cycle')!.approvedAt, t3);
 
-      currentNow = t4;
-      notifier.transitionStatus('quote-cycle', QuoteStatus.draft);
-      final reopened = notifier.findById('quote-cycle')!;
-      expect(reopened.approvedAt, isNull);
+        currentNow = t4;
+        notifier.transitionStatus('quote-cycle', QuoteStatus.draft);
+        final reopened = notifier.findById('quote-cycle')!;
+        expect(reopened.approvedAt, isNull);
 
-      currentNow = t5;
-      notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
+        currentNow = t5;
+        notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
 
-      currentNow = t6;
-      notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
-      final finalQuote = notifier.findById('quote-cycle')!;
+        currentNow = t6;
+        notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
+        final finalQuote = notifier.findById('quote-cycle')!;
 
-      expect(finalQuote.approvedAt, t6);
-      expect(finalQuote.number, number);
-      expect(finalQuote.createdAt, createdAt);
-      expect(finalQuote.items, items);
-      expect(finalQuote.statusHistory, hasLength(6));
-      expect(finalQuote.statusHistory[2].newStatus, QuoteStatus.approved);
-      expect(finalQuote.statusHistory[2].changedAt, t3);
-      expect(finalQuote.statusHistory[3].previousStatus, QuoteStatus.approved);
-      expect(finalQuote.statusHistory[3].newStatus, QuoteStatus.draft);
-      expect(finalQuote.statusHistory.last.newStatus, QuoteStatus.approved);
-      expect(finalQuote.statusHistory.last.changedAt, t6);
-    });
+        expect(finalQuote.approvedAt, t6);
+        expect(finalQuote.number, number);
+        expect(finalQuote.createdAt, createdAt);
+        expect(finalQuote.items, items);
+        expect(finalQuote.statusHistory, hasLength(6));
+        expect(finalQuote.statusHistory[2].newStatus, QuoteStatus.approved);
+        expect(finalQuote.statusHistory[2].changedAt, t3);
+        expect(
+          finalQuote.statusHistory[3].previousStatus,
+          QuoteStatus.approved,
+        );
+        expect(finalQuote.statusHistory[3].newStatus, QuoteStatus.draft);
+        expect(finalQuote.statusHistory.last.newStatus, QuoteStatus.approved);
+        expect(finalQuote.statusHistory.last.changedAt, t6);
+      },
+    );
 
     group('companySnapshot', () {
       Quote draftWithSnapshot({
@@ -319,10 +320,7 @@ void main() {
           draftWithSnapshot(id: 'quote-snap', snapshot: snapshot),
         );
 
-        expect(
-          notifier.findById('quote-snap')!.companySnapshot,
-          snapshot,
-        );
+        expect(notifier.findById('quote-snap')!.companySnapshot, snapshot);
       });
 
       test('addQuote sem snapshot mantém null', () {
@@ -418,44 +416,54 @@ void main() {
         expect(sent.copyWith(notes: 'Teste').companySnapshot, snapshot);
       });
 
-      test('alteração posterior em CompanyProfile não altera snapshot', () {
-        final profileContainer = ProviderContainer(
-          overrides: [
-            quoteClockProvider.overrideWithValue(() => fixedNow),
-          ],
-        );
-        addTearDown(profileContainer.dispose);
+      test(
+        'alteração posterior em CompanyProfile não altera snapshot',
+        () async {
+          final profileContainer = ProviderContainer(
+            overrides: [
+              quoteClockProvider.overrideWithValue(() => fixedNow),
+              ...companyProfileRepositoryOverrides(),
+            ],
+          );
+          addTearDown(profileContainer.dispose);
 
-        final profileNotifier =
-            profileContainer.read(companyProfileProvider.notifier);
-        profileNotifier.save(sampleConfiguredCompanyProfile(timestamp: fixedNow));
+          final profileNotifier = profileContainer.read(
+            companyProfileProvider.notifier,
+          );
+          await profileNotifier.save(
+            sampleConfiguredCompanyProfile(timestamp: fixedNow),
+          );
 
-        final originalSnapshot = QuoteCompanySnapshotBuilder.fromProfile(
-          profile: profileContainer.read(companyProfileProvider),
-          capturedAt: fixedNow,
-        )!;
+          final originalSnapshot = QuoteCompanySnapshotBuilder.fromProfile(
+            profile: profileContainer.read(companyProfileProvider),
+            capturedAt: fixedNow,
+          )!;
 
-        final quotesNotifier = profileContainer.read(quotesProvider.notifier);
-        quotesNotifier.addQuote(
-          draftWithSnapshot(id: 'quote-profile', snapshot: originalSnapshot),
-        );
+          final quotesNotifier = profileContainer.read(quotesProvider.notifier);
+          quotesNotifier.addQuote(
+            draftWithSnapshot(id: 'quote-profile', snapshot: originalSnapshot),
+          );
 
-        profileNotifier.save(
-          sampleConfiguredCompanyProfile(timestamp: fixedNow).copyWith(
-            tradeName: 'Empresa Alterada',
-            legalName: 'Nova Razão Social LTDA',
-          ),
-        );
+          await profileNotifier.save(
+            sampleConfiguredCompanyProfile(timestamp: fixedNow).copyWith(
+              tradeName: 'Empresa Alterada',
+              legalName: 'Nova Razão Social LTDA',
+            ),
+          );
 
-        final updatedDraft = quotesNotifier.findById('quote-profile')!;
-        final updateAttempt = updatedDraft.copyWith(notes: 'Só notas mudam');
-        quotesNotifier.updateQuote(updateAttempt);
+          final updatedDraft = quotesNotifier.findById('quote-profile')!;
+          final updateAttempt = updatedDraft.copyWith(notes: 'Só notas mudam');
+          quotesNotifier.updateQuote(updateAttempt);
 
-        final quote = quotesNotifier.findById('quote-profile')!;
-        expect(quote.companySnapshot, originalSnapshot);
-        expect(quote.companySnapshot!.identification.tradeName, 'DJ Marcelo PP');
-        expect(quote.notes, 'Só notas mudam');
-      });
+          final quote = quotesNotifier.findById('quote-profile')!;
+          expect(quote.companySnapshot, originalSnapshot);
+          expect(
+            quote.companySnapshot!.identification.tradeName,
+            'DJ Marcelo PP',
+          );
+          expect(quote.notes, 'Só notas mudam');
+        },
+      );
     });
   });
 }

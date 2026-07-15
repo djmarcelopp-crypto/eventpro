@@ -13,6 +13,7 @@ import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/main.dart';
 
 import '../clients/fakes/fake_client_repository.dart';
+import '../settings/fakes/company_profile_repository_test_overrides.dart';
 import 'quotes_test_helpers.dart';
 
 final quoteE2eFixedNow = DateTime(2026, 7, 13, 10, 30);
@@ -29,6 +30,7 @@ List<Override> quoteE2eOverrides({
 }) {
   return [
     clientRepositoryProvider.overrideWithValue(FakeClientRepository()),
+    ...companyProfileRepositoryOverrides(),
     quoteClockProvider.overrideWithValue(
       () => mutableClock?.now ?? quoteE2eFixedNow,
     ),

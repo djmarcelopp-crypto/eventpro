@@ -52,7 +52,7 @@ void main() {
       await seedQuoteDependencies(container);
 
       if (profile != null) {
-        container.read(companyProfileProvider.notifier).save(profile);
+        await container.read(companyProfileProvider.notifier).save(profile);
       }
 
       AppRouter.router.go(AppRoutes.quotesNew);

@@ -190,7 +190,7 @@ void main() {
       );
 
       final container = quoteTestContainer(tester);
-      container
+      await container
           .read(companyProfileProvider.notifier)
           .save(
             sampleConfiguredCompanyProfile().copyWith(
@@ -210,7 +210,7 @@ void main() {
       expect(find.text('Snapshot Antigo'), findsWidgets);
       expect(find.text('Perfil Atual'), findsNothing);
 
-      container
+      await container
           .read(companyProfileProvider.notifier)
           .save(
             sampleConfiguredCompanyProfile().copyWith(tradeName: 'Perfil Novo'),

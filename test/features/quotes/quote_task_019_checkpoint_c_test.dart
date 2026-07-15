@@ -49,7 +49,7 @@ void main() {
       await seedQuoteDependencies(container);
 
       if (profile != null) {
-        container.read(companyProfileProvider.notifier).save(profile);
+        await container.read(companyProfileProvider.notifier).save(profile);
       }
 
       AppRouter.router.go(AppRoutes.quotes);
@@ -166,7 +166,7 @@ void main() {
 
       final container = quoteTestContainer(tester);
       await seedQuoteDependencies(container);
-      container
+      await container
           .read(companyProfileProvider.notifier)
           .save(
             sampleConfiguredCompanyProfile(
@@ -303,7 +303,7 @@ void main() {
       await tester.tap(find.byKey(const Key('quote_configure_company_button')));
       await tester.pumpAndSettle();
 
-      container
+      await container
           .read(companyProfileProvider.notifier)
           .save(
             sampleConfiguredCompanyProfile(

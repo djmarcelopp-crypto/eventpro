@@ -1,36 +1,42 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/repositories/company_profile_repository.dart';
 import '../models/company_profile.dart';
 import 'company_profile_clock_provider.dart';
+import 'company_profile_repository_provider.dart';
 
 class CompanyProfileNotifier extends Notifier<CompanyProfile?> {
-  @override
-  CompanyProfile? build() => null;
+  CompanyProfileRepository get _repository =>
+      ref.read(companyProfileRepositoryProvider);
 
   DateTime _now() => ref.read(companyProfileClockProvider)();
 
-  bool save(CompanyProfile draft) {
+  @override
+  CompanyProfile? build() => null;
+
+  Future<bool> save(CompanyProfile draft) async {
     final existing = state;
     final now = _now();
 
-    if (existing == null) {
-      state = draft.copyWith(
-        createdAt: now,
-        updatedAt: now,
-      );
-      return true;
-    }
+    final profileToSave = existing == null
+        ? draft.copyWith(createdAt: now, updatedAt: now)
+        : draft.copyWith(
+            createdAt: existing.createdAt,
+            updatedAt: now,
+            logoReference: draft.logoReference ?? existing.logoReference,
+          );
 
-    state = draft.copyWith(
-      createdAt: existing.createdAt,
-      updatedAt: now,
-      logoReference: draft.logoReference ?? existing.logoReference,
-    );
-    return true;
+    try {
+      await _repository.upsert(profileToSave);
+      state = profileToSave;
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }
 
 final companyProfileProvider =
     NotifierProvider<CompanyProfileNotifier, CompanyProfile?>(
-  CompanyProfileNotifier.new,
-);
+      CompanyProfileNotifier.new,
+    );

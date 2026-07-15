@@ -9,12 +9,15 @@ import 'package:eventpro/features/settings/providers/company_profile_provider.da
 import 'package:eventpro/core/widgets/app_text_field.dart';
 import 'package:eventpro/main.dart';
 
+import 'fakes/company_profile_repository_test_overrides.dart';
+
 void main() {
   group('Settings Checkpoint B', () {
     Future<void> pumpApp(WidgetTester tester) async {
       await tester.pumpWidget(
-        const ProviderScope(
-          child: EventProApp(),
+        ProviderScope(
+          overrides: companyProfileRepositoryOverrides(),
+          child: const EventProApp(),
         ),
       );
       await tester.pumpAndSettle();
@@ -26,11 +29,7 @@ void main() {
         of: saveButton,
         matching: find.byType(Scrollable),
       );
-      await tester.scrollUntilVisible(
-        saveButton,
-        1200,
-        scrollable: scrollable,
-      );
+      await tester.scrollUntilVisible(saveButton, 1200, scrollable: scrollable);
       await tester.pumpAndSettle();
       await tester.ensureVisible(saveButton);
       await tester.pumpAndSettle();
@@ -61,10 +60,7 @@ void main() {
         find.byKey(const Key('settings_status_badge_notConfigured')),
         findsOneWidget,
       );
-      expect(
-        find.text('Dados da empresa não configurados'),
-        findsOneWidget,
-      );
+      expect(find.text('Dados da empresa não configurados'), findsOneWidget);
     });
 
     testWidgets('Configurações abre formulário da empresa', (tester) async {
@@ -117,7 +113,9 @@ void main() {
       );
     });
 
-    testWidgets('condições de pagamento podem ser salvas sem PIX', (tester) async {
+    testWidgets('condições de pagamento podem ser salvas sem PIX', (
+      tester,
+    ) async {
       await pumpApp(tester);
       AppRouter.router.go(AppRoutes.settingsCompany);
       await tester.pumpAndSettle();
@@ -155,44 +153,43 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('settings_scroll')), findsOneWidget);
-      expect(
-        find.text('Dados da empresa salvos com sucesso'),
-        findsOneWidget,
-      );
+      expect(find.text('Dados da empresa salvos com sucesso'), findsOneWidget);
       expect(find.text('Informe o tipo e a chave PIX'), findsNothing);
     });
 
-    testWidgets('salvar perfil mínimo retorna com feedback e status incompleto',
-        (tester) async {
-      await pumpApp(tester);
-      AppRouter.router.go(AppRoutes.settingsCompany);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'salvar perfil mínimo retorna com feedback e status incompleto',
+      (tester) async {
+        await pumpApp(tester);
+        AppRouter.router.go(AppRoutes.settingsCompany);
+        await tester.pumpAndSettle();
 
-      await tester.enterText(
-        find.byKey(const Key('company_trade_name_field')),
-        'DJ Marcelo PP',
-      );
-      await tester.enterText(
-        find.byKey(const Key('company_phone_field')),
-        '67999998888',
-      );
+        await tester.enterText(
+          find.byKey(const Key('company_trade_name_field')),
+          'DJ Marcelo PP',
+        );
+        await tester.enterText(
+          find.byKey(const Key('company_phone_field')),
+          '67999998888',
+        );
 
-      await tapCompanyProfileSave(tester);
-      await tester.pump();
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tapCompanyProfileSave(tester);
+        await tester.pump();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('settings_scroll')), findsOneWidget);
-      expect(
-        find.text('Dados da empresa salvos com sucesso'),
-        findsOneWidget,
-      );
-      expect(
-        find.byKey(const Key('settings_status_badge_incomplete')),
-        findsOneWidget,
-      );
-      expect(find.textContaining('Falta configurar:'), findsOneWidget);
-    });
+        expect(find.byKey(const Key('settings_scroll')), findsOneWidget);
+        expect(
+          find.text('Dados da empresa salvos com sucesso'),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('settings_status_badge_incomplete')),
+          findsOneWidget,
+        );
+        expect(find.textContaining('Falta configurar:'), findsOneWidget);
+      },
+    );
 
     testWidgets('perfil completo exibe status configurado', (tester) async {
       await pumpApp(tester);
@@ -200,7 +197,9 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(EventProApp)),
       );
-      container.read(companyProfileProvider.notifier).save(
+      await container
+          .read(companyProfileProvider.notifier)
+          .save(
             CompanyProfile(
               tradeName: 'DJ Marcelo PP',
               legalName: 'Marcelo PP Festas LTDA',

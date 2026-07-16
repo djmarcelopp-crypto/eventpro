@@ -615,6 +615,158 @@ void main() {
         expect(row.notes, 'Fechado para reforma');
       },
     );
+
+    test(
+      'inserting a duplicate agenda block id violates the primary key constraint',
+      () async {
+        await database
+            .into(database.agendaBlocks)
+            .insert(
+              AgendaBlocksCompanion.insert(
+                id: 'block-duplicate',
+                title: 'Bloqueio original',
+                start: 1_700_000_000_000,
+                end: 1_700_003_600_000,
+                createdAt: 1_700_000_000_000,
+                updatedAt: 1_700_000_000_000,
+              ),
+            );
+
+        await expectLater(
+          database
+              .into(database.agendaBlocks)
+              .insert(
+                AgendaBlocksCompanion.insert(
+                  id: 'block-duplicate',
+                  title: 'Bloqueio duplicado',
+                  start: 1_700_100_000_000,
+                  end: 1_700_103_600_000,
+                  createdAt: 1_700_000_000_000,
+                  updatedAt: 1_700_000_000_000,
+                ),
+              ),
+          throwsA(predicate(_isUniqueConstraintViolation, 'unique constraint')),
+        );
+      },
+    );
+
+    test(
+      'agenda_blocks rejects NULL in required columns at the database level',
+      () async {
+        Future<void> insertRawWithNull(String columnName) {
+          final columns = <String, String>{
+            'id': "'raw-null-$columnName'",
+            'title': "'Bloqueio bruto'",
+            'start': '1700000000000',
+            'end': '1700003600000',
+            'created_at': '1700000000000',
+            'updated_at': '1700000000000',
+          };
+          columns[columnName] = 'NULL';
+          final columnNames = columns.keys
+              .map((name) => name == 'end' ? '"end"' : name)
+              .join(', ');
+          final values = columns.values.join(', ');
+          return database.customStatement(
+            'INSERT INTO agenda_blocks ($columnNames) VALUES ($values)',
+          );
+        }
+
+        bool isNotNullViolation(Object error) {
+          return error.toString().contains('NOT NULL constraint failed');
+        }
+
+        await expectLater(
+          insertRawWithNull('title'),
+          throwsA(predicate(isNotNullViolation, 'not null constraint')),
+        );
+        await expectLater(
+          insertRawWithNull('start'),
+          throwsA(predicate(isNotNullViolation, 'not null constraint')),
+        );
+        await expectLater(
+          insertRawWithNull('end'),
+          throwsA(predicate(isNotNullViolation, 'not null constraint')),
+        );
+
+        expect(await database.select(database.agendaBlocks).get(), isEmpty);
+      },
+    );
+
+    test(
+      'idx_agenda_blocks_start and idx_agenda_blocks_end exist and are honored by the query planner',
+      () async {
+        final indexRows = await database
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'agenda_blocks'",
+            )
+            .get();
+        final indexNames = indexRows.map((row) => row.data['name']).toSet();
+        expect(indexNames, containsAll(['idx_agenda_blocks_start', 'idx_agenda_blocks_end']));
+
+        final startPlan = await database
+            .customSelect(
+              'EXPLAIN QUERY PLAN SELECT * FROM agenda_blocks ORDER BY start',
+            )
+            .get();
+        final startPlanDetail = startPlan
+            .map((row) => row.data['detail'].toString())
+            .join(' | ');
+        expect(startPlanDetail, contains('idx_agenda_blocks_start'));
+
+        final endPlan = await database
+            .customSelect(
+              'EXPLAIN QUERY PLAN SELECT * FROM agenda_blocks WHERE "end" > 0',
+            )
+            .get();
+        final endPlanDetail = endPlan
+            .map((row) => row.data['detail'].toString())
+            .join(' | ');
+        expect(endPlanDetail, contains('idx_agenda_blocks_end'));
+      },
+    );
+
+    test(
+      'AgendaBlocksDao.getAllOrdered returns rows ordered by start regardless of insertion order',
+      () async {
+        await database.batch((batch) {
+          batch.insertAll(database.agendaBlocks, [
+            AgendaBlocksCompanion.insert(
+              id: 'block-middle',
+              title: 'Bloqueio do meio',
+              start: 1_700_050_000_000,
+              end: 1_700_053_600_000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+            AgendaBlocksCompanion.insert(
+              id: 'block-last',
+              title: 'Bloqueio final',
+              start: 1_700_100_000_000,
+              end: 1_700_103_600_000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+            AgendaBlocksCompanion.insert(
+              id: 'block-first',
+              title: 'Bloqueio inicial',
+              start: 1_700_000_000_000,
+              end: 1_700_003_600_000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+          ]);
+        });
+
+        final ordered = await database.agendaBlocksDao.getAllOrdered();
+
+        expect(ordered.map((row) => row.id).toList(), [
+          'block-first',
+          'block-middle',
+          'block-last',
+        ]);
+      },
+    );
   });
 }
 

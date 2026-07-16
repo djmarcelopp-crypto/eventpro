@@ -1,209 +1,294 @@
-# Arquitetura Oficial Inicial do EventPro
+# Arquitetura — EventPro ERP
 
-## 1. Propósito da arquitetura
+Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024).
 
-A arquitetura inicial do EventPro foi definida para apoiar o desenvolvimento de um MVP sólido, com organização clara, manutenção simples e evolução futura. O foco é priorizar a entrega rápida da versão inicial, mantendo uma base técnica limpa e preparada para crescer sem introduzir complexidade desnecessária.
+---
 
-O projeto será desenvolvido com Flutter e Dart, usando Material 3 como base visual, com uma estrutura organizada por funcionalidades em um modelo feature-first, simples e prático para o MVP.
+## 1. Propósito
 
-## 2. Princípios gerais
+Arquitetura pragmática de Clean Architecture adaptada ao MVP: separação de responsabilidades onde faz sentido, sem abstrações prematuras. Objetivo: entrega rápida, código legível e base preparada para evolução.
 
-A arquitetura inicial seguirá estes princípios:
+**Stack:** Flutter · Dart · Material 3 · Riverpod · GoRouter · Drift · SQLite
 
-- Flutter e Dart como stack principal.
-- Material 3 como sistema de interface padrão.
-- Organização por funcionalidades, em vez de organização por tipo de arquivo.
-- Uso de Riverpod para estado e injeção de dependências.
-- Uso de GoRouter para navegação.
-- Simplicidade para o MVP, evitando camadas desnecessárias.
-- Preparação para crescimento futuro sem tornar o projeto pesado ou difícil de manter.
-- Estrutura enxuta, com criação de pastas somente quando uma funcionalidade estiver em desenvolvimento.
+---
 
-## 3. Escopo inicial do MVP
+## 2. Arquitetura em camadas
 
-O MVP inicial será focado em uma versão para Windows, com a Web como segunda prioridade. As plataformas macOS e iPhone serão trabalhadas posteriormente.
+```text
+┌─────────────────────────────────────────────────────────┐
+│  Presentation (Screens, Widgets)                         │
+│  Riverpod Notifiers / Providers                         │
+├─────────────────────────────────────────────────────────┤
+│  Domain (Models, regras de negócio, validators)         │
+├─────────────────────────────────────────────────────────┤
+│  Data (Repositories, Mappers, Services)                 │
+├─────────────────────────────────────────────────────────┤
+│  Drift DAOs → SQLite                                    │
+└─────────────────────────────────────────────────────────┘
+```
 
-O MVP terá inicialmente apenas o perfil Administrador. O sistema será online-first, com sincronização e funcionamento offline deixados para uma versão futura.
+### Responsabilidades por camada
 
-A Inteligência Artificial não faz parte do MVP inicial.
+| Camada | Responsabilidade | Localização |
+|--------|------------------|-------------|
+| **Presentation** | Telas, widgets, interação do usuário | `lib/features/*/`, `lib/app/` |
+| **State** | Estado da UI, orquestração de ações | `lib/features/*/providers/` |
+| **Domain** | Modelos, enums, validadores, regras | `lib/features/*/models/`, `utils/` |
+| **Data** | Repositórios, mappers, serviços externos | `lib/features/*/data/` |
+| **Database** | Schema, DAOs, conversores | `lib/core/database/` |
+| **Core** | Tema, widgets compartilhados, lookup, mídia | `lib/core/` |
 
-As funcionalidades do MVP serão:
+---
 
-- dashboard;
-- clientes;
-- serviços e equipamentos;
-- orçamentos;
-- geração de PDF;
-- compartilhamento do orçamento;
-- configurações da empresa.
+## 3. Features
 
-## 4. Abordagem arquitetural recomendada
+Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 
-A arquitetura proposta é uma versão pragmática de Clean Architecture, adaptada ao contexto de um MVP simples e objetivo. A ideia é manter separação de responsabilidades quando ela realmente fizer sentido, evitando abstrações sem uso.
+| Feature | Pasta | Estado da persistência |
+|---------|-------|------------------------|
+| Dashboard | `dashboard/` | Sem persistência |
+| Clientes | `clients/` | ✅ Drift (CP-B) |
+| Catálogo | `catalog/` | ⏳ Em memória — CP-D pendente |
+| Orçamentos | `quotes/` | ⏳ Em memória — CP-E pendente |
+| Configurações | `settings/` | ✅ Drift (CP-C) |
 
-## 5. Estrutura inicial de pastas dentro de lib
+### Estrutura interna de uma feature (quando complexa)
 
-A estrutura inicial recomendada é a seguinte:
+```text
+lib/features/<feature>/
+  <feature>_screen.dart          # telas principais
+  providers/                     # Notifiers e providers Riverpod
+  models/                        # entidades de domínio
+  data/
+    repositories/                # interface + Drift*Repository
+    mappers/                     # domain ↔ Drift row
+    services/                    # storage, APIs, pickers
+  widgets/                       # componentes da feature
+  utils/                         # helpers, formatters, coordinators
+```
+
+Features simples podem manter arquivos na raiz da pasta sem subpastas extras.
+
+---
+
+## 4. Providers (Riverpod)
+
+Riverpod gerencia estado da UI, injeção de dependências e compartilhamento entre telas.
+
+### Padrão adotado
+
+```text
+appDatabaseProvider
+       ↓
+<feature>RepositoryProvider  →  Drift*Repository
+       ↓
+<feature>Provider (Notifier)  →  estado em memória + escrita no repositório
+```
+
+### Providers globais (`lib/core/`)
+
+| Provider | Função |
+|----------|--------|
+| `appDatabaseProvider` | Instância singleton de `AppDatabase` (Drift) |
+
+### Providers por feature (exemplos)
+
+| Provider | Feature | Tipo | Estado |
+|----------|---------|------|--------|
+| `clientsProvider` | Clientes | `Notifier<List<Client>>` | Memória + escrita SQLite |
+| `clientRepositoryProvider` | Clientes | `Provider<ClientRepository>` | — |
+| `companyProfileProvider` | Settings | `Notifier<CompanyProfile?>` | Memória + escrita SQLite |
+| `companyProfileRepositoryProvider` | Settings | `Provider<CompanyProfileRepository>` | — |
+| `catalogProvider` | Catálogo | `Notifier<List<CatalogItem>>` | Memória (CP-D pendente) |
+| `quotesProvider` | Orçamentos | `Notifier<List<Quote>>` | Memória (CP-E pendente) |
+
+### Regras
+
+- Notifiers expõem métodos `async` que persistem via repository e atualizam `state`.
+- `build()` retorna estado inicial vazio até CP-F (hidratação no startup).
+- Providers de serviço (lookup CNPJ/CEP, imagens, PDF) ficam isolados por feature ou em `core/`.
+
+---
+
+## 5. Repositories
+
+Camada de abstração entre domínio e banco. Cada feature persistida segue o mesmo padrão:
+
+```text
+<Feature>Repository          # interface abstrata
+Drift<Feature>Repository     # implementação usando AppDatabase + DAO
+<Feature>Mapper              # conversão domain ↔ Drift Companion/Row
+```
+
+### Repositories implementados
+
+| Interface | Implementação | DAO |
+|-----------|---------------|-----|
+| `ClientRepository` | `DriftClientRepository` | `ClientsDao` |
+| `CompanyProfileRepository` | `DriftCompanyProfileRepository` | `CompanyProfilesDao` |
+
+### Contrato típico
+
+```dart
+abstract class ClientRepository {
+  Future<List<Client>> listAll();
+  Future<Client?> findById(String id);
+  Future<void> insert(Client client);
+  Future<void> update(Client client);
+  Future<void> delete(String id);
+}
+```
+
+Operações de pacotes (catálogo) usarão transações no DAO para garantir atomicidade entre item e componentes.
+
+---
+
+## 6. Drift e SQLite
+
+### Visão geral
+
+- **Drift** é a camada ORM/type-safe sobre **SQLite**.
+- Banco local: arquivo `eventpro.sqlite` (path resolvido por `database_path.dart`).
+- `schemaVersion`: **1** (TASK-024 CP-A).
+- FKs habilitadas via `PRAGMA foreign_keys = ON`.
+
+### Estrutura em `lib/core/database/`
+
+```text
+lib/core/database/
+  app_database.dart       # @DriftDatabase, factory open(), migrations
+  app_database.g.dart     # código gerado (build_runner)
+  tables.dart             # definição de todas as tabelas
+  database_provider.dart  # appDatabaseProvider
+  database_path.dart      # caminho do arquivo SQLite
+  converters/
+    timestamp_converter.dart
+    civil_date_converter.dart
+  daos/
+    clients_dao.dart
+    company_profiles_dao.dart
+    # catalog_dao.dart — CP-D
+    # quotes_dao.dart  — CP-E
+```
+
+### Tabelas (schema v1)
+
+| Tabela | Feature | Status DAO |
+|--------|---------|------------|
+| `clients` | Clientes | ✅ |
+| `company_profile` | Settings | ✅ |
+| `catalog_items` | Catálogo | Schema pronto — DAO CP-D |
+| `catalog_package_components` | Catálogo | Schema pronto — DAO CP-D |
+| `quotes` + snapshots + lines + history + sequences | Orçamentos | Schema pronto — DAO CP-E |
+
+### Geração de código
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+---
+
+## 7. Fluxo de dados
+
+### Escrita (padrão CP-B/C — em uso)
+
+```text
+Usuário → Screen → Notifier.method() async
+                        │
+                        ├─► Repository.insert/update/delete()
+                        │         │
+                        │         └─► DAO → SQLite
+                        │
+                        └─► state = novo estado em memória
+```
+
+### Leitura na sessão atual
+
+- Notifiers servem estado da memória (`state`).
+- `findById` e listagens leem do `state`, não do banco diretamente.
+
+### Hidratação no startup (CP-F — pendente)
+
+```text
+main() → bootstrap async
+           │
+           └─► Repository.listAll() → Notifier.state = dados do SQLite
+```
+
+Até CP-F, reiniciar o app exibe listas vazias mesmo com dados persistidos no disco.
+
+### Imagens e arquivos
+
+- Referências (`imageReference`, `logoReference`) ficam no SQLite.
+- Arquivos binários em storage local (`local_*_storage_service.dart`).
+- Fluxo: stage → commit → referência salva no banco.
+
+---
+
+## 8. Organização das pastas
 
 ```text
 lib/
+  main.dart
   app/
+    router/app_router.dart      # GoRouter — rotas centralizadas
+    splash_screen.dart
   core/
+    database/                   # Drift, DAOs, tabelas, providers
+    theme/                      # Premium Dark
+    widgets/                    # AppCard, AppTextField, PrimaryButton
+    lookup/                     # CNPJ/CEP via BrasilAPI
+    validation/                 # CPF, CNPJ, telefone, e-mail
+    formatting/                 # máscaras brasileiras
+    media/                      # picker, storage, validação de imagem
   features/
     dashboard/
     clients/
     catalog/
-    budgets/
+    quotes/
     settings/
-  main.dart
+
+test/                           # espelha lib/features/ e lib/core/
+docs/
+  business-rules/               # regras por módulo
+  tasks/                        # histórico TASK-001 … TASK-022
 ```
 
-### 5.1 app
+### Navegação (GoRouter)
 
-Responsável por montar a aplicação, configurar a navegação principal, os provedores globais e a composição inicial da interface.
+- Rotas nomeadas centralizadas em `lib/app/router/app_router.dart`.
+- Cada fluxo principal (clientes, catálogo, orçamentos, settings) tem rota dedicada.
+- Deep links e parâmetros de rota seguem convenção snake_case nos paths.
 
-### 5.2 core
+---
 
-Contém recursos compartilhados entre todas as funcionalidades, como temas, constantes, utilidades, widgets reutilizáveis e regras comuns.
+## 9. Princípios e convenções
 
-A estrutura inicial esperada dentro de core é:
+- **Feature First** — código agrupado por funcionalidade.
+- **Simplicidade** — camadas `presentation/domain/data` só quando a feature cresce.
+- **snake_case** para arquivos; **PascalCase** para classes; **camelCase** para membros.
+- Testes espelham a estrutura de `lib/` em `test/`.
+- Firebase e sync online — **postergados**; arquitetura atual não depende deles.
 
-```text
-lib/core/
-  theme/
-  widgets/
-  lookup/       # CNPJ/CEP BrasilAPI (compartilhado)
-  validation/   # CPF, CNPJ, telefone, e-mail
-  formatting/   # máscaras brasileiras
-  media/        # picker, storage, validação de imagem
-```
+---
 
-### 5.3 features
+## 10. Testes
 
-Cada funcionalidade do MVP terá sua própria pasta, criada somente quando a implementação começar. Não serão criadas pastas vazias para módulos futuros.
+| Tipo | Escopo |
+|------|--------|
+| Unitários | Mappers, validators, calculators, policies |
+| Widget | Telas e componentes principais |
+| Integração | Repositories Drift com banco in-memory (`AppDatabase.forTesting`) |
+| E2E parcial | Fluxos de orçamento com helpers dedicados |
 
-As features iniciais são:
+Sempre executar `flutter analyze` e `flutter test` após implementação (ver `CLAUDE.md`).
 
-- dashboard
-- clients
-- catalog
-- budgets
-- settings
+---
 
-## 6. Organização interna das features
+## 11. Evolução
 
-Dentro de cada feature, a estrutura deve ser simples e opcional. As pastas presentation, domain e data serão usadas somente quando essas camadas forem realmente necessárias.
-
-A regra principal é:
-
-- se a feature for pequena e simples, pode ser implementada com poucos arquivos diretamente na pasta da feature;
-- se a complexidade crescer, então se adiciona uma organização mais explícita com presentation, domain e data.
-
-Essa abordagem evita arquivos e abstrações sem uso no início.
-
-## 7. Padrões de nomenclatura
-
-Para manter o código consistente, os padrões abaixo serão adotados:
-
-- arquivos em snake_case;
-- classes em PascalCase;
-- variáveis, funções e parâmetros em camelCase;
-- constantes em SCREAMING_SNAKE_CASE;
-- widgets em PascalCase, com nomes claros e específicos.
-
-## 8. Uso de Riverpod
-
-Riverpod será usado para:
-
-- gerenciamento de estado da interface;
-- controle de carregamento e erro;
-- injeção de dependências quando houver necessidade real;
-- compartilhamento de estado entre telas e widgets.
-
-O uso deve permanecer simples no MVP. A recomendação é evitar uma arquitetura excessiva de providers e usar apenas o necessário para manter o código legível e fácil de manter.
-
-## 9. Uso de GoRouter
-
-A navegação será organizada com GoRouter, usando rotas nomeadas e centralizadas.
-
-As regras básicas são:
-
-- cada fluxo principal deve ter uma rota clara e nomeada;
-- a configuração de rotas deve ficar em um local dedicado;
-- a navegação deve permanecer simples no MVP;
-- novas rotas devem ser adicionadas conforme as telas forem surgindo.
-
-## 10. Integração com Firebase
-
-A integração com Firebase será adicionada depois da interface e da estrutura inicial do MVP.
-
-Isso significa que a arquitetura inicial não deve depender diretamente de Firebase nas primeiras etapas. A estrutura deve permitir essa integração futura sem exigir grandes refatorações.
-
-## 11. Regras para tratamento de erros, carregamento e validação
-
-### 11.1 Tratamento de erros
-
-- erros devem ser tratados de forma explícita;
-- mensagens amigáveis devem ser exibidas ao usuário;
-- falhas de carregamento, validação ou ação devem ser representadas de forma consistente.
-
-### 11.2 Carregamento
-
-- estados de carregamento devem ser visíveis quando houver operações assíncronas;
-- telas ou componentes devem exibir estados de loading, sucesso, erro e vazio quando apropriado.
-
-### 11.3 Validação de formulários
-
-- validação deve ocorrer antes de salvar ou enviar dados;
-- mensagens de erro devem ser claras e consistentes;
-- regras de validação devem ser simples e alinhadas ao MVP.
-
-## 12. Tema Premium Dark
-
-O tema visual do EventPro seguirá o conceito Premium Dark com uma paleta baseada em preto, dourado e branco.
-
-A organização do tema deve acontecer em um local centralizado dentro de core, com separação clara para:
-
-- tema principal da aplicação;
-- esquema de cores;
-- tipografia;
-- espaçamento;
-- estilos de componentes reutilizáveis.
-
-O objetivo é manter a identidade visual consistente, sofisticada e profissional em todas as telas do MVP.
-
-## 13. Estratégia básica de testes
-
-A estratégia inicial de testes será simples e suficiente para apoiar o MVP.
-
-Os principais tipos de testes serão:
-
-- testes unitários para regras de negócio e validações simples;
-- testes de widget para telas e componentes principais;
-- testes básicos de integração somente onde houver maior risco ou complexidade.
-
-A prioridade é garantir confiabilidade para os fluxos críticos do MVP sem exagerar na quantidade de testes no início.
-
-## 14. Diretrizes de evolução
-
-A arquitetura inicial deve permitir crescimento futuro sem introduzir complexidade prematura.
-
-- novas funcionalidades devem entrar como novas features;
-- novas integrações devem ser encapsuladas sem impactar demais as telas existentes;
-- a estrutura deve permanecer previsível para novos integrantes do projeto;
-- mudanças no backend ou na interface devem ter impacto limitado no restante do sistema.
-
-## 15. Resumo da decisão arquitetural
-
-A arquitetura oficial inicial do EventPro será:
-
-- Flutter + Dart;
-- Material 3;
-- arquitetura feature-first e simples;
-- Riverpod para estado e dependências quando necessário;
-- GoRouter para navegação;
-- MVP focado em Windows;
-- perfil de administrador inicial;
-- abordagem online-first;
-- integração com Firebase postergada para depois da estrutura inicial;
-- escopo inicial limitado a dashboard, clientes, catalog, orçamentos, PDF, compartilhamento e configurações.
+- Novas features → nova pasta em `lib/features/`.
+- Nova persistência → seguir padrão Repository + DAO + Mapper + Notifier async.
+- Migrações de schema → incrementar `schemaVersion` no CP-G com plano documentado.
+- Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.

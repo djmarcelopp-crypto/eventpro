@@ -1,8 +1,8 @@
-# EventPro
+# EventPro ERP
 
 ## Visão Geral
 
-O EventPro é uma plataforma profissional para gerenciamento de empresas de eventos.
+O **EventPro ERP** é uma plataforma profissional para gerenciamento de empresas de eventos.
 
 O objetivo é centralizar toda a operação da empresa em um único sistema.
 
@@ -14,80 +14,98 @@ DJ Marcelo PP Festas e Eventos
 
 ---
 
-## Product Owner
+## Equipe
 
-Marcelo PP
-
----
-
-## CTO
-
-ChatGPT
+| Papel | Responsável |
+|-------|-------------|
+| Product Owner | Marcelo PP |
+| CTO | ChatGPT |
+| Software Engineer | Claude |
 
 ---
 
-## Software Engineer
+## Stack
 
-Claude
+| Camada | Tecnologia |
+|--------|------------|
+| Frontend | Flutter |
+| Estado | Riverpod |
+| Navegação | GoRouter |
+| Persistência local | Drift |
+| Banco local | SQLite |
+
+### Integrações futuras (fora do escopo atual)
+
+- Firebase (Auth, Firestore, Storage) — planejado para fase posterior
+- Sincronização online/offline — planejado para fase posterior
 
 ---
 
-## Tecnologias
+## Status do Projeto
 
-Frontend
-- Flutter
+### TASK-024 — Persistência local com Drift
 
-Backend
-- Firebase
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Infraestrutura Drift (tabelas, `AppDatabase`, schema v1) | ✅ Concluído |
+| **CP-B** | Persistência de clientes | ✅ Concluído |
+| **CP-C** | Persistência de configurações da empresa | ✅ Concluído |
+| **CP-D** | Persistência de catálogo e pacotes | 🔄 Próximo |
+| CP-E | Persistência de orçamentos | ⏳ Pendente |
+| CP-F | Bootstrap e hidratação no startup | ⏳ Pendente |
+| CP-G | Hardening e migrações | ⏳ Pendente |
+| CP-H | Documentação final da task | ⏳ Pendente |
 
-Banco de Dados
-- Cloud Firestore
+### Branch e commit atuais
 
-Autenticação
-- Firebase Auth
-
-Armazenamento
-- Firebase Storage
+| Campo | Valor |
+|-------|-------|
+| Branch | `cursor/task-024-local-persistence` |
+| Último commit | `0fc0e89` — `feat(settings): persist company profile locally with Drift` |
+| Próximo checkpoint | **CP-D** |
 
 ---
 
 ## Plataformas
 
-- Windows
+- Windows (prioridade MVP)
+- Web (segunda prioridade)
 - macOS
 - Android
 - iPhone
-- Web
 
 ---
 
-## Objetivos
+## Objetivos do Produto
 
 O sistema deverá possuir:
 
 - Cadastro de clientes
-- Cadastro de equipamentos
-- Agenda
-- Orçamentos
-- Contratos
-- Financeiro
-- Controle de equipe
-- Controle de estoque
+- Cadastro de equipamentos, serviços e pacotes (catálogo)
+- Orçamentos com geração de PDF
+- Configurações da empresa
 - Dashboard
-- Relatórios
-- Inteligência Artificial
+- Agenda, contratos, financeiro, equipe, estoque, relatórios e IA — **fases futuras**
+
+---
+
+## MVP em andamento
+
+Funcionalidades entregues ou em desenvolvimento no MVP:
+
+- Dashboard
+- Clientes (persistência local — CP-B)
+- Catálogo: equipamentos, serviços e pacotes
+- Orçamentos com PDF e exportação
+- Configurações da empresa (persistência local — CP-C)
 
 ---
 
 ## Tema
 
-Premium Dark
+**Premium Dark**
 
-Cores:
-
-- Preto
-- Dourado
-- Branco
+Cores: Preto · Dourado · Branco
 
 ---
 

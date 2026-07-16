@@ -318,6 +318,252 @@ void main() {
       )..where((tbl) => tbl.quoteId.equals('quote-date'))).getSingle();
       expect(event.eventDate, birthday);
     });
+
+    test(
+      'duplicate package+component pair rejects composite primary key',
+      () async {
+        await database.batch((batch) {
+          batch.insertAll(database.catalogItems, [
+            CatalogItemsCompanion.insert(
+              id: 'package-pk',
+              createdAt: 1,
+              type: 'package',
+              name: 'Pacote PK',
+              category: 'sound',
+              unit: 'pacote',
+              priceCents: 10_000,
+              active: true,
+            ),
+            CatalogItemsCompanion.insert(
+              id: 'component-pk',
+              createdAt: 1,
+              type: 'equipment',
+              name: 'Caixa PK',
+              category: 'sound',
+              unit: 'un',
+              priceCents: 2_500,
+              active: true,
+            ),
+          ]);
+          batch.insert(
+            database.catalogPackageComponents,
+            CatalogPackageComponentsCompanion.insert(
+              packageId: 'package-pk',
+              componentItemId: 'component-pk',
+              nameSnapshot: 'Caixa PK',
+              unitSnapshot: 'un',
+              typeSnapshot: 'Equipamento',
+              categorySnapshot: 'Som',
+              quantityPerPackage: 1,
+            ),
+          );
+        });
+
+        await expectLater(
+          database
+              .into(database.catalogPackageComponents)
+              .insert(
+                CatalogPackageComponentsCompanion.insert(
+                  packageId: 'package-pk',
+                  componentItemId: 'component-pk',
+                  nameSnapshot: 'Caixa PK duplicada',
+                  unitSnapshot: 'un',
+                  typeSnapshot: 'Equipamento',
+                  categorySnapshot: 'Som',
+                  quantityPerPackage: 3,
+                ),
+              ),
+          throwsA(predicate(_isUniqueConstraintViolation, 'unique constraint')),
+        );
+      },
+    );
+
+    test(
+      'deleting a quote line item cascades to its package components',
+      () async {
+        await _insertQuoteGraph(database, quoteId: 'quote-line-cascade');
+
+        await (database.delete(
+          database.quoteLineItems,
+        )..where((tbl) => tbl.id.equals('line-1'))).go();
+
+        expect(
+          await database.select(database.quoteLinePackageComponents).get(),
+          isEmpty,
+        );
+        expect(await database.select(database.quoteLineItems).get(), isEmpty);
+      },
+    );
+
+    test(
+      'reopening the database file preserves a full quote graph',
+      () async {
+        await database.close();
+
+        final freshDir = await Directory.systemTemp.createTemp(
+          'eventpro_graph_reopen_',
+        );
+        addTearDown(() async {
+          if (await freshDir.exists()) {
+            await freshDir.delete(recursive: true);
+          }
+        });
+
+        final graphFile = File('${freshDir.path}/eventpro.sqlite');
+        final writer = AppDatabase.forTesting(graphFile);
+        await writer.batch((batch) {
+          batch.insertAll(writer.clients, [
+            ClientsCompanion.insert(
+              id: 'client-graph',
+              createdAt: 1_700_000_000_000,
+              type: 'individual',
+              name: 'Cliente Grafo',
+            ),
+          ]);
+          batch.insertAll(writer.catalogItems, [
+            CatalogItemsCompanion.insert(
+              id: 'catalog-graph',
+              createdAt: 1_700_000_000_000,
+              type: 'equipment',
+              name: 'Item Grafo',
+              category: 'sound',
+              unit: 'un',
+              priceCents: 5_000,
+              active: true,
+            ),
+          ]);
+          batch.insert(
+            writer.quotes,
+            QuotesCompanion.insert(
+              id: 'quote-graph',
+              number: 'ORC-2026-0200',
+              status: 'draft',
+              subtotalCents: 10_000,
+              discountCents: 0,
+              freightCents: 0,
+              totalCents: 10_000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+          );
+          batch.insert(
+            writer.quoteClientSnapshots,
+            QuoteClientSnapshotsCompanion.insert(
+              quoteId: 'quote-graph',
+              type: 'individual',
+              displayName: 'Cliente Grafo',
+            ),
+          );
+          batch.insert(
+            writer.quoteLineItems,
+            QuoteLineItemsCompanion.insert(
+              id: 'line-graph',
+              quoteId: 'quote-graph',
+              sortOrder: 0,
+              name: 'Item Grafo',
+              unit: 'un',
+              quantity: 2,
+              unitPriceCents: 5_000,
+              lineTotalCents: 10_000,
+            ),
+          );
+          batch.insert(
+            writer.quoteStatusHistory,
+            QuoteStatusHistoryCompanion.insert(
+              id: 'history-graph',
+              quoteId: 'quote-graph',
+              sortOrder: 0,
+              newStatus: 'draft',
+              changedAt: 1_700_000_000_000,
+            ),
+          );
+        });
+        await writer.close();
+
+        final reopened = AppDatabase.forTesting(graphFile);
+        addTearDown(reopened.close);
+
+        expect(await reopened.select(reopened.clients).get(), hasLength(1));
+        expect(
+          await reopened.select(reopened.catalogItems).get(),
+          hasLength(1),
+        );
+        expect(await reopened.select(reopened.quotes).get(), hasLength(1));
+        expect(
+          await reopened.select(reopened.quoteClientSnapshots).get(),
+          hasLength(1),
+        );
+        expect(
+          await reopened.select(reopened.quoteLineItems).get(),
+          hasLength(1),
+        );
+        expect(
+          await reopened.select(reopened.quoteStatusHistory).get(),
+          hasLength(1),
+        );
+
+        final quote = await reopened.select(reopened.quotes).getSingle();
+        expect(quote.id, 'quote-graph');
+        expect(quote.number, 'ORC-2026-0200');
+        expect(quote.totalCents, 10_000);
+      },
+    );
+
+    test('PRAGMA integrity_check reports ok after complex operations', () async {
+      await _insertQuoteGraph(database, quoteId: 'quote-integrity');
+
+      await (database.update(database.quotes)..where(
+            (tbl) => tbl.id.equals('quote-integrity'),
+          ))
+          .write(const QuotesCompanion(status: Value('sent')));
+
+      await (database.delete(
+        database.quoteLinePackageComponents,
+      )..where((tbl) => tbl.id.equals('pkg-line-1'))).go();
+
+      await (database.delete(
+        database.quotes,
+      )..where((tbl) => tbl.id.equals('quote-integrity'))).go();
+
+      final result = await database
+          .customSelect('PRAGMA integrity_check')
+          .getSingle();
+      expect(result.data.values.single, 'ok');
+    });
+
+    test(
+      'all declared table indexes exist in the physical sqlite file',
+      () async {
+        const expectedIndexes = [
+          'idx_clients_created_at',
+          'idx_catalog_items_active',
+          'idx_catalog_items_type',
+          'idx_pkg_components_component',
+          'idx_quotes_number',
+          'idx_quotes_status',
+          'idx_quotes_created_at',
+          'idx_quotes_updated_at',
+          'idx_quote_lines_quote_order',
+          'idx_quote_pkg_line',
+          'idx_quote_history_quote_order',
+        ];
+
+        final rows = await database
+            .customSelect(
+              "SELECT name FROM sqlite_master WHERE type = 'index'",
+            )
+            .get();
+        final actualIndexes = rows.map((row) => row.data['name']).toSet();
+
+        for (final indexName in expectedIndexes) {
+          expect(
+            actualIndexes,
+            contains(indexName),
+            reason: 'expected index $indexName to exist in sqlite_master',
+          );
+        }
+      },
+    );
   });
 }
 

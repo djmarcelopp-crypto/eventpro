@@ -187,6 +187,22 @@ lib/core/database/
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+### Política de Migrações Futuras (TASK-024 CP-G)
+
+**Situação atual:** `tables.dart` foi criado por completo no CP-A com as 12 tabelas do schema v1. Do CP-B ao CP-F, apenas DAOs foram adicionados — nenhuma tabela, coluna ou índice mudou. Não existe, portanto, uma versão de schema anterior real, e por isso `migration` não define `onUpgrade`: não há como implementar ou testar uma migração contra um banco legado que nunca existiu, e código de `onUpgrade` sem uma versão real para migrar seria código morto.
+
+**Quando `schemaVersion` precisar avançar pela primeira vez, seguir este checklist:**
+
+1. **Snapshot do schema anterior** — antes de alterar `tables.dart`, gerar um snapshot do schema vigente (ex.: `dart run drift_dev schema dump`) para servir de fixture real de "banco legado" nos testes de migração.
+2. **Alteração incremental** — mudar `tables.dart` e incrementar `schemaVersion` em uma unidade por vez (nunca saltar versões).
+3. **`onUpgrade` explícito** — implementar `onUpgrade` no `MigrationStrategy` tratando explicitamente o par `(from, to)` da transição real (ex.: `from == 1 && to == 2`), sem cobrir hipoteticamente versões que não existem.
+4. **Teste de migração real** — escrever um teste que abre o snapshot da versão anterior (passo 1), aplica a migração e confirma: dados antigos preservados, novas colunas/tabelas com defaults corretos, nenhuma perda de linhas.
+5. **Testes de compatibilidade e constraints** — reexecutar os testes de `test/core/database/app_database_test.dart` (reabertura, cascades, PKs, `PRAGMA integrity_check`) contra o banco pós-migração.
+6. **Suíte completa** — `flutter analyze` e `flutter test` completos antes de considerar a migração concluída.
+7. **Documentar** — registrar a migração em `TASKS.md`/`docs/tasks/` com o motivo da mudança e o par de versões tratado.
+
+Este checklist é um guia de processo; será validado de fato somente na primeira migração real.
+
 ---
 
 ## 7. Fluxo de dados
@@ -290,5 +306,5 @@ Sempre executar `flutter analyze` e `flutter test` após implementação (ver `C
 
 - Novas features → nova pasta em `lib/features/`.
 - Nova persistência → seguir padrão Repository + DAO + Mapper + Notifier async.
-- Migrações de schema → incrementar `schemaVersion` no CP-G com plano documentado.
+- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); nenhuma migração real existe ainda no MVP.
 - Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.

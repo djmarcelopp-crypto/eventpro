@@ -53,17 +53,17 @@ DJ Marcelo PP Festas e Eventos
 | **CP-D** | Persistência de catálogo e pacotes | ✅ Concluído |
 | **CP-E** | Persistência de orçamentos | ✅ Concluído |
 | **CP-F** | Bootstrap e hidratação no startup | ✅ Concluído |
-| CP-G | Hardening e migrações | 🔄 Próximo |
-| CP-H | Documentação final da task | ⏳ Pendente |
+| **CP-G** | Hardening e migrações | ✅ Concluído |
+| CP-H | Documentação final da task | 🔄 Próximo |
 
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
 | Branch | `cursor/task-024-local-persistence` |
-| Último commit | `4e4e28a` — `feat(quotes): persist quotes locally with Drift` |
-| Alterações locais | Nenhuma — CP-F commitado e enviado ao remoto |
-| Próximo checkpoint | **CP-G** |
+| Último commit | `e424d1f` — `feat(app): hydrate persisted data on startup` |
+| Alterações locais | Nenhuma — CP-G commitado e enviado ao remoto |
+| Próximo checkpoint | **CP-H** |
 
 ---
 

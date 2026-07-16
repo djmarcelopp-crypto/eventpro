@@ -19,9 +19,9 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 | C | Settings — `CompanyProfilesDao`, `DriftCompanyProfileRepository`, mapper, save async | `0fc0e89` | ✅ Concluído |
 | D | Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async | `c0beb73` | ✅ Concluído |
 | E | Orçamentos — grafo completo, sequência de números, `QuotesNotifier` async | `4e4e28a` | ✅ Concluído |
-| F | Bootstrap e hidratação — `AppBootstrapProvider`, `hydrate()` nos quatro notifiers, gate na `SplashScreen` | *(pendente de commit)* | ✅ Concluído |
-| **G** | **Hardening e migrações de schema** | — | **🔄 Atual** |
-| H | Documentação — `docs/tasks/TASK-024.md`, business-rules | — | ⏳ Pendente |
+| F | Bootstrap e hidratação — `AppBootstrapProvider`, `hydrate()` nos quatro notifiers, gate na `SplashScreen` | `e424d1f` | ✅ Concluído |
+| G | Hardening — política de migrações futuras, testes de integridade e compatibilidade | *(pendente de commit)* | ✅ Concluído |
+| **H** | **Documentação — `docs/tasks/TASK-024.md`, business-rules** | — | **🔄 Atual** |
 
 ### CP-D — concluído
 
@@ -71,7 +71,7 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 **Commit:** `4e4e28a` — `feat(quotes): persist quotes locally with Drift`
 
-### CP-F — concluído (pendente de commit)
+### CP-F — concluído
 
 **Escopo entregue:**
 
@@ -91,10 +91,31 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 - Exclusão de orçamento
 - Observação de lifecycle do app (`WidgetsBindingObserver`) para fechamento da conexão SQLite
 
+**Commit:** `e424d1f` — `feat(app): hydrate persisted data on startup`
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- Auditoria do histórico real do schema (`git log` em `tables.dart`/`app_database.dart`): confirmado que todas as 12 tabelas foram criadas de uma só vez no CP-A e nunca mudaram — não existe versão de schema anterior real para migrar
+- Política de Migrações Futuras documentada em `ARCHITECTURE.md` (seção 6): checklist de 7 passos para quando a primeira migração real acontecer (snapshot do schema anterior, incremento único de versão, `onUpgrade` explícito por par `from/to`, teste contra o snapshot legado, testes de compatibilidade, suíte completa, documentação)
+- `onUpgrade` **não implementado** nesta task — decisão explícita e documentada, não lacuna esquecida, por não haver versão real para migrar
+- 5 testes novos em `test/core/database/app_database_test.dart`: PK composta duplicada em `CatalogPackageComponents`; cascade isolado de `QuoteLineItem` para `QuoteLinePackageComponents`; reabertura do arquivo físico preservando um grafo completo de dados; `PRAGMA integrity_check` após operações complexas; auditoria dos índices declarados via `sqlite_master`
+- `schemaVersion` permanece `1`; `tables.dart`, `main.dart` e `app_router.dart` sem alterações
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 803 testes passando.
+
+**Fora de escopo do CP-G (mantido):**
+
+- `onUpgrade` real (sem uma versão futura concreta para migrar)
+- Fechamento do banco pelo lifecycle do app (`WidgetsBindingObserver`) — `appDatabaseProvider` continua responsável via `ref.onDispose`
+- Exclusão de orçamento
+- Documentação final da task (CP-H)
+
 **Commit:** *(pendente de commit)*
 
-### Checkpoint atual: CP-G
+### Checkpoint atual: CP-H
 
-Hardening e migrações de schema. Plano técnico a ser apresentado antes de qualquer implementação.
+Documentação final da task — `docs/tasks/TASK-024.md`, business-rules. Plano técnico a ser apresentado antes de qualquer implementação.
 
-**Último commit:** `4e4e28a`
+**Último commit:** `e424d1f`

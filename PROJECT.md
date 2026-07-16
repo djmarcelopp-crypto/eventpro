@@ -54,16 +54,18 @@ DJ Marcelo PP Festas e Eventos
 | **CP-E** | Persistência de orçamentos | ✅ Concluído |
 | **CP-F** | Bootstrap e hidratação no startup | ✅ Concluído |
 | **CP-G** | Hardening e migrações | ✅ Concluído |
-| CP-H | Documentação final da task | 🔄 Próximo |
+| **CP-H** | Documentação final da task | ✅ Concluído |
+
+**TASK-024 encerrada.** Documento final: `docs/tasks/TASK-024.md`.
 
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
 | Branch | `cursor/task-024-local-persistence` |
-| Último commit | `e424d1f` — `feat(app): hydrate persisted data on startup` |
-| Alterações locais | Nenhuma — CP-G commitado e enviado ao remoto |
-| Próximo checkpoint | **CP-H** |
+| Último commit | `c79526d` — `test(database): harden schema integrity and migration policy` |
+| Alterações locais | CP-H implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
+| Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
 
 ---
 

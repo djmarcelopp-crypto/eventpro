@@ -48,8 +48,8 @@ Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 |---------|-------|------------------------|
 | Dashboard | `dashboard/` | Sem persistência |
 | Clientes | `clients/` | ✅ Drift (CP-B) |
-| Catálogo | `catalog/` | ⏳ Em memória — CP-D pendente |
-| Orçamentos | `quotes/` | ⏳ Em memória — CP-E pendente |
+| Catálogo | `catalog/` | ✅ Drift (CP-D) |
+| Orçamentos | `quotes/` | ✅ Drift (CP-E) |
 | Configurações | `settings/` | ✅ Drift (CP-C) |
 
 ### Estrutura interna de uma feature (quando complexa)
@@ -95,17 +95,21 @@ appDatabaseProvider
 
 | Provider | Feature | Tipo | Estado |
 |----------|---------|------|--------|
-| `clientsProvider` | Clientes | `Notifier<List<Client>>` | Memória + escrita SQLite |
+| `clientsProvider` | Clientes | `Notifier<List<Client>>` | Memória + escrita SQLite + hidratado no startup |
 | `clientRepositoryProvider` | Clientes | `Provider<ClientRepository>` | — |
-| `companyProfileProvider` | Settings | `Notifier<CompanyProfile?>` | Memória + escrita SQLite |
+| `companyProfileProvider` | Settings | `Notifier<CompanyProfile?>` | Memória + escrita SQLite + hidratado no startup |
 | `companyProfileRepositoryProvider` | Settings | `Provider<CompanyProfileRepository>` | — |
-| `catalogProvider` | Catálogo | `Notifier<List<CatalogItem>>` | Memória (CP-D pendente) |
-| `quotesProvider` | Orçamentos | `Notifier<List<Quote>>` | Memória (CP-E pendente) |
+| `catalogProvider` | Catálogo | `Notifier<List<CatalogItem>>` | Memória + escrita SQLite + hidratado no startup |
+| `catalogRepositoryProvider` | Catálogo | `Provider<CatalogRepository>` | — |
+| `quotesProvider` | Orçamentos | `Notifier<List<Quote>>` | Memória + escrita SQLite + hidratado no startup |
+| `quoteRepositoryProvider` | Orçamentos | `Provider<QuoteRepository>` | — |
+| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos quatro notifiers no startup (CP-F) |
 
 ### Regras
 
 - Notifiers expõem métodos `async` que persistem via repository e atualizam `state`.
-- `build()` retorna estado inicial vazio até CP-F (hidratação no startup).
+- `build()` retorna estado inicial vazio; a hidratação real ocorre via `appBootstrapProvider` no gate da `SplashScreen` (CP-F).
+- Nenhum código externo escreve em `notifier.state` diretamente — hidratação usa o método público `hydrate(...)` de cada notifier.
 - Providers de serviço (lookup CNPJ/CEP, imagens, PDF) ficam isolados por feature ou em `core/`.
 
 ---
@@ -126,6 +130,8 @@ Drift<Feature>Repository     # implementação usando AppDatabase + DAO
 |-----------|---------------|-----|
 | `ClientRepository` | `DriftClientRepository` | `ClientsDao` |
 | `CompanyProfileRepository` | `DriftCompanyProfileRepository` | `CompanyProfilesDao` |
+| `CatalogRepository` | `DriftCatalogRepository` | `CatalogDao` |
+| `QuoteRepository` | `DriftQuoteRepository` | `QuotesDao` |
 
 ### Contrato típico
 
@@ -139,7 +145,7 @@ abstract class ClientRepository {
 }
 ```
 
-Operações de pacotes (catálogo) usarão transações no DAO para garantir atomicidade entre item e componentes.
+Operações de pacotes (catálogo) usam transações no DAO (`CatalogDao`) para garantir atomicidade entre item e componentes. O mesmo padrão é aplicado ao grafo completo de orçamentos (`QuotesDao`).
 
 ---
 
@@ -167,8 +173,8 @@ lib/core/database/
   daos/
     clients_dao.dart
     company_profiles_dao.dart
-    # catalog_dao.dart — CP-D
-    # quotes_dao.dart  — CP-E
+    catalog_dao.dart
+    quotes_dao.dart
 ```
 
 ### Tabelas (schema v1)
@@ -177,9 +183,9 @@ lib/core/database/
 |--------|---------|------------|
 | `clients` | Clientes | ✅ |
 | `company_profile` | Settings | ✅ |
-| `catalog_items` | Catálogo | Schema pronto — DAO CP-D |
-| `catalog_package_components` | Catálogo | Schema pronto — DAO CP-D |
-| `quotes` + snapshots + lines + history + sequences | Orçamentos | Schema pronto — DAO CP-E |
+| `catalog_items` | Catálogo | ✅ |
+| `catalog_package_components` | Catálogo | ✅ |
+| `quotes` + snapshots + lines + history + sequences | Orçamentos | ✅ |
 
 ### Geração de código
 
@@ -207,7 +213,7 @@ Este checklist é um guia de processo; será validado de fato somente na primeir
 
 ## 7. Fluxo de dados
 
-### Escrita (padrão CP-B/C — em uso)
+### Escrita (padrão adotado por Clientes, Catálogo, Configurações e Orçamentos)
 
 ```text
 Usuário → Screen → Notifier.method() async
@@ -224,15 +230,17 @@ Usuário → Screen → Notifier.method() async
 - Notifiers servem estado da memória (`state`).
 - `findById` e listagens leem do `state`, não do banco diretamente.
 
-### Hidratação no startup (CP-F — pendente)
+### Hidratação no startup (CP-F — concluído)
 
 ```text
-main() → bootstrap async
+SplashScreen → appBootstrapProvider (AsyncNotifier)
            │
-           └─► Repository.listAll() → Notifier.state = dados do SQLite
+           └─► Future.wait(Repository.listAll() × 4)
+                     │
+                     └─► Notifier.hydrate(dados do SQLite)
 ```
 
-Até CP-F, reiniciar o app exibe listas vazias mesmo com dados persistidos no disco.
+Ao abrir o app, a `SplashScreen` aguarda o `appBootstrapProvider` (estado `loading`/`error`/`data`) antes de liberar a navegação — reiniciar o app não perde mais dados persistidos.
 
 ### Imagens e arquivos
 

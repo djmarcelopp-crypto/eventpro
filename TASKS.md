@@ -20,8 +20,10 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 | D | Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async | `c0beb73` | ✅ Concluído |
 | E | Orçamentos — grafo completo, sequência de números, `QuotesNotifier` async | `4e4e28a` | ✅ Concluído |
 | F | Bootstrap e hidratação — `AppBootstrapProvider`, `hydrate()` nos quatro notifiers, gate na `SplashScreen` | `e424d1f` | ✅ Concluído |
-| G | Hardening — política de migrações futuras, testes de integridade e compatibilidade | *(pendente de commit)* | ✅ Concluído |
-| **H** | **Documentação — `docs/tasks/TASK-024.md`, business-rules** | — | **🔄 Atual** |
+| G | Hardening — política de migrações futuras, testes de integridade e compatibilidade | `c79526d` | ✅ Concluído |
+| H | Documentação final — `docs/tasks/TASK-024.md`, revisão de `business-rules/` e `ARCHITECTURE.md` | *(pendente de commit)* | ✅ Concluído |
+
+**TASK-024 encerrada.** Histórico completo dos checkpoints preservado abaixo e consolidado em `docs/tasks/TASK-024.md`.
 
 ### CP-D — concluído
 
@@ -114,8 +116,22 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 **Commit:** *(pendente de commit)*
 
-### Checkpoint atual: CP-H
+### CP-H — concluído
 
-Documentação final da task — `docs/tasks/TASK-024.md`, business-rules. Plano técnico a ser apresentado antes de qualquer implementação.
+**Escopo entregue:**
 
-**Último commit:** `e424d1f`
+- `docs/tasks/TASK-024.md` criado, consolidando os 8 checkpoints (A–H) com commit, escopo entregue e verificação de cada um, incluindo a seção "Lições Aprendidas"
+- Revisão de consistência em `docs/business-rules/clients.md`, `catalog.md`, `settings.md` e `quotes.md`: remoção de afirmações obsoletas de persistência em memória (todas as quatro features já persistem em SQLite e são hidratadas no startup)
+- Revisão de consistência em `ARCHITECTURE.md`: tabelas de Features, Providers e Repositories atualizadas (Catálogo e Orçamentos deixam de aparecer como "pendentes"); seção de hidratação atualizada de "CP-F — pendente" para "concluído"
+- `PROJECT.md` atualizado com o encerramento da TASK-024
+- Nenhuma alteração em `lib/` ou `test/` — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 803 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de commit)*
+
+### TASK-024 — encerrada
+
+Todos os checkpoints (A–H) concluídos. Documento final consolidado: `docs/tasks/TASK-024.md`. Encerramento aguardando aprovação do PO/CTO para commit e push; merge na `main` permanece de responsabilidade externa (fluxo de PR), conforme `CLAUDE.md`.
+
+**Último commit:** `c79526d`

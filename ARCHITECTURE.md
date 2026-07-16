@@ -1,6 +1,6 @@
 # Arquitetura — EventPro ERP
 
-Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024).
+Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024) e o módulo de Agenda com ocupação computada (TASK-025).
 
 ---
 
@@ -47,10 +47,11 @@ Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 | Feature | Pasta | Estado da persistência |
 |---------|-------|------------------------|
 | Dashboard | `dashboard/` | Sem persistência |
-| Clientes | `clients/` | ✅ Drift (CP-B) |
-| Catálogo | `catalog/` | ✅ Drift (CP-D) |
-| Orçamentos | `quotes/` | ✅ Drift (CP-E) |
-| Configurações | `settings/` | ✅ Drift (CP-C) |
+| Clientes | `clients/` | ✅ Drift (TASK-024 CP-B) |
+| Catálogo | `catalog/` | ✅ Drift (TASK-024 CP-D) |
+| Orçamentos | `quotes/` | ✅ Drift (TASK-024 CP-E) |
+| Configurações | `settings/` | ✅ Drift (TASK-024 CP-C) |
+| Agenda | `agenda/` | ✅ Drift para bloqueios manuais (TASK-025 CP-A/B); ocupação de orçamentos é **computada**, nunca persistida (CP-C) |
 
 ### Estrutura interna de uma feature (quando complexa)
 
@@ -103,13 +104,17 @@ appDatabaseProvider
 | `catalogRepositoryProvider` | Catálogo | `Provider<CatalogRepository>` | — |
 | `quotesProvider` | Orçamentos | `Notifier<List<Quote>>` | Memória + escrita SQLite + hidratado no startup |
 | `quoteRepositoryProvider` | Orçamentos | `Provider<QuoteRepository>` | — |
-| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos quatro notifiers no startup (CP-F) |
+| `agendaBlocksProvider` | Agenda | `AsyncNotifier<List<AgendaBlock>>` | Memória + escrita SQLite + hidratado no startup (TASK-025 CP-B/E) |
+| `agendaBlockRepositoryProvider` | Agenda | `Provider<AgendaBlockRepository>` | — |
+| `agendaOccupancyProvider` | Agenda | `Provider<AsyncValue<List<AgendaOccupancy>>>` | **Computado** — combina `quotesProvider` + `agendaBlocksProvider`; sem estado próprio, sem persistência (TASK-025 CP-C) |
+| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos cinco notifiers no startup (TASK-024 CP-F; estendido na TASK-025 CP-E) |
 
 ### Regras
 
 - Notifiers expõem métodos `async` que persistem via repository e atualizam `state`.
 - `build()` retorna estado inicial vazio; a hidratação real ocorre via `appBootstrapProvider` no gate da `SplashScreen` (CP-F).
 - Nenhum código externo escreve em `notifier.state` diretamente — hidratação usa o método público `hydrate(...)` de cada notifier.
+- `Notifier` (síncrono) é o padrão para estado hidratável; `AsyncNotifier` (ex.: `AgendaBlocksNotifier`) exige aguardar `provider.future` (resolução do `build()`) **antes** de chamar `hydrate()` no bootstrap, para evitar que o `build()` assíncrono sobrescreva o estado hidratado por uma corrida de microtasks.
 - Providers de serviço (lookup CNPJ/CEP, imagens, PDF) ficam isolados por feature ou em `core/`.
 
 ---
@@ -132,6 +137,9 @@ Drift<Feature>Repository     # implementação usando AppDatabase + DAO
 | `CompanyProfileRepository` | `DriftCompanyProfileRepository` | `CompanyProfilesDao` |
 | `CatalogRepository` | `DriftCatalogRepository` | `CatalogDao` |
 | `QuoteRepository` | `DriftQuoteRepository` | `QuotesDao` |
+| `AgendaBlockRepository` | `DriftAgendaBlockRepository` | `AgendaBlocksDao` |
+
+`AgendaOccupancy` **não** possui repository, DAO ou mapper — é sempre computado (seção 7).
 
 ### Contrato típico
 
@@ -155,7 +163,7 @@ Operações de pacotes (catálogo) usam transações no DAO (`CatalogDao`) para 
 
 - **Drift** é a camada ORM/type-safe sobre **SQLite**.
 - Banco local: arquivo `eventpro.sqlite` (path resolvido por `database_path.dart`).
-- `schemaVersion`: **1** (TASK-024 CP-A).
+- `schemaVersion`: **2** (v1 na TASK-024 CP-A; v2 na TASK-025 CP-A, adicionando `agenda_blocks`).
 - FKs habilitadas via `PRAGMA foreign_keys = ON`.
 
 ### Estrutura em `lib/core/database/`
@@ -175,17 +183,19 @@ lib/core/database/
     company_profiles_dao.dart
     catalog_dao.dart
     quotes_dao.dart
+    agenda_blocks_dao.dart
 ```
 
-### Tabelas (schema v1)
+### Tabelas (schema v2)
 
-| Tabela | Feature | Status DAO |
-|--------|---------|------------|
-| `clients` | Clientes | ✅ |
-| `company_profile` | Settings | ✅ |
-| `catalog_items` | Catálogo | ✅ |
-| `catalog_package_components` | Catálogo | ✅ |
-| `quotes` + snapshots + lines + history + sequences | Orçamentos | ✅ |
+| Tabela | Feature | Status DAO | Desde |
+|--------|---------|------------|-------|
+| `clients` | Clientes | ✅ | v1 |
+| `company_profile` | Settings | ✅ | v1 |
+| `catalog_items` | Catálogo | ✅ | v1 |
+| `catalog_package_components` | Catálogo | ✅ | v1 |
+| `quotes` + snapshots + lines + history + sequences | Orçamentos | ✅ | v1 |
+| `agenda_blocks` | Agenda | ✅ | v2 (TASK-025 CP-A) |
 
 ### Geração de código
 
@@ -193,11 +203,22 @@ lib/core/database/
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-### Política de Migrações Futuras (TASK-024 CP-G)
+### Política de Migrações Futuras (TASK-024 CP-G, validada na prática pela TASK-025 CP-A)
 
-**Situação atual:** `tables.dart` foi criado por completo no CP-A com as 12 tabelas do schema v1. Do CP-B ao CP-F, apenas DAOs foram adicionados — nenhuma tabela, coluna ou índice mudou. Não existe, portanto, uma versão de schema anterior real, e por isso `migration` não define `onUpgrade`: não há como implementar ou testar uma migração contra um banco legado que nunca existiu, e código de `onUpgrade` sem uma versão real para migrar seria código morto.
+**Histórico:** `tables.dart` foi criado por completo no CP-A da TASK-024 com as 12 tabelas do schema v1. Do CP-B ao CP-F daquela task, apenas DAOs foram adicionados — nenhuma tabela, coluna ou índice mudou, e por isso `onUpgrade` não foi implementado na TASK-024 (não havia versão real para migrar).
 
-**Quando `schemaVersion` precisar avançar pela primeira vez, seguir este checklist:**
+**Primeira migração real (TASK-025 CP-A):** `schemaVersion` avançou de `1` para `2` para adicionar a tabela `agenda_blocks` (Agenda). O checklist abaixo — até então apenas um guia de processo — foi seguido e validado:
+
+1. Snapshot real do schema v1 congelado em `test/core/database/legacy_schema/` (`LegacyAppDatabaseV1`), usado como fixture de "banco legado" no teste de migração.
+2. `onUpgrade` explícito somente para o par real `(from == 1, to >= 2)`, criando apenas `agendaBlocks` — nenhuma tabela existente foi alterada.
+3. `test/core/database/agenda_migration_test.dart`: abre o snapshot v1 populado, aplica a migração, confirma que **nenhum dado anterior foi perdido** e que `agenda_blocks` é criada vazia.
+4. Testes de compatibilidade e constraints (`app_database_test.dart`) reexecutados e estendidos com os testes próprios de `agenda_blocks` (TASK-025 CP-F).
+5. `flutter analyze` e `flutter test` completos antes de considerar a migração concluída.
+6. Migração registrada em `TASKS.md`/`docs/tasks/TASK-025.md`.
+
+**Desvio documentado:** `dart run drift_dev schema dump` não funcionou nesta versão do `drift_dev` (incompatibilidade com `drift 2.34.2`); o snapshot do passo 1 foi construído manualmente copiando `tables.dart` e sobrescrevendo `tableName` de cada tabela legada para bater com os nomes físicos originais — aprovado explicitamente pelo PO/CTO como alternativa válida quando a ferramenta de dump automático não está disponível.
+
+**Quando `schemaVersion` precisar avançar novamente (v2 → v3), seguir o mesmo checklist:**
 
 1. **Snapshot do schema anterior** — antes de alterar `tables.dart`, gerar um snapshot do schema vigente (ex.: `dart run drift_dev schema dump`) para servir de fixture real de "banco legado" nos testes de migração.
 2. **Alteração incremental** — mudar `tables.dart` e incrementar `schemaVersion` em uma unidade por vez (nunca saltar versões).
@@ -207,7 +228,7 @@ dart run build_runner build --delete-conflicting-outputs
 6. **Suíte completa** — `flutter analyze` e `flutter test` completos antes de considerar a migração concluída.
 7. **Documentar** — registrar a migração em `TASKS.md`/`docs/tasks/` com o motivo da mudança e o par de versões tratado.
 
-Este checklist é um guia de processo; será validado de fato somente na primeira migração real.
+Checklist validado na prática pela primeira vez na TASK-025 CP-A; deve continuar sendo seguido em toda migração futura.
 
 ---
 
@@ -230,17 +251,34 @@ Usuário → Screen → Notifier.method() async
 - Notifiers servem estado da memória (`state`).
 - `findById` e listagens leem do `state`, não do banco diretamente.
 
-### Hidratação no startup (CP-F — concluído)
+### Hidratação no startup (TASK-024 CP-F; estendido na TASK-025 CP-E)
 
 ```text
 SplashScreen → appBootstrapProvider (AsyncNotifier)
            │
-           └─► Future.wait(Repository.listAll() × 4)
+           └─► Future.wait(Repository.listAll() × 5)
                      │
                      └─► Notifier.hydrate(dados do SQLite)
 ```
 
 Ao abrir o app, a `SplashScreen` aguarda o `appBootstrapProvider` (estado `loading`/`error`/`data`) antes de liberar a navegação — reiniciar o app não perde mais dados persistidos.
+
+### Ocupação computada da Agenda (TASK-025 CP-C)
+
+Diferente das demais features, a ocupação de orçamentos na Agenda **não é escrita nem hidratada** — é recomputada a cada leitura:
+
+```text
+agendaOccupancyProvider (Provider, sem estado próprio)
+           │
+           ├─► ref.watch(quotesProvider)        → propostas/confirmados (deriva de QuoteEventSnapshot)
+           └─► ref.watch(agendaBlocksProvider)   → bloqueios manuais (persistidos)
+                     │
+                     └─► List<AgendaOccupancy> ordenada por start
+```
+
+- Nenhuma tabela, DAO, repository ou mapper para `AgendaOccupancy`.
+- Qualquer mudança em um orçamento (status, evento) reflete na Agenda na próxima leitura do provider, sem sincronização manual.
+- Somente `AgendaBlock` (bloqueio manual) segue o fluxo de escrita padrão (Notifier → Repository → DAO → SQLite).
 
 ### Imagens e arquivos
 
@@ -272,18 +310,20 @@ lib/
     catalog/
     quotes/
     settings/
+    agenda/
 
 test/                           # espelha lib/features/ e lib/core/
 docs/
   business-rules/               # regras por módulo
-  tasks/                        # histórico TASK-001 … TASK-022
+  tasks/                        # histórico TASK-001 … TASK-025
 ```
 
 ### Navegação (GoRouter)
 
 - Rotas nomeadas centralizadas em `lib/app/router/app_router.dart`.
-- Cada fluxo principal (clientes, catálogo, orçamentos, settings) tem rota dedicada.
+- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda) tem rota dedicada.
 - Deep links e parâmetros de rota seguem convenção snake_case nos paths.
+- Ocupações da Agenda originadas de orçamento **não** têm rota própria — abrem a rota já existente de detalhes do orçamento (`/quotes/:id`).
 
 ---
 
@@ -314,5 +354,7 @@ Sempre executar `flutter analyze` e `flutter test` após implementação (ver `C
 
 - Novas features → nova pasta em `lib/features/`.
 - Nova persistência → seguir padrão Repository + DAO + Mapper + Notifier async.
-- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); nenhuma migração real existe ainda no MVP.
+- Dado que é **função** de outras entidades já persistidas (ex.: `AgendaOccupancy` a partir de Orçamentos + Agenda) → computar via `Provider`, não criar tabela própria.
+- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); primeira migração real aplicada na TASK-025 CP-A (v1 → v2, `agenda_blocks`).
 - Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.
+- Evoluções previstas para a Agenda (Agenda Inteligente, Recursos, integração com Financeiro/Contratos/Equipe/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` (seção "Fora de escopo") e `docs/roadmap.md`.

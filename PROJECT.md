@@ -58,13 +58,27 @@ DJ Marcelo PP Festas e Eventos
 
 **TASK-024 encerrada.** Documento final: `docs/tasks/TASK-024.md`.
 
+### TASK-025 — Agenda
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Migração real de schema v1→v2 e tabela `AgendaBlocks` | ✅ Concluído |
+| **CP-B** | Repository, DAO, Mapper e Notifier de bloqueios manuais | ✅ Concluído |
+| **CP-C** | Ocupação computada (`AgendaOccupancy`) e detecção de conflitos | ✅ Concluído |
+| **CP-D** | Interface e rotas da Agenda | ✅ Concluído |
+| **CP-E** | Bootstrap e hidratação no startup | ✅ Concluído |
+| **CP-F** | Hardening da integridade do banco | ✅ Concluído |
+| **CP-G** | Documentação final da task | ✅ Concluído |
+
+**TASK-025 encerrada.** Documento final: `docs/tasks/TASK-025.md`.
+
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-024-local-persistence` |
-| Último commit | `c79526d` — `test(database): harden schema integrity and migration policy` |
-| Alterações locais | CP-H implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
+| Branch | `cursor/task-025-agenda` |
+| Último commit | `0a56c0e` — `test(agenda): harden agenda database integrity` |
+| Alterações locais | CP-G implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
 | Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
 
 ---
@@ -88,7 +102,8 @@ O sistema deverá possuir:
 - Orçamentos com geração de PDF
 - Configurações da empresa
 - Dashboard
-- Agenda, contratos, financeiro, equipe, estoque, relatórios e IA — **fases futuras**
+- Agenda (propostas, confirmados e bloqueios manuais)
+- Contratos, financeiro, equipe, estoque, relatórios e IA — **fases futuras**
 
 ---
 
@@ -97,11 +112,12 @@ O sistema deverá possuir:
 Funcionalidades entregues ou em desenvolvimento no MVP:
 
 - Dashboard
-- Clientes (persistência local — CP-B)
-- Catálogo: equipamentos, serviços e pacotes (persistência local — CP-D)
-- Orçamentos com PDF e exportação (persistência local do grafo completo — CP-E)
-- Configurações da empresa (persistência local — CP-C)
-- Hidratação automática de clientes, catálogo, configurações da empresa e orçamentos ao iniciar o app (CP-F)
+- Clientes (persistência local — TASK-024 CP-B)
+- Catálogo: equipamentos, serviços e pacotes (persistência local — TASK-024 CP-D)
+- Orçamentos com PDF e exportação (persistência local do grafo completo — TASK-024 CP-E)
+- Configurações da empresa (persistência local — TASK-024 CP-C)
+- Agenda: propostas e confirmados computados a partir dos orçamentos + bloqueios manuais persistidos (TASK-025 CP-A a CP-C)
+- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E)
 
 ---
 

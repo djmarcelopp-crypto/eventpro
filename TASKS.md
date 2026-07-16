@@ -4,6 +4,142 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-025 — Agenda
+
+**Branch:** `cursor/task-025-agenda`
+
+**Objetivo:** Criar o módulo de Agenda, combinando propostas e eventos confirmados derivados dos Orçamentos existentes com bloqueios manuais persistidos localmente, sem duplicar dados, preparando a base para futura Agenda Inteligente, Financeiro, Contratos, Equipe, Fornecedores e Evento 360°.
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Migração real de schema v1→v2 — tabela `AgendaBlocks`, snapshot do schema legado, teste de migração | `34d1ac8` | ✅ Concluído |
+| B | Repository, DAO, Mapper e Notifier — bloqueios manuais persistidos | `ba7bf74` | ✅ Concluído |
+| C | Ocupação computada (`AgendaOccupancy`) e detecção de conflitos (`AgendaOverlapChecker`) | `565cfdf` | ✅ Concluído |
+| D | Interface e rotas — `AgendaScreen`, formulário de bloqueio, detalhes, módulo no Dashboard | `e821995` | ✅ Concluído |
+| E | Bootstrap e hidratação — `AgendaBlocks` no `appBootstrapProvider` | `67583e2` | ✅ Concluído |
+| F | Hardening — constraints reais, índices, ordenação, integridade | `0a56c0e` | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-025.md`, `docs/business-rules/agenda.md`, revisão de `ARCHITECTURE.md` | *(pendente de commit)* | ✅ Concluído |
+
+**TASK-025 encerrada.** Histórico completo dos checkpoints preservado abaixo e consolidado em `docs/tasks/TASK-025.md`.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- Tabela `AgendaBlocks` (`id`, `title`, `notes?`, `start`, `end`, `createdAt`, `updatedAt`), índices `idx_agenda_blocks_start`/`idx_agenda_blocks_end`
+- `schemaVersion` 1 → 2 — primeira migração real do projeto; `onUpgrade` explícito somente para `(from == 1, to >= 2)`, criando apenas `agendaBlocks`
+- Snapshot genuíno do schema v1 (`test/core/database/legacy_schema/LegacyAppDatabaseV1`), com `tableName` sobrescrito para bater com os nomes físicos originais
+- `test/core/database/agenda_migration_test.dart`: grava banco v1 completo, reabre com `AppDatabase` v2, confirma preservação total dos dados e `PRAGMA integrity_check` ok
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 806 testes passando.
+
+**Desvio registrado:** `dart run drift_dev schema dump` incompatível com a versão instalada de `drift_dev`; snapshot v1 construído manualmente, aprovado pelo PO/CTO.
+
+**Fora de escopo do CP-A (mantido):** repository, DAO em uso pela UI, telas, bootstrap, documentação.
+
+**Commit:** `34d1ac8` — `feat(agenda): add AgendaBlocks table with real v1 to v2 migration`
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- `AgendaBlocksDao`, `AgendaBlockMapper`, `AgendaBlockRepository`/`DriftAgendaBlockRepository`, `agendaBlockRepositoryProvider`
+- `AgendaBlocksNotifier` (`AsyncNotifier`) com `addBlock`/`updateBlock`/`deleteBlock` assíncronos e `hydrate(...)` público
+- `AgendaBlockValidator` (título, início e fim obrigatórios; fim posterior ao início)
+- `FakeAgendaBlockRepository` e `agendaBlockRepositoryOverrides()`
+- Correção de bug real: `AgendaBlocksDao.updateRow` mascarava o retorno booleano do Drift (`.then((_) => true)`); corrigido para propagar o resultado real de `update(...).replace(row)`
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 841 testes passando.
+
+**Fora de escopo do CP-B (mantido):** telas, rotas, bootstrap, `agendaOccupancyProvider`, documentação.
+
+**Commit:** `ba7bf74` — `feat(agenda): persist manual agenda blocks`
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `AgendaEventIntervalResolver`: converte `QuoteEventSnapshot` em intervalo `DateTime` local, preservando data civil e horário; fallback `00:00`/`23:59`; virada de dia quando `end <= start`
+- `AgendaOccupancy` (nunca persistido): `fromQuote` (status → `proposal`/`confirmed`, ignora `rejected`/`cancelled`) e `fromBlock`
+- `AgendaOverlapChecker`: verificador puro (sem Riverpod) de sobreposição "half-open"
+- `agendaOccupancyProvider`: `Provider` computado combinando `quotesProvider` + `agendaBlocksProvider`, ordenado por `start`
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 871 testes passando.
+
+**Fora de escopo do CP-C (mantido):** telas, rotas, bootstrap, documentação.
+
+**Commit:** `565cfdf` — `feat(agenda): compute agenda occupancy and conflicts`
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- `AgendaScreen` (lista, distinção visual Proposta/Confirmado/Bloqueio, loading/vazio/erro, botão "Novo bloqueio")
+- `NewAgendaBlockScreen` (criação e edição, `AgendaBlockValidator`, proteção contra duplo clique)
+- `AgendaBlockDetailScreen` (editar, excluir com confirmação)
+- Rotas `/agenda`, `/agenda/new`, `/agenda/:id`, `/agenda/:id/edit`; módulo Agenda no Dashboard
+- Ocupações de orçamento abrem `/quotes/:id` já existente — sem duplicação de dados
+- 25 testes de widget novos; correção de regressão em `settings_checkpoint_b_test.dart`/`settings_checkpoint_c_test.dart`
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 894 testes passando.
+
+**Fora de escopo do CP-D (mantido):** bootstrap (CP-E), documentação.
+
+**Commit:** `e821995` — `feat(agenda): add agenda user interface`
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- `appBootstrapProvider` passa a carregar `AgendaBlockRepository` em paralelo com os demais e hidratar `agendaBlocksProvider` somente após todas as leituras concluírem
+- Aguarda `agendaBlocksProvider.future` antes de `hydrate()`, evitando corrida de microtasks entre o `build()` assíncrono do notifier e a hidratação
+- Helpers que constroem o `EventProApp` completo atualizados com o override do repositório da Agenda
+- Testes novos: bootstrap hidrata os cinco providers; falha no repository da Agenda coloca o bootstrap em erro; retry após falha na Agenda hidrata com sucesso
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 896 testes passando.
+
+**Fora de escopo do CP-E (mantido):** UI, rotas, schema, DAO, mapper, repository, documentação.
+
+**Commit:** `67583e2` — `feat(agenda): hydrate agenda blocks on startup`
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- Revisão confirmando que a migração v1→v2 e a preservação de dados legados continuam íntegras
+- 4 testes novos em `app_database_test.dart`: PK duplicada em `agenda_blocks`; rejeição de `NULL` em colunas obrigatórias via SQL bruto; existência e uso efetivo dos índices (`EXPLAIN QUERY PLAN`); ordenação por `start` no `AgendaBlocksDao`
+- Nenhum defeito real encontrado — nenhuma alteração em `lib/`
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 900 testes passando.
+
+**Fora de escopo do CP-F (mantido):** UI, rotas, providers, repository, mapper, bootstrap, schema, documentação.
+
+**Commit:** `0a56c0e` — `test(agenda): harden agenda database integrity`
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-025.md` criado, consolidando os 7 checkpoints (A–G) com commit, escopo entregue e verificação de cada um, incluindo a seção "Lições Aprendidas"
+- `docs/business-rules/agenda.md` criado, documentando `AgendaBlock`, `AgendaOccupancy`, regra de status → ocupação, conversão de horários, conflitos, integração com Orçamentos e itens fora de escopo
+- `ARCHITECTURE.md` atualizado: Agenda nas tabelas de Features/Providers/Repositories, `schemaVersion` 2, tabela `agenda_blocks`, Política de Migrações Futuras com a primeira migração real aplicada, fluxo de ocupação computada
+- `PROJECT.md` e este documento atualizados com o encerramento da TASK-025
+- Nenhuma alteração em `lib/`, `test/`, schema, providers, repositories, DAOs ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 900 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de commit)*
+
+### TASK-025 — encerrada
+
+Todos os checkpoints (A–G) concluídos. Documento final consolidado: `docs/tasks/TASK-025.md`. Encerramento aguardando aprovação do PO/CTO para commit e push; merge na `main` permanece de responsabilidade externa (fluxo de PR), conforme `CLAUDE.md`.
+
+**Último commit:** `0a56c0e`
+
+---
+
 ## TASK-024 — Persistência local com Drift
 
 **Branch:** `cursor/task-024-local-persistence`

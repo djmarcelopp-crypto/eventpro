@@ -12,6 +12,7 @@ import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/main.dart';
 
+import '../agenda/fakes/agenda_block_repository_test_overrides.dart';
 import '../catalog/fakes/catalog_repository_test_overrides.dart';
 import '../clients/fakes/fake_client_repository.dart';
 import '../settings/fakes/company_profile_repository_test_overrides.dart';
@@ -35,6 +36,7 @@ List<Override> quoteE2eOverrides({
     ...companyProfileRepositoryOverrides(),
     ...catalogRepositoryOverrides(),
     ...quoteRepositoryOverrides(),
+    ...agendaBlockRepositoryOverrides(),
     quoteClockProvider.overrideWithValue(
       () => mutableClock?.now ?? quoteE2eFixedNow,
     ),

@@ -14,6 +14,7 @@ import 'package:eventpro/features/clients/client_list_feedback.dart';
 import 'package:eventpro/features/catalog/catalog_list_feedback.dart';
 import 'package:eventpro/main.dart';
 
+import 'features/agenda/fakes/agenda_block_repository_test_overrides.dart';
 import 'features/catalog/fakes/catalog_repository_test_overrides.dart';
 import 'features/clients/fakes/client_repository_test_overrides.dart';
 import 'features/clients/fakes/fake_cep_lookup_service.dart';
@@ -28,6 +29,7 @@ Widget _createTestApp({List<Override> overrides = const []}) {
       ...companyProfileRepositoryOverrides(),
       ...catalogRepositoryOverrides(),
       ...quoteRepositoryOverrides(),
+      ...agendaBlockRepositoryOverrides(),
       ...overrides,
     ],
     child: const EventProApp(),

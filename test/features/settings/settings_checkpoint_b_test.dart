@@ -9,6 +9,7 @@ import 'package:eventpro/features/settings/providers/company_profile_provider.da
 import 'package:eventpro/core/widgets/app_text_field.dart';
 import 'package:eventpro/main.dart';
 
+import '../agenda/fakes/agenda_block_repository_test_overrides.dart';
 import '../catalog/fakes/catalog_repository_test_overrides.dart';
 import '../clients/fakes/client_repository_test_overrides.dart';
 import '../quotes/fakes/quote_repository_test_overrides.dart';
@@ -24,6 +25,7 @@ void main() {
             ...companyProfileRepositoryOverrides(),
             ...catalogRepositoryOverrides(),
             ...quoteRepositoryOverrides(),
+            ...agendaBlockRepositoryOverrides(),
           ],
           child: const EventProApp(),
         ),

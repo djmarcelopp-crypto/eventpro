@@ -9,6 +9,9 @@ import 'package:eventpro/features/settings/providers/company_profile_provider.da
 import 'package:eventpro/core/widgets/app_text_field.dart';
 import 'package:eventpro/main.dart';
 
+import '../catalog/fakes/catalog_repository_test_overrides.dart';
+import '../clients/fakes/client_repository_test_overrides.dart';
+import '../quotes/fakes/quote_repository_test_overrides.dart';
 import 'fakes/company_profile_repository_test_overrides.dart';
 
 void main() {
@@ -16,7 +19,12 @@ void main() {
     Future<void> pumpApp(WidgetTester tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: companyProfileRepositoryOverrides(),
+          overrides: [
+            ...clientRepositoryOverrides(),
+            ...companyProfileRepositoryOverrides(),
+            ...catalogRepositoryOverrides(),
+            ...quoteRepositoryOverrides(),
+          ],
           child: const EventProApp(),
         ),
       );

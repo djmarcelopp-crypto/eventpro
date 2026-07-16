@@ -13,6 +13,10 @@ class ClientsNotifier extends Notifier<List<Client>> {
   @override
   List<Client> build() => [];
 
+  void hydrate(List<Client> clients) {
+    state = clients;
+  }
+
   Client? findById(String id) {
     for (final client in state) {
       if (client.id == id) {

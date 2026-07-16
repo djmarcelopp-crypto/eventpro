@@ -38,6 +38,18 @@ void main() {
       expect(container.read(clientsProvider), isEmpty);
     });
 
+    test('hydrate substitui o state pela lista informada', () {
+      final container = _createContainer();
+      final clients = [
+        _sampleClient(name: 'Maria Silva'),
+        _sampleClient(name: 'João Souza'),
+      ];
+
+      container.read(clientsProvider.notifier).hydrate(clients);
+
+      expect(container.read(clientsProvider), clients);
+    });
+
     test('addClient adiciona cliente à lista', () async {
       final container = _createContainer();
 

@@ -44,6 +44,18 @@ void main() {
       expect(container.read(catalogProvider), isEmpty);
     });
 
+    test('hydrate substitui o state pela lista informada', () {
+      final container = _createContainer();
+      final items = [
+        _sampleItem(id: 'item-1'),
+        _sampleItem(id: 'item-2'),
+      ];
+
+      container.read(catalogProvider.notifier).hydrate(items);
+
+      expect(container.read(catalogProvider), items);
+    });
+
     test('addItem adiciona item à lista', () async {
       final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);

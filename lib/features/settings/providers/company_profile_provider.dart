@@ -14,6 +14,10 @@ class CompanyProfileNotifier extends Notifier<CompanyProfile?> {
   @override
   CompanyProfile? build() => null;
 
+  void hydrate(CompanyProfile? profile) {
+    state = profile;
+  }
+
   Future<bool> save(CompanyProfile draft) async {
     final existing = state;
     final now = _now();

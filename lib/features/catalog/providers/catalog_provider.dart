@@ -11,6 +11,10 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
   @override
   List<CatalogItem> build() => [];
 
+  void hydrate(List<CatalogItem> items) {
+    state = items;
+  }
+
   Future<bool> addItem(CatalogItem item) async {
     try {
       await _repository.insert(item);

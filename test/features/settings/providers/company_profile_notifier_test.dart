@@ -41,6 +41,21 @@ void main() {
       expect(container.read(companyProfileProvider), isNull);
     });
 
+    test('hydrate substitui o state pelo perfil informado', () {
+      final profile = sampleDraft();
+
+      container.read(companyProfileProvider.notifier).hydrate(profile);
+
+      expect(container.read(companyProfileProvider), profile);
+    });
+
+    test('hydrate aceita null quando não há perfil salvo', () {
+      container.read(companyProfileProvider.notifier).hydrate(sampleDraft());
+      container.read(companyProfileProvider.notifier).hydrate(null);
+
+      expect(container.read(companyProfileProvider), isNull);
+    });
+
     test(
       'primeiro save cria perfil com createdAt e updatedAt do relógio',
       () async {

@@ -19,11 +19,13 @@ import 'features/clients/fakes/client_repository_test_overrides.dart';
 import 'features/clients/fakes/fake_cep_lookup_service.dart';
 import 'features/clients/fakes/fake_cnpj_lookup_service.dart';
 import 'features/quotes/fakes/quote_repository_test_overrides.dart';
+import 'features/settings/fakes/company_profile_repository_test_overrides.dart';
 
 Widget _createTestApp({List<Override> overrides = const []}) {
   return ProviderScope(
     overrides: [
       ...clientRepositoryOverrides(),
+      ...companyProfileRepositoryOverrides(),
       ...catalogRepositoryOverrides(),
       ...quoteRepositoryOverrides(),
       ...overrides,

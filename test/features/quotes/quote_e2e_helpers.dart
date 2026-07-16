@@ -71,10 +71,10 @@ Future<ProviderContainer> pumpQuoteAppSeeded(
 Future<void> seedQuoteDependencies(ProviderContainer container) async {
   final client = sampleClient();
   await container.read(clientRepositoryProvider).insert(client);
-  container.read(clientsProvider.notifier).state = [
+  container.read(clientsProvider.notifier).hydrate([
     ...container.read(clientsProvider),
     client,
-  ];
+  ]);
   await container.read(catalogProvider.notifier).addItem(sampleCatalogItem());
 }
 

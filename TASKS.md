@@ -18,9 +18,9 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 | B | Clientes — `ClientsDao`, `DriftClientRepository`, mapper, provider async | `c39e65d` | ✅ Concluído |
 | C | Settings — `CompanyProfilesDao`, `DriftCompanyProfileRepository`, mapper, save async | `0fc0e89` | ✅ Concluído |
 | D | Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async | `c0beb73` | ✅ Concluído |
-| E | Orçamentos — grafo completo, sequência de números, `QuotesNotifier` async | *(pendente de commit)* | ✅ Concluído |
-| **F** | **Bootstrap e hidratação — carregar SQLite no startup** | — | **🔄 Atual** |
-| G | Hardening e migrações de schema | — | ⏳ Pendente |
+| E | Orçamentos — grafo completo, sequência de números, `QuotesNotifier` async | `4e4e28a` | ✅ Concluído |
+| F | Bootstrap e hidratação — `AppBootstrapProvider`, `hydrate()` nos quatro notifiers, gate na `SplashScreen` | *(pendente de commit)* | ✅ Concluído |
+| **G** | **Hardening e migrações de schema** | — | **🔄 Atual** |
 | H | Documentação — `docs/tasks/TASK-024.md`, business-rules | — | ⏳ Pendente |
 
 ### CP-D — concluído
@@ -46,7 +46,7 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 **Commit:** `c0beb73` — `feat(catalog): persist catalog items locally with Drift`
 
-### CP-E — concluído (pendente de commit)
+### CP-E — concluído
 
 **Escopo entregue:**
 
@@ -69,10 +69,32 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 - Exclusão de orçamento
 - Migrações de schema
 
+**Commit:** `4e4e28a` — `feat(quotes): persist quotes locally with Drift`
+
+### CP-F — concluído (pendente de commit)
+
+**Escopo entregue:**
+
+- Método público `hydrate(...)` em `ClientsNotifier`, `CompanyProfileNotifier`, `CatalogNotifier` e `QuotesNotifier` — substitui o `state` sem exigir escrita externa
+- `AppBootstrapNotifier` / `appBootstrapProvider` (`AsyncNotifier<void>`) — carrega os quatro repositories em paralelo (`Future.wait`) e só hidrata os notifiers após todas as leituras concluírem
+- Gate exclusivo na `SplashScreen` (`ConsumerWidget`): estado `loading` desabilita o botão "Entrar", `error` exibe mensagem com ação "Tentar novamente" (`ref.invalidate`), `data` libera o fluxo normal
+- `main.dart` e `app_router.dart` mantidos sem alterações
+- Helpers de teste (`widget_test.dart`, `settings_checkpoint_b_test.dart`, `settings_checkpoint_c_test.dart`) atualizados com os quatro overrides de repository, necessários porque a splash agora aciona todos eles
+- Testes novos: `AppBootstrapProvider` (sucesso, falha, retry) e `hydrate()` unitário nos quatro notifiers
+- Última escrita externa em `notifier.state` (em `quote_e2e_helpers.dart`, remanescente do CP-D/E) substituída por `hydrate(...)`
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 798 testes passando.
+
+**Fora de escopo do CP-F (mantido):**
+
+- Migrações de schema (CP-G)
+- Exclusão de orçamento
+- Observação de lifecycle do app (`WidgetsBindingObserver`) para fechamento da conexão SQLite
+
 **Commit:** *(pendente de commit)*
 
-### Checkpoint atual: CP-F
+### Checkpoint atual: CP-G
 
-Bootstrap e hidratação — carregar clientes, catálogo, configurações da empresa e orçamentos do SQLite no startup. Plano técnico a ser apresentado antes de qualquer implementação.
+Hardening e migrações de schema. Plano técnico a ser apresentado antes de qualquer implementação.
 
-**Último commit:** `c0beb73`
+**Último commit:** `4e4e28a`

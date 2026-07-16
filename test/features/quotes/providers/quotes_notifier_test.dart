@@ -41,6 +41,17 @@ void main() {
       expect(container.read(quotesProvider), isEmpty);
     });
 
+    test('hydrate substitui o state pela lista informada', () {
+      final quotes = [
+        sampleQuoteDraft(id: 'quote-1'),
+        sampleQuoteDraft(id: 'quote-2'),
+      ];
+
+      container.read(quotesProvider.notifier).hydrate(quotes);
+
+      expect(container.read(quotesProvider), quotes);
+    });
+
     test('addQuote força draft, approvedAt null e número gerado', () async {
       final notifier = container.read(quotesProvider.notifier);
       await notifier.addQuote(sampleQuoteDraft());

@@ -15,6 +15,10 @@ class QuotesNotifier extends Notifier<List<Quote>> {
   @override
   List<Quote> build() => [];
 
+  void hydrate(List<Quote> quotes) {
+    state = quotes;
+  }
+
   DateTime _now() => ref.read(quoteClockProvider)();
 
   Future<bool> addQuote(Quote draft) async {

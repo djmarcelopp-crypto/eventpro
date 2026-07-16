@@ -52,7 +52,18 @@ void main() {
       AppRouter.router.go(AppRoutes.dashboard);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Configurações'));
+      final settingsCard = find.text('Configurações');
+      final dashboardScrollable = find.ancestor(
+        of: settingsCard,
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(
+        settingsCard,
+        300,
+        scrollable: dashboardScrollable,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(settingsCard);
       await tester.pumpAndSettle();
 
       expect(find.byKey(const Key('settings_scroll')), findsOneWidget);

@@ -4,6 +4,7 @@ enum DashboardModuleId {
   clients,
   catalog,
   quotes,
+  agenda,
   settings,
 }
 
@@ -39,6 +40,12 @@ const List<DashboardModule> dashboardModules = [
     title: 'Orçamentos',
     description: 'Crie e envie orçamentos',
     icon: Icons.request_quote_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.agenda,
+    title: 'Agenda',
+    description: 'Propostas, eventos confirmados e bloqueios',
+    icon: Icons.calendar_month_outlined,
   ),
   DashboardModule(
     id: DashboardModuleId.settings,

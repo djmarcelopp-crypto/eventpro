@@ -1,5 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../../features/agenda/agenda_block_detail_screen.dart';
+import '../../features/agenda/agenda_screen.dart';
+import '../../features/agenda/new_agenda_block_screen.dart';
 import '../../features/catalog/catalog_item_detail_screen.dart';
 import '../../features/catalog/catalog_screen.dart';
 import '../../features/catalog/new_catalog_item_screen.dart';
@@ -40,6 +43,13 @@ abstract class AppRoutes {
   static String clientsEdit(String id) => '$clients/$id/edit';
   static const settings = '/settings';
   static const settingsCompany = '/settings/company';
+
+  static const agenda = '/agenda';
+  static const agendaNew = '/agenda/new';
+
+  static String agendaDetail(String id) => '$agenda/$id';
+
+  static String agendaEdit(String id) => '$agenda/$id/edit';
 }
 
 abstract class AppRouter {
@@ -139,6 +149,30 @@ abstract class AppRouter {
           GoRoute(
             path: 'company',
             builder: (context, state) => const CompanyProfileScreen(),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.agenda,
+        builder: (context, state) => const AgendaScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewAgendaBlockScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => AgendaBlockDetailScreen(
+              blockId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) => NewAgendaBlockScreen(
+                  blockId: state.pathParameters['id'],
+                ),
+              ),
+            ],
           ),
         ],
       ),

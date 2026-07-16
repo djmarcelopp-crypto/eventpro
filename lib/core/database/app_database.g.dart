@@ -9851,6 +9851,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final CatalogDao catalogDao = CatalogDao(this as AppDatabase);
   late final QuotesDao quotesDao = QuotesDao(this as AppDatabase);
+  late final AgendaBlocksDao agendaBlocksDao = AgendaBlocksDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -16507,4 +16510,16 @@ class QuotesDaoManager {
         _db.attachedDatabase,
         _db.quoteNumberSequences,
       );
+}
+
+mixin _$AgendaBlocksDaoMixin on DatabaseAccessor<AppDatabase> {
+  $AgendaBlocksTable get agendaBlocks => attachedDatabase.agendaBlocks;
+  AgendaBlocksDaoManager get managers => AgendaBlocksDaoManager(this);
+}
+
+class AgendaBlocksDaoManager {
+  final _$AgendaBlocksDaoMixin _db;
+  AgendaBlocksDaoManager(this._db);
+  $$AgendaBlocksTableTableManager get agendaBlocks =>
+      $$AgendaBlocksTableTableManager(_db.attachedDatabase, _db.agendaBlocks);
 }

@@ -12,6 +12,7 @@ part 'daos/clients_dao.dart';
 part 'daos/company_profiles_dao.dart';
 part 'daos/catalog_dao.dart';
 part 'daos/quotes_dao.dart';
+part 'daos/agenda_blocks_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -29,7 +30,7 @@ part 'daos/quotes_dao.dart';
     QuoteNumberSequences,
     AgendaBlocks,
   ],
-  daos: [ClientsDao, CompanyProfilesDao, CatalogDao, QuotesDao],
+  daos: [ClientsDao, CompanyProfilesDao, CatalogDao, QuotesDao, AgendaBlocksDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);

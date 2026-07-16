@@ -90,7 +90,7 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
     });
 
     try {
-      final success = ref
+      final success = await ref
           .read(quotesProvider.notifier)
           .transitionStatus(widget.quoteId, target);
 

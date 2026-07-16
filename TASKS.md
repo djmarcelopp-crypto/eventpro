@@ -17,13 +17,13 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 | A | Infraestrutura Drift — tabelas, `AppDatabase`, schema v1, FKs, testes de lifecycle | `a5de3a0` | ✅ Concluído |
 | B | Clientes — `ClientsDao`, `DriftClientRepository`, mapper, provider async | `c39e65d` | ✅ Concluído |
 | C | Settings — `CompanyProfilesDao`, `DriftCompanyProfileRepository`, mapper, save async | `0fc0e89` | ✅ Concluído |
-| D | Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async | *(pendente de commit)* | ✅ Concluído |
-| **E** | **Orçamentos — grafo completo, sequência de números** | — | **🔄 Atual** |
-| F | Bootstrap e hidratação — carregar SQLite no startup | — | ⏳ Pendente |
+| D | Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async | `c0beb73` | ✅ Concluído |
+| E | Orçamentos — grafo completo, sequência de números, `QuotesNotifier` async | *(pendente de commit)* | ✅ Concluído |
+| **F** | **Bootstrap e hidratação — carregar SQLite no startup** | — | **🔄 Atual** |
 | G | Hardening e migrações de schema | — | ⏳ Pendente |
 | H | Documentação — `docs/tasks/TASK-024.md`, business-rules | — | ⏳ Pendente |
 
-### CP-D — concluído (pendente de commit)
+### CP-D — concluído
 
 **Escopo entregue:**
 
@@ -44,10 +44,35 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 - Atualização de `docs/business-rules/catalog.md` (CP-H)
 - Migrações de schema
 
-**Commit:** ainda não realizado — aguardando aprovação do Product Owner.
+**Commit:** `c0beb73` — `feat(catalog): persist catalog items locally with Drift`
 
-### Checkpoint atual: CP-E
+### CP-E — concluído (pendente de commit)
 
-Persistência de orçamentos (grafo completo, sequência de números). Plano técnico a ser apresentado antes de qualquer implementação.
+**Escopo entregue:**
 
-**Último commit:** `0fc0e89`
+- `QuotesDao` com `insertQuoteGraph`/`updateQuoteGraph` transacionais, cobrindo quote, snapshots (cliente, evento, empresa), itens, componentes de pacote e histórico de status
+- Reserva atômica do número sequencial `ORC-AAAA-NNNN` (`QuoteNumberSequences`) dentro da mesma transação de inserção — sequência não avança em caso de falha
+- `QuoteMapper` (conversão domínio ↔ Drift, IDs UUID v7 para coleções filhas, datas civis e timestamps)
+- `QuoteRepository` / `DriftQuoteRepository` registrados via `quoteRepositoryProvider`; `insert()` retorna `Future<Quote>` com o número definitivo gerado pelo banco
+- Estratégia de apagar e reinserir para `QuoteLineItems`, `QuoteLinePackageComponents` e `QuoteStatusHistory` em updates, preservando `id`, `number`, `createdAt` e `companySnapshot` conforme a regra atual
+- `QuotesNotifier` refatorado para `addQuote`/`updateQuote`/`transitionStatus` assíncronos, delegando à camada de persistência e retornando `false` para a UI em caso de falha
+- Remoção do `QuoteNumberGenerator` (código morto substituído pela sequência persistida no SQLite)
+- Telas (`new_quote_screen.dart`, `quote_detail_screen.dart`) ajustadas para `await`, com feedback de erro e rollback de logo copiado em caso de falha de persistência
+- Testes novos: `QuoteMapper` (14 testes), `DriftQuoteRepository` (11 testes, incluindo atomicidade da sequência e do grafo)
+- `FakeQuoteRepository` e `quoteRepositoryOverrides()` propagados a todos os testes que tocam orçamentos (`widget_test.dart`, `quote_e2e_helpers.dart`, specs de notifier, PDF e catálogo)
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 790 testes passando.
+
+**Fora de escopo do CP-E (mantido):**
+
+- Hidratação da lista de orçamentos no startup (CP-F)
+- Exclusão de orçamento
+- Migrações de schema
+
+**Commit:** *(pendente de commit)*
+
+### Checkpoint atual: CP-F
+
+Bootstrap e hidratação — carregar clientes, catálogo, configurações da empresa e orçamentos do SQLite no startup. Plano técnico a ser apresentado antes de qualquer implementação.
+
+**Último commit:** `c0beb73`

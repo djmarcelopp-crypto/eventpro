@@ -184,15 +184,15 @@ void main() {
         await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
 
         if (targetStatus == QuoteStatus.sent) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
         } else if (targetStatus == QuoteStatus.approved) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-          transitionQuoteTo(container, quoteId, QuoteStatus.approved);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.approved);
         } else if (targetStatus == QuoteStatus.rejected) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-          transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
         } else if (targetStatus == QuoteStatus.cancelled) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
         }
 
         AppRouter.router.go(AppRoutes.quotesEdit(quoteId));
@@ -261,7 +261,7 @@ void main() {
       await pumpQuoteAppWithContainer(tester);
       final container = quoteTestContainer(tester);
       await seedQuoteDependencies(container);
-      container
+      await container
           .read(quotesProvider.notifier)
           .addQuote(
             buildRichQuoteAddDraft(id: 'quote-missing').copyWith(
@@ -379,7 +379,7 @@ void main() {
       'sent → approved atualiza status, approvedAt, contrato e histórico',
       (tester) async {
         final container = await openDetail(tester, 'quote-approve');
-        transitionQuoteTo(container, 'quote-approve', QuoteStatus.sent);
+        await transitionQuoteTo(container, 'quote-approve', QuoteStatus.sent);
         await tester.pumpAndSettle();
 
         await scrollQuoteDetailUntilVisible(
@@ -407,7 +407,7 @@ void main() {
 
     testWidgets('sent → rejected', (tester) async {
       final container = await openDetail(tester, 'quote-reject');
-      transitionQuoteTo(container, 'quote-reject', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-reject', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await scrollQuoteDetailUntilVisible(
@@ -448,7 +448,7 @@ void main() {
     testWidgets('enviado pode ser cancelado', (tester) async {
       useTallViewport(tester);
       final container = await openDetail(tester, 'quote-cancel-sent');
-      transitionQuoteTo(container, 'quote-cancel-sent', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-cancel-sent', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await scrollQuoteDetailUntilVisible(
@@ -468,8 +468,12 @@ void main() {
     testWidgets('aprovado pode ser cancelado', (tester) async {
       useTallViewport(tester);
       final container = await openDetail(tester, 'quote-cancel-approved');
-      transitionQuoteTo(container, 'quote-cancel-approved', QuoteStatus.sent);
-      transitionQuoteTo(
+      await transitionQuoteTo(
+        container,
+        'quote-cancel-approved',
+        QuoteStatus.sent,
+      );
+      await transitionQuoteTo(
         container,
         'quote-cancel-approved',
         QuoteStatus.approved,
@@ -528,7 +532,7 @@ void main() {
       await tester.tap(find.byKey(const Key('quote_detail_mark_sent_button')));
       await tester.pumpAndSettle();
 
-      transitionQuoteTo(container, 'quote-invalid', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-invalid', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await confirmQuoteStatusDialog(tester);
@@ -559,7 +563,7 @@ void main() {
       expect(find.text('Rascunho'), findsOneWidget);
 
       await openQuoteDetailFromList(tester, 'quote-badge');
-      transitionQuoteTo(container, 'quote-badge', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-badge', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byTooltip('Voltar'));
@@ -583,8 +587,12 @@ void main() {
           findsNothing,
         );
 
-        transitionQuoteTo(container, 'quote-contract-draft', QuoteStatus.sent);
-        transitionQuoteTo(
+        await transitionQuoteTo(
+          container,
+          'quote-contract-draft',
+          QuoteStatus.sent,
+        );
+        await transitionQuoteTo(
           container,
           'quote-contract-draft',
           QuoteStatus.approved,
@@ -650,8 +658,8 @@ void main() {
       await pumpQuoteAppWithContainer(tester);
       final container = quoteTestContainer(tester);
       await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
-      transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-      transitionQuoteTo(container, quoteId, QuoteStatus.approved);
+      await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+      await transitionQuoteTo(container, quoteId, QuoteStatus.approved);
       AppRouter.router.go(AppRoutes.quotesDetail(quoteId));
       await tester.pumpAndSettle();
       return container;
@@ -676,7 +684,7 @@ void main() {
         container,
         buildRichQuoteAddDraft(id: 'quote-reopen-sent'),
       );
-      transitionQuoteTo(container, 'quote-reopen-sent', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-reopen-sent', QuoteStatus.sent);
       AppRouter.router.go(AppRoutes.quotesDetail('quote-reopen-sent'));
       await tester.pumpAndSettle();
 
@@ -697,10 +705,10 @@ void main() {
         final container = quoteTestContainer(tester);
         await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
         if (status == QuoteStatus.rejected) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-          transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
         } else {
-          transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
         }
         AppRouter.router.go(AppRoutes.quotesDetail(quoteId));
         await tester.pumpAndSettle();

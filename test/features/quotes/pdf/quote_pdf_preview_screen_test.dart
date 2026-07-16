@@ -69,7 +69,7 @@ void main() {
       if (seedQuote) {
         final container = quoteTestContainer(tester);
         await seedQuoteDependencies(container);
-        container
+        await container
             .read(quotesProvider.notifier)
             .addQuote(
               buildRichQuoteAddDraft(id: quoteId).copyWith(
@@ -146,7 +146,7 @@ void main() {
 
       final container = quoteTestContainer(tester);
       await seedQuoteDependencies(container);
-      container
+      await container
           .read(quotesProvider.notifier)
           .addQuote(buildRichQuoteAddDraft(id: 'quote-pdf-blocked'));
 

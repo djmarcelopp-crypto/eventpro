@@ -15,6 +15,7 @@ import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/main.dart';
 
+import '../quotes/fakes/quote_repository_test_overrides.dart';
 import '../quotes/quotes_test_helpers.dart';
 import 'fakes/catalog_repository_test_overrides.dart';
 import 'fakes/fake_catalog_image_storage_service.dart';
@@ -373,6 +374,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           ...catalogRepositoryOverrides(),
+          ...quoteRepositoryOverrides(),
           catalogImageStorageProvider.overrideWithValue(
             FakeCatalogImageStorageService(),
           ),
@@ -380,7 +382,7 @@ void main() {
       );
 
       await container.read(catalogProvider.notifier).addItem(eq);
-      container.read(quotesProvider.notifier).addQuote(
+      await container.read(quotesProvider.notifier).addQuote(
             sampleQuoteDraft(
               items: [
                 sampleLineItem(catalogItemId: eq.id, name: eq.name),

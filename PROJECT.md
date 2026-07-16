@@ -51,8 +51,8 @@ DJ Marcelo PP Festas e Eventos
 | **CP-B** | Persistência de clientes | ✅ Concluído |
 | **CP-C** | Persistência de configurações da empresa | ✅ Concluído |
 | **CP-D** | Persistência de catálogo e pacotes | ✅ Concluído |
-| **CP-E** | Persistência de orçamentos | 🔄 Próximo |
-| CP-F | Bootstrap e hidratação no startup | ⏳ Pendente |
+| **CP-E** | Persistência de orçamentos | ✅ Concluído |
+| CP-F | Bootstrap e hidratação no startup | 🔄 Próximo |
 | CP-G | Hardening e migrações | ⏳ Pendente |
 | CP-H | Documentação final da task | ⏳ Pendente |
 
@@ -61,9 +61,9 @@ DJ Marcelo PP Festas e Eventos
 | Campo | Valor |
 |-------|-------|
 | Branch | `cursor/task-024-local-persistence` |
-| Último commit | `0fc0e89` — `feat(settings): persist company profile locally with Drift` |
-| Alterações locais | CP-D implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
-| Próximo checkpoint | **CP-E** |
+| Último commit | `c0beb73` — `feat(catalog): persist catalog items locally with Drift` |
+| Alterações locais | CP-E implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando commit |
+| Próximo checkpoint | **CP-F** |
 
 ---
 
@@ -97,7 +97,7 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Dashboard
 - Clientes (persistência local — CP-B)
 - Catálogo: equipamentos, serviços e pacotes (persistência local — CP-D)
-- Orçamentos com PDF e exportação
+- Orçamentos com PDF e exportação (persistência local do grafo completo — CP-E)
 - Configurações da empresa (persistência local — CP-C)
 
 ---

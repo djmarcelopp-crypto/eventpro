@@ -786,8 +786,8 @@ class _NewQuoteScreenState extends ConsumerState<NewQuoteScreen> {
       );
 
       final success = _isEditing
-          ? ref.read(quotesProvider.notifier).updateQuote(draft)
-          : ref.read(quotesProvider.notifier).addQuote(draft);
+          ? await ref.read(quotesProvider.notifier).updateQuote(draft)
+          : await ref.read(quotesProvider.notifier).addQuote(draft);
 
       if (!success) {
         if (!_isEditing) {

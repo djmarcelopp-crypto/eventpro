@@ -1,24 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/repositories/quote_repository.dart';
 import '../models/quote.dart';
 import '../models/quote_status.dart';
 import '../models/quote_status_history_entry.dart';
 import '../utils/quote_calculator.dart';
 import '../utils/quote_status_transitions.dart';
 import 'quote_clock_provider.dart';
-import 'quote_number_generator.dart';
+import 'quote_repository_provider.dart';
 
 class QuotesNotifier extends Notifier<List<Quote>> {
-  final QuoteNumberGenerator _numberGenerator = QuoteNumberGenerator();
+  QuoteRepository get _repository => ref.read(quoteRepositoryProvider);
 
   @override
   List<Quote> build() => [];
 
-  QuoteNumberGenerator get numberGenerator => _numberGenerator;
-
   DateTime _now() => ref.read(quoteClockProvider)();
 
-  bool addQuote(Quote draft) {
+  Future<bool> addQuote(Quote draft) async {
     final now = _now();
     final items = [
       for (final item in draft.items)
@@ -33,7 +32,7 @@ class QuotesNotifier extends Notifier<List<Quote>> {
 
     final quote = Quote(
       id: draft.id,
-      number: _numberGenerator.nextNumber(),
+      number: draft.number,
       status: QuoteStatus.draft,
       clientSnapshot: draft.clientSnapshot,
       eventSnapshot: draft.eventSnapshot,
@@ -58,8 +57,13 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       approvedAt: null,
     );
 
-    state = [...state, quote];
-    return true;
+    try {
+      final persisted = await _repository.insert(quote);
+      state = [...state, persisted];
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Quote? findById(String id) {
@@ -71,7 +75,7 @@ class QuotesNotifier extends Notifier<List<Quote>> {
     return null;
   }
 
-  bool updateQuote(Quote quote) {
+  Future<bool> updateQuote(Quote quote) async {
     final existing = findById(quote.id);
     if (existing == null || existing.status != QuoteStatus.draft) {
       return false;
@@ -109,14 +113,19 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       approvedAt: existing.approvedAt,
     );
 
-    state = [
-      for (final current in state)
-        if (current.id == updated.id) updated else current,
-    ];
-    return true;
+    try {
+      await _repository.update(updated);
+      state = [
+        for (final current in state)
+          if (current.id == updated.id) updated else current,
+      ];
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
-  bool transitionStatus(String id, QuoteStatus target) {
+  Future<bool> transitionStatus(String id, QuoteStatus target) async {
     final existing = findById(id);
     if (existing == null) {
       return false;
@@ -133,8 +142,8 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       changedAt: now,
     );
 
-    final reopeningForEditing = existing.status == QuoteStatus.approved &&
-        target == QuoteStatus.draft;
+    final reopeningForEditing =
+        existing.status == QuoteStatus.approved && target == QuoteStatus.draft;
 
     final updated = existing.copyWith(
       status: target,
@@ -144,11 +153,16 @@ class QuotesNotifier extends Notifier<List<Quote>> {
       statusHistory: [...existing.statusHistory, historyEntry],
     );
 
-    state = [
-      for (final current in state)
-        if (current.id == updated.id) updated else current,
-    ];
-    return true;
+    try {
+      await _repository.update(updated);
+      state = [
+        for (final current in state)
+          if (current.id == updated.id) updated else current,
+      ];
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 }
 

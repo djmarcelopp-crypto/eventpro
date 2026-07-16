@@ -12,6 +12,7 @@ import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/features/quotes/utils/quote_company_snapshot_builder.dart';
 import 'package:eventpro/features/settings/providers/company_profile_provider.dart';
 import '../../settings/fakes/company_profile_repository_test_overrides.dart';
+import '../fakes/quote_repository_test_overrides.dart';
 import '../quotes_test_helpers.dart';
 
 void main() {
@@ -21,7 +22,10 @@ void main() {
 
     ProviderContainer createContainer() {
       return ProviderContainer(
-        overrides: [quoteClockProvider.overrideWithValue(() => fixedNow)],
+        overrides: [
+          quoteClockProvider.overrideWithValue(() => fixedNow),
+          ...quoteRepositoryOverrides(),
+        ],
       );
     }
 
@@ -37,9 +41,9 @@ void main() {
       expect(container.read(quotesProvider), isEmpty);
     });
 
-    test('addQuote força draft, approvedAt null e número gerado', () {
+    test('addQuote força draft, approvedAt null e número gerado', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft());
+      await notifier.addQuote(sampleQuoteDraft());
 
       final quote = container.read(quotesProvider).single;
       expect(quote.status, QuoteStatus.draft);
@@ -50,7 +54,7 @@ void main() {
       expect(quote.updatedAt, fixedNow);
     });
 
-    test('addQuote ignora histórico recebido e cria entrada inicial', () {
+    test('addQuote ignora histórico recebido e cria entrada inicial', () async {
       final notifier = container.read(quotesProvider.notifier);
       final fakeHistory = [
         QuoteStatusHistoryEntry(
@@ -60,7 +64,7 @@ void main() {
         ),
       ];
 
-      notifier.addQuote(
+      await notifier.addQuote(
         sampleQuoteDraft().copyWith(statusHistory: fakeHistory),
       );
 
@@ -74,16 +78,16 @@ void main() {
 
     test(
       'transitionStatus adiciona histórico e dupla transição inválida não duplica',
-      () {
+      () async {
         final notifier = container.read(quotesProvider.notifier);
-        notifier.addQuote(sampleQuoteDraft(id: 'quote-history'));
+        await notifier.addQuote(sampleQuoteDraft(id: 'quote-history'));
 
         expect(
-          notifier.transitionStatus('quote-history', QuoteStatus.sent),
+          await notifier.transitionStatus('quote-history', QuoteStatus.sent),
           isTrue,
         );
         expect(
-          notifier.transitionStatus('quote-history', QuoteStatus.sent),
+          await notifier.transitionStatus('quote-history', QuoteStatus.sent),
           isFalse,
         );
 
@@ -95,17 +99,17 @@ void main() {
       },
     );
 
-    test('findById retorna orçamento existente ou null', () {
+    test('findById retorna orçamento existente ou null', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-42'));
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-42'));
 
       expect(notifier.findById('quote-42')?.id, 'quote-42');
       expect(notifier.findById('missing'), isNull);
     });
 
-    test('updateQuote funciona somente em draft', () {
+    test('updateQuote funciona somente em draft', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-1'));
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-1'));
 
       final existing = notifier.findById('quote-1')!;
       final updatedDraft = Quote(
@@ -126,7 +130,7 @@ void main() {
         updatedAt: DateTime(2019, 1, 1),
       );
 
-      expect(notifier.updateQuote(updatedDraft), isTrue);
+      expect(await notifier.updateQuote(updatedDraft), isTrue);
 
       final result = notifier.findById('quote-1')!;
       expect(result.status, QuoteStatus.draft);
@@ -140,62 +144,65 @@ void main() {
       expect(result.updatedAt, fixedNow);
     });
 
-    test('updateQuote bloqueado fora de draft', () {
+    test('updateQuote bloqueado fora de draft', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-2'));
-      notifier.transitionStatus('quote-2', QuoteStatus.sent);
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-2'));
+      await notifier.transitionStatus('quote-2', QuoteStatus.sent);
 
       final existing = notifier.findById('quote-2')!;
       final attempt = existing.copyWith(notes: 'Tentativa de alteração');
 
-      expect(notifier.updateQuote(attempt), isFalse);
+      expect(await notifier.updateQuote(attempt), isFalse);
       expect(notifier.findById('quote-2')?.notes, isNull);
     });
 
-    test('transitionStatus é a única forma de alterar status', () {
+    test('transitionStatus é a única forma de alterar status', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-3'));
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-3'));
 
       expect(
-        notifier.transitionStatus('quote-3', QuoteStatus.approved),
+        await notifier.transitionStatus('quote-3', QuoteStatus.approved),
         isFalse,
       );
-      expect(notifier.transitionStatus('quote-3', QuoteStatus.sent), isTrue);
+      expect(
+        await notifier.transitionStatus('quote-3', QuoteStatus.sent),
+        isTrue,
+      );
       expect(notifier.findById('quote-3')?.status, QuoteStatus.sent);
     });
 
-    test('approvedAt preenchido na aprovação e preservado ao cancelar', () {
+    test('approvedAt preenchido na aprovação e preservado ao cancelar', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-4'));
-      notifier.transitionStatus('quote-4', QuoteStatus.sent);
-      notifier.transitionStatus('quote-4', QuoteStatus.approved);
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-4'));
+      await notifier.transitionStatus('quote-4', QuoteStatus.sent);
+      await notifier.transitionStatus('quote-4', QuoteStatus.approved);
 
       final approved = notifier.findById('quote-4')!;
       expect(approved.approvedAt, isNotNull);
       expect(approved.isApprovedForContract, isTrue);
 
       final approvedAt = approved.approvedAt;
-      notifier.transitionStatus('quote-4', QuoteStatus.cancelled);
+      await notifier.transitionStatus('quote-4', QuoteStatus.cancelled);
 
       final cancelled = notifier.findById('quote-4')!;
       expect(cancelled.status, QuoteStatus.cancelled);
       expect(cancelled.approvedAt, approvedAt);
     });
 
-    test('reabrir aprovado limpa approvedAt e preserva dados', () {
+    test('reabrir aprovado limpa approvedAt e preserva dados', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-reopen'));
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-reopen'));
 
       final beforeApproval = notifier.findById('quote-reopen')!;
-      notifier.transitionStatus('quote-reopen', QuoteStatus.sent);
-      notifier.transitionStatus('quote-reopen', QuoteStatus.approved);
+      await notifier.transitionStatus('quote-reopen', QuoteStatus.sent);
+      await notifier.transitionStatus('quote-reopen', QuoteStatus.approved);
 
       final approved = notifier.findById('quote-reopen')!;
       expect(approved.approvedAt, fixedNow);
       expect(approved.statusHistory, hasLength(3));
 
       expect(
-        notifier.transitionStatus('quote-reopen', QuoteStatus.draft),
+        await notifier.transitionStatus('quote-reopen', QuoteStatus.draft),
         isTrue,
       );
 
@@ -217,13 +224,16 @@ void main() {
       expect(reopened.statusHistory.last.newStatus, QuoteStatus.draft);
     });
 
-    test('reabrir bloqueado fora de aprovado', () {
+    test('reabrir bloqueado fora de aprovado', () async {
       final notifier = container.read(quotesProvider.notifier);
-      notifier.addQuote(sampleQuoteDraft(id: 'quote-reopen-blocked'));
-      notifier.transitionStatus('quote-reopen-blocked', QuoteStatus.sent);
+      await notifier.addQuote(sampleQuoteDraft(id: 'quote-reopen-blocked'));
+      await notifier.transitionStatus('quote-reopen-blocked', QuoteStatus.sent);
 
       expect(
-        notifier.transitionStatus('quote-reopen-blocked', QuoteStatus.draft),
+        await notifier.transitionStatus(
+          'quote-reopen-blocked',
+          QuoteStatus.draft,
+        ),
         isFalse,
       );
       expect(
@@ -234,7 +244,7 @@ void main() {
 
     test(
       'ciclo completo draft → sent → approved → draft → sent → approved',
-      () {
+      () async {
         final t1 = DateTime(2026, 7, 13, 10, 0);
         final t2 = DateTime(2026, 7, 13, 11, 0);
         final t3 = DateTime(2026, 7, 13, 12, 0);
@@ -244,12 +254,15 @@ void main() {
 
         var currentNow = t1;
         final cycleContainer = ProviderContainer(
-          overrides: [quoteClockProvider.overrideWithValue(() => currentNow)],
+          overrides: [
+            quoteClockProvider.overrideWithValue(() => currentNow),
+            ...quoteRepositoryOverrides(),
+          ],
         );
         addTearDown(cycleContainer.dispose);
 
         final notifier = cycleContainer.read(quotesProvider.notifier);
-        notifier.addQuote(sampleQuoteDraft(id: 'quote-cycle'));
+        await notifier.addQuote(sampleQuoteDraft(id: 'quote-cycle'));
 
         final created = notifier.findById('quote-cycle')!;
         final number = created.number;
@@ -257,22 +270,22 @@ void main() {
         final createdAt = created.createdAt;
 
         currentNow = t2;
-        notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
+        await notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
 
         currentNow = t3;
-        notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
+        await notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
         expect(notifier.findById('quote-cycle')!.approvedAt, t3);
 
         currentNow = t4;
-        notifier.transitionStatus('quote-cycle', QuoteStatus.draft);
+        await notifier.transitionStatus('quote-cycle', QuoteStatus.draft);
         final reopened = notifier.findById('quote-cycle')!;
         expect(reopened.approvedAt, isNull);
 
         currentNow = t5;
-        notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
+        await notifier.transitionStatus('quote-cycle', QuoteStatus.sent);
 
         currentNow = t6;
-        notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
+        await notifier.transitionStatus('quote-cycle', QuoteStatus.approved);
         final finalQuote = notifier.findById('quote-cycle')!;
 
         expect(finalQuote.approvedAt, t6);
@@ -312,28 +325,28 @@ void main() {
         );
       }
 
-      test('addQuote preserva snapshot recebido na criação', () {
+      test('addQuote preserva snapshot recebido na criação', () async {
         final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
         final notifier = container.read(quotesProvider.notifier);
 
-        notifier.addQuote(
+        await notifier.addQuote(
           draftWithSnapshot(id: 'quote-snap', snapshot: snapshot),
         );
 
         expect(notifier.findById('quote-snap')!.companySnapshot, snapshot);
       });
 
-      test('addQuote sem snapshot mantém null', () {
+      test('addQuote sem snapshot mantém null', () async {
         final notifier = container.read(quotesProvider.notifier);
-        notifier.addQuote(sampleQuoteDraft(id: 'quote-null'));
+        await notifier.addQuote(sampleQuoteDraft(id: 'quote-null'));
 
         expect(notifier.findById('quote-null')!.companySnapshot, isNull);
       });
 
-      test('updateQuote preserva snapshot existente', () {
+      test('updateQuote preserva snapshot existente', () async {
         final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
         final notifier = container.read(quotesProvider.notifier);
-        notifier.addQuote(
+        await notifier.addQuote(
           draftWithSnapshot(id: 'quote-update', snapshot: snapshot),
         );
 
@@ -356,61 +369,73 @@ void main() {
           updatedAt: existing.createdAt,
         );
 
-        expect(notifier.updateQuote(attempt), isTrue);
+        expect(await notifier.updateQuote(attempt), isTrue);
         expect(notifier.findById('quote-update')!.companySnapshot, snapshot);
         expect(notifier.findById('quote-update')!.notes, 'Atualizado');
       });
 
-      test('transições preservam snapshot', () {
+      test('transições preservam snapshot', () async {
         final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
         final notifier = container.read(quotesProvider.notifier);
-        notifier.addQuote(
+        await notifier.addQuote(
           draftWithSnapshot(id: 'quote-transitions', snapshot: snapshot),
         );
 
-        notifier.transitionStatus('quote-transitions', QuoteStatus.sent);
+        await notifier.transitionStatus('quote-transitions', QuoteStatus.sent);
         expect(
           notifier.findById('quote-transitions')!.companySnapshot,
           snapshot,
         );
 
-        notifier.transitionStatus('quote-transitions', QuoteStatus.approved);
+        await notifier.transitionStatus(
+          'quote-transitions',
+          QuoteStatus.approved,
+        );
         expect(
           notifier.findById('quote-transitions')!.companySnapshot,
           snapshot,
         );
 
-        notifier.transitionStatus('quote-transitions', QuoteStatus.cancelled);
+        await notifier.transitionStatus(
+          'quote-transitions',
+          QuoteStatus.cancelled,
+        );
         expect(
           notifier.findById('quote-transitions')!.companySnapshot,
           snapshot,
         );
       });
 
-      test('reabertura de aprovado preserva snapshot', () {
+      test('reabertura de aprovado preserva snapshot', () async {
         final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
         final notifier = container.read(quotesProvider.notifier);
-        notifier.addQuote(
+        await notifier.addQuote(
           draftWithSnapshot(id: 'quote-reopen-snap', snapshot: snapshot),
         );
 
-        notifier.transitionStatus('quote-reopen-snap', QuoteStatus.sent);
-        notifier.transitionStatus('quote-reopen-snap', QuoteStatus.approved);
-        notifier.transitionStatus('quote-reopen-snap', QuoteStatus.draft);
+        await notifier.transitionStatus('quote-reopen-snap', QuoteStatus.sent);
+        await notifier.transitionStatus(
+          'quote-reopen-snap',
+          QuoteStatus.approved,
+        );
+        await notifier.transitionStatus(
+          'quote-reopen-snap',
+          QuoteStatus.draft,
+        );
 
         final reopened = notifier.findById('quote-reopen-snap')!;
         expect(reopened.status, QuoteStatus.draft);
         expect(reopened.companySnapshot, snapshot);
       });
 
-      test('copyWith sem snapshot preserva valor existente', () {
+      test('copyWith sem snapshot preserva valor existente', () async {
         final snapshot = sampleCompanySnapshot(capturedAt: fixedNow);
         final notifier = container.read(quotesProvider.notifier);
-        notifier.addQuote(
+        await notifier.addQuote(
           draftWithSnapshot(id: 'quote-copywith', snapshot: snapshot),
         );
 
-        notifier.transitionStatus('quote-copywith', QuoteStatus.sent);
+        await notifier.transitionStatus('quote-copywith', QuoteStatus.sent);
         final sent = notifier.findById('quote-copywith')!;
 
         expect(sent.copyWith(notes: 'Teste').companySnapshot, snapshot);
@@ -422,6 +447,7 @@ void main() {
           final profileContainer = ProviderContainer(
             overrides: [
               quoteClockProvider.overrideWithValue(() => fixedNow),
+              ...quoteRepositoryOverrides(),
               ...companyProfileRepositoryOverrides(),
             ],
           );
@@ -440,7 +466,7 @@ void main() {
           )!;
 
           final quotesNotifier = profileContainer.read(quotesProvider.notifier);
-          quotesNotifier.addQuote(
+          await quotesNotifier.addQuote(
             draftWithSnapshot(id: 'quote-profile', snapshot: originalSnapshot),
           );
 
@@ -453,7 +479,7 @@ void main() {
 
           final updatedDraft = quotesNotifier.findById('quote-profile')!;
           final updateAttempt = updatedDraft.copyWith(notes: 'Só notas mudam');
-          quotesNotifier.updateQuote(updateAttempt);
+          await quotesNotifier.updateQuote(updateAttempt);
 
           final quote = quotesNotifier.findById('quote-profile')!;
           expect(quote.companySnapshot, originalSnapshot);

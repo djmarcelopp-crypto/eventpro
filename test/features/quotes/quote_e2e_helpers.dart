@@ -15,6 +15,7 @@ import 'package:eventpro/main.dart';
 import '../catalog/fakes/catalog_repository_test_overrides.dart';
 import '../clients/fakes/fake_client_repository.dart';
 import '../settings/fakes/company_profile_repository_test_overrides.dart';
+import 'fakes/quote_repository_test_overrides.dart';
 import 'quotes_test_helpers.dart';
 
 final quoteE2eFixedNow = DateTime(2026, 7, 13, 10, 30);
@@ -33,6 +34,7 @@ List<Override> quoteE2eOverrides({
     clientRepositoryProvider.overrideWithValue(FakeClientRepository()),
     ...companyProfileRepositoryOverrides(),
     ...catalogRepositoryOverrides(),
+    ...quoteRepositoryOverrides(),
     quoteClockProvider.overrideWithValue(
       () => mutableClock?.now ?? quoteE2eFixedNow,
     ),
@@ -78,7 +80,7 @@ Future<void> seedQuoteDependencies(ProviderContainer container) async {
 
 Future<Quote> seedQuote(ProviderContainer container, Quote draft) async {
   await seedQuoteDependencies(container);
-  container.read(quotesProvider.notifier).addQuote(draft);
+  await container.read(quotesProvider.notifier).addQuote(draft);
   return container.read(quotesProvider.notifier).findById(draft.id)!;
 }
 
@@ -164,11 +166,13 @@ Future<void> openQuoteEditFromDetail(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Quote transitionQuoteTo(
+Future<Quote> transitionQuoteTo(
   ProviderContainer container,
   String quoteId,
   QuoteStatus target,
-) {
-  container.read(quotesProvider.notifier).transitionStatus(quoteId, target);
+) async {
+  await container
+      .read(quotesProvider.notifier)
+      .transitionStatus(quoteId, target);
   return container.read(quotesProvider.notifier).findById(quoteId)!;
 }

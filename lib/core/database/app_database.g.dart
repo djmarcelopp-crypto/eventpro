@@ -9391,6 +9391,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this as AppDatabase,
   );
   late final CatalogDao catalogDao = CatalogDao(this as AppDatabase);
+  late final QuotesDao quotesDao = QuotesDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15742,5 +15743,66 @@ class CatalogDaoManager {
       $$CatalogPackageComponentsTableTableManager(
         _db.attachedDatabase,
         _db.catalogPackageComponents,
+      );
+}
+
+mixin _$QuotesDaoMixin on DatabaseAccessor<AppDatabase> {
+  $QuotesTable get quotes => attachedDatabase.quotes;
+  $QuoteClientSnapshotsTable get quoteClientSnapshots =>
+      attachedDatabase.quoteClientSnapshots;
+  $QuoteEventSnapshotsTable get quoteEventSnapshots =>
+      attachedDatabase.quoteEventSnapshots;
+  $QuoteCompanySnapshotsTable get quoteCompanySnapshots =>
+      attachedDatabase.quoteCompanySnapshots;
+  $QuoteLineItemsTable get quoteLineItems => attachedDatabase.quoteLineItems;
+  $QuoteLinePackageComponentsTable get quoteLinePackageComponents =>
+      attachedDatabase.quoteLinePackageComponents;
+  $QuoteStatusHistoryTable get quoteStatusHistory =>
+      attachedDatabase.quoteStatusHistory;
+  $QuoteNumberSequencesTable get quoteNumberSequences =>
+      attachedDatabase.quoteNumberSequences;
+  QuotesDaoManager get managers => QuotesDaoManager(this);
+}
+
+class QuotesDaoManager {
+  final _$QuotesDaoMixin _db;
+  QuotesDaoManager(this._db);
+  $$QuotesTableTableManager get quotes =>
+      $$QuotesTableTableManager(_db.attachedDatabase, _db.quotes);
+  $$QuoteClientSnapshotsTableTableManager get quoteClientSnapshots =>
+      $$QuoteClientSnapshotsTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteClientSnapshots,
+      );
+  $$QuoteEventSnapshotsTableTableManager get quoteEventSnapshots =>
+      $$QuoteEventSnapshotsTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteEventSnapshots,
+      );
+  $$QuoteCompanySnapshotsTableTableManager get quoteCompanySnapshots =>
+      $$QuoteCompanySnapshotsTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteCompanySnapshots,
+      );
+  $$QuoteLineItemsTableTableManager get quoteLineItems =>
+      $$QuoteLineItemsTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteLineItems,
+      );
+  $$QuoteLinePackageComponentsTableTableManager
+  get quoteLinePackageComponents =>
+      $$QuoteLinePackageComponentsTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteLinePackageComponents,
+      );
+  $$QuoteStatusHistoryTableTableManager get quoteStatusHistory =>
+      $$QuoteStatusHistoryTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteStatusHistory,
+      );
+  $$QuoteNumberSequencesTableTableManager get quoteNumberSequences =>
+      $$QuoteNumberSequencesTableTableManager(
+        _db.attachedDatabase,
+        _db.quoteNumberSequences,
       );
 }

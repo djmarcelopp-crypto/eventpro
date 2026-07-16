@@ -10,6 +10,7 @@ import 'package:eventpro/features/quotes/pdf/theme/quote_pdf_fonts.dart';
 import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 
+import '../fakes/quote_repository_test_overrides.dart';
 import '../quotes_test_helpers.dart';
 import 'fakes/fake_quote_pdf_export_service.dart';
 import 'fakes/fake_quote_pdf_generator.dart';
@@ -33,10 +34,10 @@ void main() {
       fakeLogoLoader = FakeQuotePdfLogoLoaderService();
     });
 
-    ProviderContainer createContainer({
+    Future<ProviderContainer> createContainer({
       List<Override> extraOverrides = const [],
       Quote? seededQuote,
-    }) {
+    }) async {
       final container = ProviderContainer(
         overrides: [
           quoteClockProvider.overrideWithValue(() => DateTime(2026, 7, 13)),
@@ -44,12 +45,13 @@ void main() {
           quotePdfGeneratorProvider.overrideWithValue(fakeGenerator),
           quotePdfLogoLoaderProvider.overrideWithValue(fakeLogoLoader),
           quotePdfExportServiceProvider.overrideWithValue(fakeExport),
+          ...quoteRepositoryOverrides(),
           ...extraOverrides,
         ],
       );
 
       if (seededQuote != null) {
-        container.read(quotesProvider.notifier).addQuote(seededQuote);
+        await container.read(quotesProvider.notifier).addQuote(seededQuote);
       }
 
       return container;
@@ -91,7 +93,7 @@ void main() {
     }
 
     test('gera bytes uma vez e entra em estado pronto', () async {
-      final container = createContainer(seededQuote: eligibleQuote());
+      final container = await createContainer(seededQuote: eligibleQuote());
       addTearDown(container.dispose);
 
       final state = await waitForTerminalState(container, 'quote-pdf-1');
@@ -108,7 +110,7 @@ void main() {
     });
 
     test('não regenera bytes em nova leitura do provider', () async {
-      final container = createContainer(seededQuote: eligibleQuote());
+      final container = await createContainer(seededQuote: eligibleQuote());
       addTearDown(container.dispose);
 
       final subscription = container.listen(
@@ -125,7 +127,7 @@ void main() {
     });
 
     test('retorna não encontrado para orçamento inexistente', () async {
-      final container = createContainer();
+      final container = await createContainer();
       addTearDown(container.dispose);
 
       final state = await waitForTerminalState(container, 'missing-quote');
@@ -136,7 +138,7 @@ void main() {
 
     test('bloqueia quando companySnapshot é nulo', () async {
       final quote = buildRichQuoteAddDraft(id: 'quote-blocked');
-      final container = createContainer(seededQuote: quote);
+      final container = await createContainer(seededQuote: quote);
       addTearDown(container.dispose);
 
       final state = await waitForTerminalState(container, 'quote-blocked');
@@ -151,7 +153,7 @@ void main() {
 
     test('entra em erro quando geração falha', () async {
       fakeGenerator.error = StateError('generation failed');
-      final container = createContainer(seededQuote: eligibleQuote());
+      final container = await createContainer(seededQuote: eligibleQuote());
       addTearDown(container.dispose);
 
       final state = await waitForTerminalState(container, 'quote-pdf-1');
@@ -160,7 +162,7 @@ void main() {
     });
 
     test('exporta com sucesso reutilizando os mesmos bytes', () async {
-      final container = createContainer(seededQuote: eligibleQuote());
+      final container = await createContainer(seededQuote: eligibleQuote());
       addTearDown(container.dispose);
 
       final ready = await waitForTerminalState(container, 'quote-pdf-1')
@@ -180,7 +182,7 @@ void main() {
 
     test('cancelamento de exportação é silencioso', () async {
       fakeExport.nextResult = const QuotePdfExportCancelled();
-      final container = createContainer(seededQuote: eligibleQuote());
+      final container = await createContainer(seededQuote: eligibleQuote());
       addTearDown(container.dispose);
 
       await waitForTerminalState(container, 'quote-pdf-1');
@@ -193,7 +195,7 @@ void main() {
 
     test('falha de exportação retorna resultado de erro', () async {
       fakeExport.nextResult = const QuotePdfExportFailed();
-      final container = createContainer(seededQuote: eligibleQuote());
+      final container = await createContainer(seededQuote: eligibleQuote());
       addTearDown(container.dispose);
 
       await waitForTerminalState(container, 'quote-pdf-1');

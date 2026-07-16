@@ -17,28 +17,37 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 | A | Infraestrutura Drift — tabelas, `AppDatabase`, schema v1, FKs, testes de lifecycle | `a5de3a0` | ✅ Concluído |
 | B | Clientes — `ClientsDao`, `DriftClientRepository`, mapper, provider async | `c39e65d` | ✅ Concluído |
 | C | Settings — `CompanyProfilesDao`, `DriftCompanyProfileRepository`, mapper, save async | `0fc0e89` | ✅ Concluído |
-| **D** | **Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async** | — | **🔄 Atual** |
-| E | Orçamentos — grafo completo, sequência de números | — | ⏳ Pendente |
+| D | Catálogo e pacotes — DAO, repository, mapper, `CatalogNotifier` async | *(pendente de commit)* | ✅ Concluído |
+| **E** | **Orçamentos — grafo completo, sequência de números** | — | **🔄 Atual** |
 | F | Bootstrap e hidratação — carregar SQLite no startup | — | ⏳ Pendente |
 | G | Hardening e migrações de schema | — | ⏳ Pendente |
 | H | Documentação — `docs/tasks/TASK-024.md`, business-rules | — | ⏳ Pendente |
 
-### Checkpoint atual: CP-D
+### CP-D — concluído (pendente de commit)
 
-**Escopo:**
+**Escopo entregue:**
 
-- `CatalogDao` com transações para itens e componentes de pacote
-- `CatalogRepository` / `DriftCatalogRepository`
+- `CatalogDao` com transações para itens e componentes de pacote (`insertItemWithComponents`, `updateItemWithComponents`, `deleteById`)
+- `CatalogRepository` / `DriftCatalogRepository` registrados via `catalogRepositoryProvider`
 - `CatalogItemMapper` (preço em centavos, enums, snapshots de componentes)
-- Refatorar `CatalogNotifier` para operações async com escrita SQLite
-- Ajustar telas e coordinator de exclusão para `await`
-- Testes de mapper, repository e notifier
+- `CatalogNotifier` refatorado para `addItem`/`updateItem`/`deleteItem` assíncronos, delegando à camada de persistência e preservando o padrão de geração de ID na UI (compatível com o fluxo de imagens)
+- Telas (`new_catalog_item_screen.dart`, `catalog_item_detail_screen.dart`) e `CatalogItemDeletionCoordinator` ajustados para `await`, com feedback de erro em caso de falha de persistência
+- Testes novos: `CatalogItemMapper`, `DriftCatalogRepository` (CRUD, transações, FK cascade/restrict), `CatalogNotifier` (sucesso e falha)
+- `FakeCatalogRepository` e `catalogRepositoryOverrides()` propagados a todos os testes que tocam o catálogo (`widget_test.dart`, `quote_e2e_helpers.dart` e specs de catálogo)
 
-**Fora de escopo do CP-D:**
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 769 testes passando.
+
+**Fora de escopo do CP-D (mantido):**
 
 - Hidratação no startup (CP-F)
 - Persistência de orçamentos (CP-E)
 - Atualização de `docs/business-rules/catalog.md` (CP-H)
 - Migrações de schema
+
+**Commit:** ainda não realizado — aguardando aprovação do Product Owner.
+
+### Checkpoint atual: CP-E
+
+Persistência de orçamentos (grafo completo, sequência de números). Plano técnico a ser apresentado antes de qualquer implementação.
 
 **Último commit:** `0fc0e89`

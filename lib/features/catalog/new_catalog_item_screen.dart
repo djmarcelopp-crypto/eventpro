@@ -510,10 +510,21 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
       );
 
       if (_isEditing) {
-        ref.read(catalogProvider.notifier).updateItem(
+        final updated = await ref.read(catalogProvider.notifier).updateItem(
               item,
               clearImageReference: clearImageReference,
             );
+
+        if (!updated) {
+          if (rollbackReference != null) {
+            await storage.deleteCommitted(rollbackReference);
+          }
+          if (mounted) {
+            _showImageError('Não foi possível salvar. Tente novamente.');
+          }
+          return;
+        }
+
         _formSaved = true;
 
         if (_removeImageRequested && originalToDelete != null) {
@@ -535,7 +546,18 @@ class _NewCatalogItemScreenState extends ConsumerState<NewCatalogItemScreen> {
         return;
       }
 
-      ref.read(catalogProvider.notifier).addItem(item);
+      final added = await ref.read(catalogProvider.notifier).addItem(item);
+
+      if (!added) {
+        if (rollbackReference != null) {
+          await storage.deleteCommitted(rollbackReference);
+        }
+        if (mounted) {
+          _showImageError('Não foi possível salvar. Tente novamente.');
+        }
+        return;
+      }
+
       _formSaved = true;
 
       if (!mounted) {

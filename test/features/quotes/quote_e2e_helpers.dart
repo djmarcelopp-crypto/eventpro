@@ -12,6 +12,7 @@ import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/main.dart';
 
+import '../catalog/fakes/catalog_repository_test_overrides.dart';
 import '../clients/fakes/fake_client_repository.dart';
 import '../settings/fakes/company_profile_repository_test_overrides.dart';
 import 'quotes_test_helpers.dart';
@@ -31,6 +32,7 @@ List<Override> quoteE2eOverrides({
   return [
     clientRepositoryProvider.overrideWithValue(FakeClientRepository()),
     ...companyProfileRepositoryOverrides(),
+    ...catalogRepositoryOverrides(),
     quoteClockProvider.overrideWithValue(
       () => mutableClock?.now ?? quoteE2eFixedNow,
     ),
@@ -71,7 +73,7 @@ Future<void> seedQuoteDependencies(ProviderContainer container) async {
     ...container.read(clientsProvider),
     client,
   ];
-  container.read(catalogProvider.notifier).addItem(sampleCatalogItem());
+  await container.read(catalogProvider.notifier).addItem(sampleCatalogItem());
 }
 
 Future<Quote> seedQuote(ProviderContainer container, Quote draft) async {

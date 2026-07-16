@@ -10,6 +10,8 @@ import 'package:eventpro/features/catalog/models/catalog_package_component.dart'
 import 'package:eventpro/features/catalog/new_catalog_item_screen.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 
+import 'fakes/catalog_repository_test_overrides.dart';
+
 Future<void> _tapCatalogSave(WidgetTester tester) async {
   final saveButton = find.byKey(const Key('catalog_save_button'));
   final formScrollable = find.ancestor(
@@ -134,11 +136,13 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final container = ProviderContainer();
+    final container = ProviderContainer(
+      overrides: catalogRepositoryOverrides(),
+    );
     addTearDown(container.dispose);
 
     for (final item in seedItems) {
-      container.read(catalogProvider.notifier).addItem(item);
+      await container.read(catalogProvider.notifier).addItem(item);
     }
 
     await tester.pumpWidget(
@@ -474,10 +478,12 @@ void main() {
         components: [component(id: eq.id)],
       );
 
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: catalogRepositoryOverrides(),
+      );
       addTearDown(container.dispose);
-      container.read(catalogProvider.notifier).addItem(eq);
-      container.read(catalogProvider.notifier).addItem(pkg);
+      await container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(pkg);
 
       final router = GoRouter(
         initialLocation: '/',

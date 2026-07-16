@@ -3,8 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/catalog_category.dart';
 import 'package:eventpro/features/catalog/catalog_item_type.dart';
+import 'package:eventpro/features/catalog/data/repositories/catalog_repository.dart';
 import 'package:eventpro/features/catalog/models/catalog_delete_result.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
+
+import '../fakes/catalog_repository_test_overrides.dart';
+import '../fakes/fake_catalog_repository.dart';
 
 CatalogItem _sampleItem({
   String id = 'item-1',
@@ -25,50 +29,54 @@ CatalogItem _sampleItem({
   );
 }
 
+ProviderContainer _createContainer({CatalogRepository? repository}) {
+  final container = ProviderContainer(
+    overrides: catalogRepositoryOverrides(repository: repository),
+  );
+  addTearDown(container.dispose);
+  return container;
+}
+
 void main() {
   group('CatalogNotifier', () {
-    late ProviderContainer container;
-
-    setUp(() {
-      container = ProviderContainer();
-    });
-
-    tearDown(() {
-      container.dispose();
-    });
-
     test('inicia com lista vazia', () {
+      final container = _createContainer();
       expect(container.read(catalogProvider), isEmpty);
     });
 
-    test('addItem adiciona item à lista', () {
+    test('addItem adiciona item à lista', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem());
 
+      final saved = await notifier.addItem(_sampleItem());
+
+      expect(saved, isTrue);
       final items = container.read(catalogProvider);
       expect(items, hasLength(1));
       expect(items.first.name, 'Caixa de som');
     });
 
-    test('findById retorna item existente ou null', () {
+    test('findById retorna item existente ou null', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem());
+      await notifier.addItem(_sampleItem());
 
       expect(notifier.findById('item-1')?.name, 'Caixa de som');
       expect(notifier.findById('missing'), isNull);
     });
 
-    test('updateItem preserva id, createdAt e imageReference', () {
+    test('updateItem preserva id, createdAt e imageReference', () async {
       final createdAt = DateTime(2024, 1, 10, 8, 30);
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(
+      await notifier.addItem(
         _sampleItem(
           createdAt: createdAt,
           imageReference: 'catalog/items/photo.jpg',
         ),
       );
 
-      notifier.updateItem(
+      final saved = await notifier.updateItem(
         CatalogItem.fromForm(
           type: CatalogItemType.service,
           name: 'DJ Profissional',
@@ -80,6 +88,7 @@ void main() {
         ).copyWith(id: 'item-1'),
       );
 
+      expect(saved, isTrue);
       final updated = container.read(catalogProvider).single;
       expect(updated.id, 'item-1');
       expect(updated.createdAt, createdAt);
@@ -87,21 +96,23 @@ void main() {
       expect(updated.name, 'DJ Profissional');
     });
 
-    test('updateItem altera status ativo', () {
+    test('updateItem altera status ativo', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem());
+      await notifier.addItem(_sampleItem());
 
       final existing = notifier.findById('item-1')!;
-      notifier.updateItem(existing.copyWith(active: false));
+      await notifier.updateItem(existing.copyWith(active: false));
 
       expect(container.read(catalogProvider).single.active, isFalse);
     });
 
-    test('updateItem ignora ID inexistente', () {
+    test('updateItem ignora ID inexistente', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem());
+      await notifier.addItem(_sampleItem());
 
-      notifier.updateItem(
+      final saved = await notifier.updateItem(
         CatalogItem.fromForm(
           type: CatalogItemType.service,
           name: 'Item fantasma',
@@ -112,19 +123,21 @@ void main() {
         ),
       );
 
+      expect(saved, isFalse);
       final items = container.read(catalogProvider);
       expect(items, hasLength(1));
       expect(items.single.name, 'Caixa de som');
     });
 
-    test('updateItem remove imageReference explicitamente', () {
+    test('updateItem remove imageReference explicitamente', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(
+      await notifier.addItem(
         _sampleItem(imageReference: 'catalog/images/old.jpg'),
       );
 
       final existing = notifier.findById('item-1')!;
-      notifier.updateItem(
+      await notifier.updateItem(
         existing.copyWith(name: 'Sem foto'),
         clearImageReference: true,
       );
@@ -133,12 +146,13 @@ void main() {
       expect(container.read(catalogProvider).single.name, 'Sem foto');
     });
 
-    test('updateItem mantém posição na lista', () {
+    test('updateItem mantém posição na lista', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(
+      await notifier.addItem(
         _sampleItem(id: 'item-1', createdAt: DateTime(2024, 1, 1)),
       );
-      notifier.addItem(
+      await notifier.addItem(
         CatalogItem.fromForm(
           type: CatalogItemType.service,
           name: 'DJ',
@@ -149,7 +163,7 @@ void main() {
           createdAt: DateTime(2024, 2, 1),
         ),
       );
-      notifier.addItem(
+      await notifier.addItem(
         CatalogItem.fromForm(
           type: CatalogItemType.equipment,
           name: 'Painel LED',
@@ -161,7 +175,7 @@ void main() {
         ),
       );
 
-      notifier.updateItem(
+      await notifier.updateItem(
         CatalogItem.fromForm(
           type: CatalogItemType.equipment,
           name: 'Caixa atualizada',
@@ -174,14 +188,18 @@ void main() {
       );
 
       final items = container.read(catalogProvider);
-      expect(items.map((item) => item.id).toList(), ['item-1', 'item-2', 'item-3']);
+      expect(
+        items.map((item) => item.id).toList(),
+        ['item-1', 'item-2', 'item-3'],
+      );
       expect(items.first.name, 'Caixa atualizada');
     });
 
-    test('deleteItem remove somente o item indicado preservando ordem', () {
+    test('deleteItem remove somente o item indicado preservando ordem', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem(id: 'item-1'));
-      notifier.addItem(
+      await notifier.addItem(_sampleItem(id: 'item-1'));
+      await notifier.addItem(
         CatalogItem.fromForm(
           type: CatalogItemType.service,
           name: 'DJ',
@@ -193,7 +211,7 @@ void main() {
         ),
       );
 
-      final result = notifier.deleteItem('item-1');
+      final result = await notifier.deleteItem('item-1');
 
       expect(result.status, CatalogDeleteStatus.deleted);
       expect(
@@ -202,13 +220,55 @@ void main() {
       );
     });
 
-    test('deleteItem retorna notFound para ID inexistente', () {
+    test('deleteItem retorna notFound para ID inexistente', () async {
+      final container = _createContainer();
       final notifier = container.read(catalogProvider.notifier);
-      notifier.addItem(_sampleItem());
+      await notifier.addItem(_sampleItem());
 
-      final result = notifier.deleteItem('missing');
+      final result = await notifier.deleteItem('missing');
 
       expect(result.status, CatalogDeleteStatus.notFound);
+      expect(container.read(catalogProvider), hasLength(1));
+    });
+
+    test('falha de insert não altera state', () async {
+      final repository = FakeCatalogRepository()
+        ..shouldFailOnNextOperation = true;
+      final container = _createContainer(repository: repository);
+
+      final saved = await container
+          .read(catalogProvider.notifier)
+          .addItem(_sampleItem());
+
+      expect(saved, isFalse);
+      expect(container.read(catalogProvider), isEmpty);
+    });
+
+    test('falha de update não altera state', () async {
+      final repository = FakeCatalogRepository();
+      final container = _createContainer(repository: repository);
+      final notifier = container.read(catalogProvider.notifier);
+      await notifier.addItem(_sampleItem());
+      repository.shouldFailOnNextOperation = true;
+
+      final saved = await notifier.updateItem(
+        _sampleItem().copyWith(name: 'Nome novo'),
+      );
+
+      expect(saved, isFalse);
+      expect(container.read(catalogProvider).single.name, 'Caixa de som');
+    });
+
+    test('falha de delete retorna failure e preserva state', () async {
+      final repository = FakeCatalogRepository();
+      final container = _createContainer(repository: repository);
+      final notifier = container.read(catalogProvider.notifier);
+      await notifier.addItem(_sampleItem());
+      repository.shouldFailOnNextOperation = true;
+
+      final result = await notifier.deleteItem('item-1');
+
+      expect(result.status, CatalogDeleteStatus.failure);
       expect(container.read(catalogProvider), hasLength(1));
     });
   });

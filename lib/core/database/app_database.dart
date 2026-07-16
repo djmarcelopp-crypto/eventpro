@@ -10,6 +10,7 @@ import 'tables.dart';
 part 'app_database.g.dart';
 part 'daos/clients_dao.dart';
 part 'daos/company_profiles_dao.dart';
+part 'daos/catalog_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -26,7 +27,7 @@ part 'daos/company_profiles_dao.dart';
     QuoteStatusHistory,
     QuoteNumberSequences,
   ],
-  daos: [ClientsDao, CompanyProfilesDao],
+  daos: [ClientsDao, CompanyProfilesDao, CatalogDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);

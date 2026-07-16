@@ -32,7 +32,7 @@ abstract class CatalogItemDeletionCoordinator {
     final imageReference = item.imageReference;
 
     try {
-      final deleteResult = notifier.deleteItem(itemId);
+      final deleteResult = await notifier.deleteItem(itemId);
 
       if (deleteResult.status == CatalogDeleteStatus.notFound) {
         return deleteResult;

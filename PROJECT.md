@@ -50,8 +50,8 @@ DJ Marcelo PP Festas e Eventos
 | **CP-A** | Infraestrutura Drift (tabelas, `AppDatabase`, schema v1) | ✅ Concluído |
 | **CP-B** | Persistência de clientes | ✅ Concluído |
 | **CP-C** | Persistência de configurações da empresa | ✅ Concluído |
-| **CP-D** | Persistência de catálogo e pacotes | 🔄 Próximo |
-| CP-E | Persistência de orçamentos | ⏳ Pendente |
+| **CP-D** | Persistência de catálogo e pacotes | ✅ Concluído |
+| **CP-E** | Persistência de orçamentos | 🔄 Próximo |
 | CP-F | Bootstrap e hidratação no startup | ⏳ Pendente |
 | CP-G | Hardening e migrações | ⏳ Pendente |
 | CP-H | Documentação final da task | ⏳ Pendente |
@@ -62,7 +62,8 @@ DJ Marcelo PP Festas e Eventos
 |-------|-------|
 | Branch | `cursor/task-024-local-persistence` |
 | Último commit | `0fc0e89` — `feat(settings): persist company profile locally with Drift` |
-| Próximo checkpoint | **CP-D** |
+| Alterações locais | CP-D implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
+| Próximo checkpoint | **CP-E** |
 
 ---
 
@@ -95,7 +96,7 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 
 - Dashboard
 - Clientes (persistência local — CP-B)
-- Catálogo: equipamentos, serviços e pacotes
+- Catálogo: equipamentos, serviços e pacotes (persistência local — CP-D)
 - Orçamentos com PDF e exportação
 - Configurações da empresa (persistência local — CP-C)
 

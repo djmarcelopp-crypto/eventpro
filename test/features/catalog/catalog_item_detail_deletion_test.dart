@@ -16,6 +16,7 @@ import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 import 'package:eventpro/main.dart';
 
 import '../quotes/quotes_test_helpers.dart';
+import 'fakes/catalog_repository_test_overrides.dart';
 import 'fakes/fake_catalog_image_storage_service.dart';
 import 'utils/catalog_package_dependency_checker_test.dart';
 
@@ -29,12 +30,13 @@ void main() {
     final fakeStorage = storage ?? FakeCatalogImageStorageService();
     final container = ProviderContainer(
       overrides: [
+        ...catalogRepositoryOverrides(),
         catalogImageStorageProvider.overrideWithValue(fakeStorage),
       ],
     );
 
     for (final item in items) {
-      container.read(catalogProvider.notifier).addItem(item);
+      await container.read(catalogProvider.notifier).addItem(item);
     }
 
     final router = GoRouter(
@@ -370,13 +372,14 @@ void main() {
       final eq = equipment();
       final container = ProviderContainer(
         overrides: [
+          ...catalogRepositoryOverrides(),
           catalogImageStorageProvider.overrideWithValue(
             FakeCatalogImageStorageService(),
           ),
         ],
       );
 
-      container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(eq);
       container.read(quotesProvider.notifier).addQuote(
             sampleQuoteDraft(
               items: [

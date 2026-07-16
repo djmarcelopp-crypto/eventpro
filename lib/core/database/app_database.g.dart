@@ -9390,6 +9390,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final CompanyProfilesDao companyProfilesDao = CompanyProfilesDao(
     this as AppDatabase,
   );
+  late final CatalogDao catalogDao = CatalogDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15722,5 +15723,24 @@ class CompanyProfilesDaoManager {
       $$CompanyProfilesTableTableManager(
         _db.attachedDatabase,
         _db.companyProfiles,
+      );
+}
+
+mixin _$CatalogDaoMixin on DatabaseAccessor<AppDatabase> {
+  $CatalogItemsTable get catalogItems => attachedDatabase.catalogItems;
+  $CatalogPackageComponentsTable get catalogPackageComponents =>
+      attachedDatabase.catalogPackageComponents;
+  CatalogDaoManager get managers => CatalogDaoManager(this);
+}
+
+class CatalogDaoManager {
+  final _$CatalogDaoMixin _db;
+  CatalogDaoManager(this._db);
+  $$CatalogItemsTableTableManager get catalogItems =>
+      $$CatalogItemsTableTableManager(_db.attachedDatabase, _db.catalogItems);
+  $$CatalogPackageComponentsTableTableManager get catalogPackageComponents =>
+      $$CatalogPackageComponentsTableTableManager(
+        _db.attachedDatabase,
+        _db.catalogPackageComponents,
       );
 }

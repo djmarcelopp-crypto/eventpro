@@ -27,6 +27,7 @@ part 'daos/quotes_dao.dart';
     QuoteLinePackageComponents,
     QuoteStatusHistory,
     QuoteNumberSequences,
+    AgendaBlocks,
   ],
   daos: [ClientsDao, CompanyProfilesDao, CatalogDao, QuotesDao],
 )
@@ -42,7 +43,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -51,6 +52,14 @@ class AppDatabase extends _$AppDatabase {
     },
     onCreate: (Migrator migrator) async {
       await migrator.createAll();
+    },
+    onUpgrade: (Migrator migrator, int from, int to) async {
+      // TASK-025 CP-A — primeira migração real do projeto: v1 (schema
+      // congelado da TASK-024) não tinha `agenda_blocks`. Nenhuma tabela
+      // existente é alterada; apenas a tabela nova é criada.
+      if (from == 1 && to >= 2) {
+        await migrator.createTable(agendaBlocks);
+      }
     },
   );
 

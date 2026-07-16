@@ -70,8 +70,8 @@ void main() {
       }
     });
 
-    test('schemaVersion is 1', () {
-      expect(database.schemaVersion, 1);
+    test('schemaVersion is 2', () {
+      expect(database.schemaVersion, 2);
     });
 
     test('foreign key enforcement is enabled by beforeOpen', () async {
@@ -546,6 +546,8 @@ void main() {
           'idx_quote_lines_quote_order',
           'idx_quote_pkg_line',
           'idx_quote_history_quote_order',
+          'idx_agenda_blocks_start',
+          'idx_agenda_blocks_end',
         ];
 
         final rows = await database
@@ -562,6 +564,55 @@ void main() {
             reason: 'expected index $indexName to exist in sqlite_master',
           );
         }
+      },
+    );
+
+    test('agenda block validates end after start at the database level', () async {
+      await database
+          .into(database.agendaBlocks)
+          .insert(
+            AgendaBlocksCompanion.insert(
+              id: 'block-1',
+              title: 'Manutenção do galpão',
+              start: 1_700_000_000_000,
+              end: 1_700_003_600_000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+          );
+
+      final row = await (database.select(
+        database.agendaBlocks,
+      )..where((tbl) => tbl.id.equals('block-1'))).getSingle();
+      expect(row.title, 'Manutenção do galpão');
+      expect(row.start, 1_700_000_000_000);
+      expect(row.end, 1_700_003_600_000);
+    });
+
+    test(
+      'reopening the database file preserves persisted agenda blocks',
+      () async {
+        await database
+            .into(database.agendaBlocks)
+            .insert(
+              AgendaBlocksCompanion.insert(
+                id: 'block-reopen',
+                title: 'Bloqueio recorrente',
+                notes: const Value('Fechado para reforma'),
+                start: 1_700_000_000_000,
+                end: 1_700_003_600_000,
+                createdAt: 1_700_000_000_000,
+                updatedAt: 1_700_000_000_000,
+              ),
+            );
+        await database.close();
+
+        final reopened = AppDatabase.forTesting(dbFile);
+        addTearDown(reopened.close);
+
+        final row = await reopened.select(reopened.agendaBlocks).getSingle();
+        expect(row.id, 'block-reopen');
+        expect(row.notes, 'Fechado para reforma');
       },
     );
   });

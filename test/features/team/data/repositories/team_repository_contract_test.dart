@@ -65,7 +65,12 @@ void main() {
 
     test('TeamRoleRepository can be implemented in memory', () async {
       final repository = _MemoryTeamRoleRepository();
-      const role = TeamRole(id: 'role-1', name: 'DJ');
+      final role = TeamRole(
+        id: 'role-1',
+        name: 'DJ',
+        createdAt: now,
+        updatedAt: now,
+      );
 
       await repository.insert(role);
       expect(await repository.findById('role-1'), role);

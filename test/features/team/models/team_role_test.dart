@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('TeamRole', () {
+    final createdAt = DateTime(2026, 7, 1, 10);
+    final updatedAt = DateTime(2026, 7, 1, 10);
+
     TeamRole buildRole({
       String id = 'role-1',
       String name = 'DJ',
@@ -14,11 +17,18 @@ void main() {
         name: name,
         description: description,
         active: active,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
     }
 
     test('description defaults to null and active to true', () {
-      const role = TeamRole(id: 'role-1', name: 'DJ');
+      final role = TeamRole(
+        id: 'role-1',
+        name: 'DJ',
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 
       expect(role.description, isNull);
       expect(role.active, isTrue);

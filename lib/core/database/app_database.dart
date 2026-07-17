@@ -18,6 +18,8 @@ part 'daos/financial_entries_dao.dart';
 part 'daos/equipment_categories_dao.dart';
 part 'daos/equipments_dao.dart';
 part 'daos/quote_equipment_dao.dart';
+part 'daos/team_roles_dao.dart';
+part 'daos/team_members_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -39,6 +41,8 @@ part 'daos/quote_equipment_dao.dart';
     EquipmentCategories,
     Equipments,
     QuoteEquipmentItems,
+    TeamRoles,
+    TeamMembers,
   ],
   daos: [
     ClientsDao,
@@ -51,6 +55,8 @@ part 'daos/quote_equipment_dao.dart';
     EquipmentCategoriesDao,
     EquipmentsDao,
     QuoteEquipmentDao,
+    TeamRolesDao,
+    TeamMembersDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -65,7 +71,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -114,6 +120,12 @@ class AppDatabase extends _$AppDatabase {
       // é alterada; apenas `quote_equipment` é criada.
       if (from <= 5 && to >= 6) {
         await migrator.createTable(quoteEquipmentItems);
+      }
+      // TASK-029 CP-B — domínio Equipe & Escalas. Nenhuma tabela existente
+      // é alterada; apenas `team_roles` e `team_members` são criadas.
+      if (from <= 6 && to >= 7) {
+        await migrator.createTable(teamRoles);
+        await migrator.createTable(teamMembers);
       }
     },
   );

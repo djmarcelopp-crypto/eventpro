@@ -70,8 +70,8 @@ void main() {
       }
     });
 
-    test('schemaVersion is 6', () {
-      expect(database.schemaVersion, 6);
+    test('schemaVersion is 7', () {
+      expect(database.schemaVersion, 7);
     });
 
     test('foreign key enforcement is enabled by beforeOpen', () async {

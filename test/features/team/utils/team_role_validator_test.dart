@@ -24,7 +24,12 @@ void main() {
 
     test('validate delegates to fields of the entity', () {
       final result = TeamRoleValidator.validate(
-        const TeamRole(id: 'role-1', name: ''),
+        TeamRole(
+          id: 'role-1',
+          name: '',
+          createdAt: DateTime(2026, 7, 1),
+          updatedAt: DateTime(2026, 7, 1),
+        ),
       );
 
       expect(result.isValid, isFalse);

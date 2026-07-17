@@ -1,8 +1,21 @@
+// Cópia congelada do schema real da TASK-025 (schemaVersion 2), exatamente
+// como definido em lib/core/database/tables.dart antes da TASK-027 CP-B.
+//
+// Usada exclusivamente para gerar um banco SQLite v2 genuíno em
+// test/core/database/financial_migration_test.dart, permitindo testar a
+// migração real 2 -> 3 (TASK-027 CP-B) contra um schema legado de fato (não
+// simulado).
+//
+// NUNCA deve ser alterada para acompanhar tables.dart — é uma fotografia
+// histórica intencionalmente congelada.
 import 'package:drift/drift.dart';
 
-@DataClassName('ClientRow')
+@DataClassName('LegacyClientRow')
 @TableIndex(name: 'idx_clients_created_at', columns: {#createdAt})
-class Clients extends Table {
+class LegacyClients extends Table {
+  @override
+  String get tableName => 'clients';
+
   TextColumn get id => text()();
   IntColumn get createdAt => integer()();
   TextColumn get type => text()();
@@ -27,10 +40,13 @@ class Clients extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('CatalogItemRow')
+@DataClassName('LegacyCatalogItemRow')
 @TableIndex(name: 'idx_catalog_items_active', columns: {#active})
 @TableIndex(name: 'idx_catalog_items_type', columns: {#type})
-class CatalogItems extends Table {
+class LegacyCatalogItems extends Table {
+  @override
+  String get tableName => 'catalog_items';
+
   TextColumn get id => text()();
   IntColumn get createdAt => integer()();
   TextColumn get type => text()();
@@ -46,15 +62,18 @@ class CatalogItems extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('CatalogPackageComponentRow')
+@DataClassName('LegacyCatalogPackageComponentRow')
 @TableIndex(name: 'idx_pkg_components_component', columns: {#componentItemId})
-class CatalogPackageComponents extends Table {
+class LegacyCatalogPackageComponents extends Table {
+  @override
+  String get tableName => 'catalog_package_components';
+
   @ReferenceName('package_components')
   TextColumn get packageId =>
-      text().references(CatalogItems, #id, onDelete: KeyAction.cascade)();
+      text().references(LegacyCatalogItems, #id, onDelete: KeyAction.cascade)();
   @ReferenceName('component_usages')
-  TextColumn get componentItemId =>
-      text().references(CatalogItems, #id, onDelete: KeyAction.restrict)();
+  TextColumn get componentItemId => text()
+      .references(LegacyCatalogItems, #id, onDelete: KeyAction.restrict)();
   TextColumn get nameSnapshot => text()();
   TextColumn get unitSnapshot => text()();
   TextColumn get typeSnapshot => text()();
@@ -65,8 +84,8 @@ class CatalogPackageComponents extends Table {
   Set<Column<Object>> get primaryKey => {packageId, componentItemId};
 }
 
-@DataClassName('CompanyProfileRow')
-class CompanyProfiles extends Table {
+@DataClassName('LegacyCompanyProfileRow')
+class LegacyCompanyProfiles extends Table {
   @override
   String get tableName => 'company_profile';
 
@@ -104,12 +123,15 @@ class CompanyProfiles extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('QuoteRow')
+@DataClassName('LegacyQuoteRow')
 @TableIndex(name: 'idx_quotes_number', columns: {#number}, unique: true)
 @TableIndex(name: 'idx_quotes_status', columns: {#status})
 @TableIndex(name: 'idx_quotes_created_at', columns: {#createdAt})
 @TableIndex(name: 'idx_quotes_updated_at', columns: {#updatedAt})
-class Quotes extends Table {
+class LegacyQuotes extends Table {
+  @override
+  String get tableName => 'quotes';
+
   TextColumn get id => text()();
   TextColumn get number => text()();
   TextColumn get status => text()();
@@ -128,10 +150,13 @@ class Quotes extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('QuoteClientSnapshotRow')
-class QuoteClientSnapshots extends Table {
+@DataClassName('LegacyQuoteClientSnapshotRow')
+class LegacyQuoteClientSnapshots extends Table {
+  @override
+  String get tableName => 'quote_client_snapshots';
+
   TextColumn get quoteId =>
-      text().references(Quotes, #id, onDelete: KeyAction.cascade)();
+      text().references(LegacyQuotes, #id, onDelete: KeyAction.cascade)();
   TextColumn get sourceClientId => text().nullable()();
   TextColumn get type => text()();
   TextColumn get displayName => text()();
@@ -146,10 +171,13 @@ class QuoteClientSnapshots extends Table {
   Set<Column<Object>> get primaryKey => {quoteId};
 }
 
-@DataClassName('QuoteEventSnapshotRow')
-class QuoteEventSnapshots extends Table {
+@DataClassName('LegacyQuoteEventSnapshotRow')
+class LegacyQuoteEventSnapshots extends Table {
+  @override
+  String get tableName => 'quote_event_snapshots';
+
   TextColumn get quoteId =>
-      text().references(Quotes, #id, onDelete: KeyAction.cascade)();
+      text().references(LegacyQuotes, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text().nullable()();
   TextColumn get type => text().nullable()();
   TextColumn get eventDate => text().nullable()();
@@ -163,10 +191,13 @@ class QuoteEventSnapshots extends Table {
   Set<Column<Object>> get primaryKey => {quoteId};
 }
 
-@DataClassName('QuoteCompanySnapshotRow')
-class QuoteCompanySnapshots extends Table {
+@DataClassName('LegacyQuoteCompanySnapshotRow')
+class LegacyQuoteCompanySnapshots extends Table {
+  @override
+  String get tableName => 'quote_company_snapshots';
+
   TextColumn get quoteId =>
-      text().references(Quotes, #id, onDelete: KeyAction.cascade)();
+      text().references(LegacyQuotes, #id, onDelete: KeyAction.cascade)();
   TextColumn get captureStatus => text()();
   IntColumn get capturedAt => integer()();
   TextColumn get logoReference => text().nullable()();
@@ -198,15 +229,18 @@ class QuoteCompanySnapshots extends Table {
   Set<Column<Object>> get primaryKey => {quoteId};
 }
 
-@DataClassName('QuoteLineItemRow')
+@DataClassName('LegacyQuoteLineItemRow')
 @TableIndex(
   name: 'idx_quote_lines_quote_order',
   columns: {#quoteId, #sortOrder},
 )
-class QuoteLineItems extends Table {
+class LegacyQuoteLineItems extends Table {
+  @override
+  String get tableName => 'quote_line_items';
+
   TextColumn get id => text()();
   TextColumn get quoteId =>
-      text().references(Quotes, #id, onDelete: KeyAction.cascade)();
+      text().references(LegacyQuotes, #id, onDelete: KeyAction.cascade)();
   IntColumn get sortOrder => integer()();
   TextColumn get catalogItemId => text().nullable()();
   TextColumn get name => text()();
@@ -220,12 +254,15 @@ class QuoteLineItems extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('QuoteLinePackageComponentRow')
+@DataClassName('LegacyQuoteLinePackageComponentRow')
 @TableIndex(name: 'idx_quote_pkg_line', columns: {#lineItemId, #sortOrder})
-class QuoteLinePackageComponents extends Table {
+class LegacyQuoteLinePackageComponents extends Table {
+  @override
+  String get tableName => 'quote_line_package_components';
+
   TextColumn get id => text()();
-  TextColumn get lineItemId =>
-      text().references(QuoteLineItems, #id, onDelete: KeyAction.cascade)();
+  TextColumn get lineItemId => text()
+      .references(LegacyQuoteLineItems, #id, onDelete: KeyAction.cascade)();
   IntColumn get sortOrder => integer()();
   TextColumn get catalogItemId => text().nullable()();
   TextColumn get name => text()();
@@ -238,15 +275,18 @@ class QuoteLinePackageComponents extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('QuoteStatusHistoryRow')
+@DataClassName('LegacyQuoteStatusHistoryRow')
 @TableIndex(
   name: 'idx_quote_history_quote_order',
   columns: {#quoteId, #sortOrder},
 )
-class QuoteStatusHistory extends Table {
+class LegacyQuoteStatusHistory extends Table {
+  @override
+  String get tableName => 'quote_status_history';
+
   TextColumn get id => text()();
   TextColumn get quoteId =>
-      text().references(Quotes, #id, onDelete: KeyAction.cascade)();
+      text().references(LegacyQuotes, #id, onDelete: KeyAction.cascade)();
   IntColumn get sortOrder => integer()();
   TextColumn get previousStatus => text().nullable()();
   TextColumn get newStatus => text()();
@@ -256,8 +296,11 @@ class QuoteStatusHistory extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
-@DataClassName('QuoteNumberSequenceRow')
-class QuoteNumberSequences extends Table {
+@DataClassName('LegacyQuoteNumberSequenceRow')
+class LegacyQuoteNumberSequences extends Table {
+  @override
+  String get tableName => 'quote_number_sequences';
+
   IntColumn get year => integer()();
   IntColumn get lastSequence => integer()();
 
@@ -265,52 +308,18 @@ class QuoteNumberSequences extends Table {
   Set<Column<Object>> get primaryKey => {year};
 }
 
-@DataClassName('AgendaBlockRow')
+@DataClassName('LegacyAgendaBlockRow')
 @TableIndex(name: 'idx_agenda_blocks_start', columns: {#start})
 @TableIndex(name: 'idx_agenda_blocks_end', columns: {#end})
-class AgendaBlocks extends Table {
+class LegacyAgendaBlocks extends Table {
+  @override
+  String get tableName => 'agenda_blocks';
+
   TextColumn get id => text()();
   TextColumn get title => text()();
   TextColumn get notes => text().nullable()();
   IntColumn get start => integer()();
   IntColumn get end => integer()();
-  IntColumn get createdAt => integer()();
-  IntColumn get updatedAt => integer()();
-
-  @override
-  Set<Column<Object>> get primaryKey => {id};
-}
-
-@DataClassName('FinancialCategoryRow')
-@TableIndex(name: 'idx_financial_categories_kind', columns: {#kind})
-class FinancialCategories extends Table {
-  TextColumn get id => text()();
-  TextColumn get name => text()();
-  TextColumn get kind => text()();
-  BoolColumn get active => boolean()();
-  IntColumn get createdAt => integer()();
-
-  @override
-  Set<Column<Object>> get primaryKey => {id};
-}
-
-@DataClassName('FinancialEntryRow')
-@TableIndex(name: 'idx_financial_entries_date', columns: {#date})
-@TableIndex(name: 'idx_financial_entries_kind', columns: {#kind})
-class FinancialEntries extends Table {
-  TextColumn get id => text()();
-  TextColumn get kind => text()();
-  TextColumn get description => text()();
-  IntColumn get amountCents => integer()();
-
-  /// Civil date (competência), stored as an ISO `YYYY-MM-DD` string via
-  /// `CivilDateConverter` — this field has no time-of-day meaning.
-  TextColumn get date => text()();
-  TextColumn get categoryId => text()
-      .references(FinancialCategories, #id, onDelete: KeyAction.restrict)();
-  TextColumn get status => text()();
-  IntColumn get paidAt => integer().nullable()();
-  TextColumn get notes => text().nullable()();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 

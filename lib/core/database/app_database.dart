@@ -13,6 +13,8 @@ part 'daos/company_profiles_dao.dart';
 part 'daos/catalog_dao.dart';
 part 'daos/quotes_dao.dart';
 part 'daos/agenda_blocks_dao.dart';
+part 'daos/financial_categories_dao.dart';
+part 'daos/financial_entries_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -29,8 +31,18 @@ part 'daos/agenda_blocks_dao.dart';
     QuoteStatusHistory,
     QuoteNumberSequences,
     AgendaBlocks,
+    FinancialCategories,
+    FinancialEntries,
   ],
-  daos: [ClientsDao, CompanyProfilesDao, CatalogDao, QuotesDao, AgendaBlocksDao],
+  daos: [
+    ClientsDao,
+    CompanyProfilesDao,
+    CatalogDao,
+    QuotesDao,
+    AgendaBlocksDao,
+    FinancialCategoriesDao,
+    FinancialEntriesDao,
+  ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
@@ -44,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -60,6 +72,14 @@ class AppDatabase extends _$AppDatabase {
       // existente é alterada; apenas a tabela nova é criada.
       if (from == 1 && to >= 2) {
         await migrator.createTable(agendaBlocks);
+      }
+      // TASK-027 CP-B — v2 (schema após a TASK-025) não tinha as tabelas do
+      // domínio Financeiro. Nenhuma tabela existente é alterada; apenas as
+      // tabelas novas são criadas. Cobre tanto quem já estava na v2 quanto
+      // quem ainda está na v1 e salta direto para a v3.
+      if (from <= 2 && to >= 3) {
+        await migrator.createTable(financialCategories);
+        await migrator.createTable(financialEntries);
       }
     },
   );

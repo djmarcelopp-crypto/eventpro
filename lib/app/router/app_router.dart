@@ -9,6 +9,10 @@ import '../../features/catalog/new_catalog_item_screen.dart';
 import '../../features/clients/client_detail_screen.dart';
 import '../../features/clients/clients_screen.dart';
 import '../../features/clients/new_client_screen.dart';
+import '../../features/financial/financial_categories_screen.dart';
+import '../../features/financial/financial_entry_detail_screen.dart';
+import '../../features/financial/financial_screen.dart';
+import '../../features/financial/new_financial_entry_screen.dart';
 import '../../features/quotes/pdf/quote_pdf_preview_screen.dart';
 import '../../features/quotes/new_quote_screen.dart';
 import '../../features/quotes/quote_detail_screen.dart';
@@ -50,6 +54,14 @@ abstract class AppRoutes {
   static String agendaDetail(String id) => '$agenda/$id';
 
   static String agendaEdit(String id) => '$agenda/$id/edit';
+
+  static const financial = '/financial';
+  static const financialNew = '/financial/new';
+  static const financialCategories = '/financial/categories';
+
+  static String financialDetail(String id) => '$financial/$id';
+
+  static String financialEdit(String id) => '$financial/$id/edit';
 }
 
 abstract class AppRouter {
@@ -170,6 +182,34 @@ abstract class AppRouter {
                 path: 'edit',
                 builder: (context, state) => NewAgendaBlockScreen(
                   blockId: state.pathParameters['id'],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.financial,
+        builder: (context, state) => const FinancialScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewFinancialEntryScreen(),
+          ),
+          GoRoute(
+            path: 'categories',
+            builder: (context, state) => const FinancialCategoriesScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => FinancialEntryDetailScreen(
+              entryId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) => NewFinancialEntryScreen(
+                  entryId: state.pathParameters['id'],
                 ),
               ),
             ],

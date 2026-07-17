@@ -77,6 +77,28 @@ void main() {
       expect(result.errors, contains(TeamMemberValidator.statusRequiredError));
     });
 
+    test('rejects invalid status name', () {
+      final result = TeamMemberValidator.validateFields(
+        name: 'Ana',
+        roleId: 'role-dj',
+        dailyRate: 1000,
+        statusName: 'not-a-status',
+      );
+
+      expect(result.errors, contains(TeamMemberValidator.statusInvalidError));
+    });
+
+    test('accepts a known status name when enum status is omitted', () {
+      final result = TeamMemberValidator.validateFields(
+        name: 'Ana',
+        roleId: 'role-dj',
+        dailyRate: 1000,
+        statusName: TeamMemberStatus.active.name,
+      );
+
+      expect(result.isValid, isTrue);
+    });
+
     test('validate delegates to fields of the entity', () {
       final result = TeamMemberValidator.validate(
         TeamMember(

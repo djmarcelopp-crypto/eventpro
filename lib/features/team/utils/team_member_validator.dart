@@ -8,12 +8,14 @@ abstract class TeamMemberValidator {
   static const dailyRateNonNegativeError =
       'Informe uma diária maior ou igual a zero';
   static const statusRequiredError = 'Selecione um status';
+  static const statusInvalidError = 'Status inválido';
 
   static TeamValidationResult validateFields({
     String? name,
     String? roleId,
     int? dailyRate,
     TeamMemberStatus? status,
+    String? statusName,
   }) {
     final errors = <String>[];
 
@@ -30,7 +32,12 @@ abstract class TeamMemberValidator {
     }
 
     if (status == null) {
-      errors.add(statusRequiredError);
+      if (statusName == null || statusName.trim().isEmpty) {
+        errors.add(statusRequiredError);
+      } else if (!TeamMemberStatus.values
+          .any((value) => value.name == statusName)) {
+        errors.add(statusInvalidError);
+      }
     }
 
     return TeamValidationResult(errors: List.unmodifiable(errors));

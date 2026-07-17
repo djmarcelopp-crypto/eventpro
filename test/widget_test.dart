@@ -119,7 +119,10 @@ Future<void> _openQuotesScreen(WidgetTester tester) async {
   await tester.tap(find.text('Entrar'));
   await tester.pumpAndSettle();
 
-  await tester.tap(find.text('Orçamentos'));
+  final quotesCard = find.text('Orçamentos');
+  await tester.ensureVisible(quotesCard);
+  await tester.pumpAndSettle();
+  await tester.tap(quotesCard);
   await tester.pumpAndSettle();
 }
 
@@ -472,7 +475,10 @@ void main() {
     await tester.tap(find.text('Entrar'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Orçamentos'));
+    final quotesCard = find.text('Orçamentos');
+    await tester.ensureVisible(quotesCard);
+    await tester.pumpAndSettle();
+    await tester.tap(quotesCard);
     await tester.pumpAndSettle();
 
     expect(find.text('Orçamentos'), findsOneWidget);

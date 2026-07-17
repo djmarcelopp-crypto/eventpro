@@ -14,6 +14,11 @@ import '../../features/equipment/equipment_detail_screen.dart';
 import '../../features/equipment/equipment_screen.dart';
 import '../../features/equipment/new_equipment_screen.dart';
 import '../../features/equipment/quote_equipment_screen.dart';
+import '../../features/team/new_team_member_screen.dart';
+import '../../features/team/quote_team_screen.dart';
+import '../../features/team/team_member_detail_screen.dart';
+import '../../features/team/team_roles_screen.dart';
+import '../../features/team/team_screen.dart';
 import '../../features/financial/financial_categories_screen.dart';
 import '../../features/financial/financial_entry_detail_screen.dart';
 import '../../features/financial/financial_screen.dart';
@@ -42,6 +47,8 @@ abstract class AppRoutes {
   static String quotesPdf(String id) => '$quotes/$id/pdf';
 
   static String quotesEquipment(String id) => '$quotes/$id/equipment';
+
+  static String quotesTeam(String id) => '$quotes/$id/team';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -77,6 +84,14 @@ abstract class AppRoutes {
   static String equipmentDetail(String id) => '$equipment/$id';
 
   static String equipmentEdit(String id) => '$equipment/$id/edit';
+
+  static const team = '/team';
+  static const teamNew = '/team/new';
+  static const teamRoles = '/team/roles';
+
+  static String teamDetail(String id) => '$team/$id';
+
+  static String teamEdit(String id) => '$team/$id/edit';
 }
 
 abstract class AppRouter {
@@ -144,6 +159,12 @@ abstract class AppRouter {
               GoRoute(
                 path: 'equipment',
                 builder: (context, state) => QuoteEquipmentScreen(
+                  quoteId: state.pathParameters['id']!,
+                ),
+              ),
+              GoRoute(
+                path: 'team',
+                builder: (context, state) => QuoteTeamScreen(
                   quoteId: state.pathParameters['id']!,
                 ),
               ),
@@ -259,6 +280,34 @@ abstract class AppRouter {
                 path: 'edit',
                 builder: (context, state) => NewEquipmentScreen(
                   equipmentId: state.pathParameters['id'],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.team,
+        builder: (context, state) => const TeamScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewTeamMemberScreen(),
+          ),
+          GoRoute(
+            path: 'roles',
+            builder: (context, state) => const TeamRolesScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => TeamMemberDetailScreen(
+              memberId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) => NewTeamMemberScreen(
+                  memberId: state.pathParameters['id'],
                 ),
               ),
             ],

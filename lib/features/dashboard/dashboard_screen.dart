@@ -7,6 +7,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../settings/providers/company_profile_provider.dart';
 import '../settings/utils/company_profile_presenter.dart';
+import '../team/models/team_list_summary.dart';
+import '../team/providers/team_list_summary_provider.dart';
+import '../team/widgets/team_summary_cards.dart';
 import 'dashboard_modules.dart';
 import 'widgets/dashboard_shortcut_card.dart';
 
@@ -48,6 +51,8 @@ class DashboardScreen extends ConsumerWidget {
         context.push(AppRoutes.financial);
       case DashboardModuleId.equipment:
         context.push(AppRoutes.equipment);
+      case DashboardModuleId.team:
+        context.push(AppRoutes.team);
       case DashboardModuleId.settings:
         context.push(AppRoutes.settings);
     }
@@ -59,6 +64,7 @@ class DashboardScreen extends ConsumerWidget {
     final companyLine = profile == null
         ? 'DJ Marcelo PP Festas e Eventos'
         : CompanyProfilePresenter.displayName(profile);
+    final teamSummaryAsync = ref.watch(teamListSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -95,6 +101,21 @@ class DashboardScreen extends ConsumerWidget {
                       companyLine,
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.mutedWhite,
+                      ),
+                    ),
+                    const SizedBox(height: _sectionSpacing),
+                    Text(
+                      'Equipe',
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: _gridSpacing),
+                    teamSummaryAsync.when(
+                      data: (summary) => TeamSummaryCards(summary: summary),
+                      loading: () => const TeamSummaryCards(
+                        summary: TeamListSummary.empty,
+                      ),
+                      error: (_, _) => const TeamSummaryCards(
+                        summary: TeamListSummary.empty,
                       ),
                     ),
                     const SizedBox(height: _sectionSpacing),

@@ -21,6 +21,7 @@ import 'widgets/quote_pdf_actions_section.dart';
 import 'widgets/quote_status_actions.dart';
 import 'widgets/quote_status_badge.dart';
 import 'widgets/quote_status_history_list.dart';
+import 'widgets/quote_team_section.dart';
 
 class QuoteDetailScreen extends ConsumerStatefulWidget {
   const QuoteDetailScreen({
@@ -252,6 +253,8 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                     QuoteLineItemsSection(items: resolvedQuote.items),
                     const SizedBox(height: 16),
                     QuoteEquipmentSection(quoteId: resolvedQuote.id),
+                    const SizedBox(height: 16),
+                    QuoteTeamSection(quoteId: resolvedQuote.id),
                     const SizedBox(height: 16),
                     QuoteDetailSection(
                       title: 'Financeiro',

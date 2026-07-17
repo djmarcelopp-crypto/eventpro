@@ -1,6 +1,6 @@
 # Arquitetura — EventPro ERP
 
-Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024) e o módulo de Agenda com ocupação computada (TASK-025).
+Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025) e a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026).
 
 ---
 
@@ -51,7 +51,7 @@ Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 | Catálogo | `catalog/` | ✅ Drift (TASK-024 CP-D) |
 | Orçamentos | `quotes/` | ✅ Drift (TASK-024 CP-E) |
 | Configurações | `settings/` | ✅ Drift (TASK-024 CP-C) |
-| Agenda | `agenda/` | ✅ Drift para bloqueios manuais (TASK-025 CP-A/B); ocupação de orçamentos é **computada**, nunca persistida (CP-C) |
+| Agenda | `agenda/` | ✅ Drift para bloqueios manuais (TASK-025 CP-A/B); ocupação de orçamentos é **computada**, nunca persistida (CP-C); Agenda Inteligente (TASK-026) é um pipeline Dart puro sem persistência própria, consumindo a ocupação já computada |
 
 ### Estrutura interna de uma feature (quando complexa)
 
@@ -280,6 +280,33 @@ agendaOccupancyProvider (Provider, sem estado próprio)
 - Qualquer mudança em um orçamento (status, evento) reflete na Agenda na próxima leitura do provider, sem sincronização manual.
 - Somente `AgendaBlock` (bloqueio manual) segue o fluxo de escrita padrão (Notifier → Repository → DAO → SQLite).
 
+### Agenda Inteligente — pipeline determinístico de disponibilidade (TASK-026)
+
+Consultas de disponibilidade em português ("Tenho agenda livre hoje?") são resolvidas por uma cadeia de camadas **Dart puras** (sem Flutter, Riverpod, SQLite ou I/O), consumindo apenas a lista de `AgendaOccupancy` já computada pelo `agendaOccupancyProvider` — nenhum dado novo é lido, escrito ou persistido:
+
+```text
+Frase em português
+      │
+      ▼
+AgendaAvailabilityRequestParser        (interpretação por regex/palavras-chave)
+      │
+      ├─ 1 dia/horário  → AgendaAvailabilityAnalyzer       (motor puro: free/partial/busy)
+      └─ semana/mês/… → AgendaAvailabilityQueryService   (agrega o Analyzer dia a dia)
+                              │
+                              ▼
+                  AgendaAvailabilityResponseFormatter      (texto PT-BR determinístico)
+                              │
+                              ▼
+                  AgendaAvailabilityAssistantService       (orquestra as camadas acima)
+                              │
+                              ▼
+                  AgendaAvailabilityQueryCard (widget na AgendaScreen)
+```
+
+- **Sem IA/LLM, sem rede, sem persistência nova** — todo o pipeline é determinístico: a mesma frase, com os mesmos dados, sempre produz a mesma resposta.
+- **Sem provider novo:** a integração com a UI (`AgendaAvailabilityQueryCard`, um `ConsumerStatefulWidget`) reaproveita o `agendaBlockClockProvider` já existente (criado na TASK-025 para timestamps de `AgendaBlock`) para injetar o relógio no parser, em vez de criar um provider de relógio dedicado.
+- Detalhes de regras (status `free`/`partial`/`busy`, conflitos, interpretação de frases, erros estruturados) em `docs/business-rules/agenda-inteligente.md`.
+
 ### Imagens e arquivos
 
 - Referências (`imageReference`, `logoReference`) ficam no SQLite.
@@ -315,7 +342,7 @@ lib/
 test/                           # espelha lib/features/ e lib/core/
 docs/
   business-rules/               # regras por módulo
-  tasks/                        # histórico TASK-001 … TASK-025
+  tasks/                        # histórico TASK-001 … TASK-026
 ```
 
 ### Navegação (GoRouter)
@@ -357,4 +384,5 @@ Sempre executar `flutter analyze` e `flutter test` após implementação (ver `C
 - Dado que é **função** de outras entidades já persistidas (ex.: `AgendaOccupancy` a partir de Orçamentos + Agenda) → computar via `Provider`, não criar tabela própria.
 - Migrações de schema → seguir a Política de Migrações Futuras (seção 6); primeira migração real aplicada na TASK-025 CP-A (v1 → v2, `agenda_blocks`).
 - Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.
-- Evoluções previstas para a Agenda (Agenda Inteligente, Recursos, integração com Financeiro/Contratos/Equipe/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` (seção "Fora de escopo") e `docs/roadmap.md`.
+- Evoluções previstas para a Agenda (IA/LLM na Agenda Inteligente, voz, Recursos, integração com Financeiro/Contratos/Equipe/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` e `docs/business-rules/agenda-inteligente.md` (seções "Fora de escopo") e `docs/roadmap.md`.
+- Lógica de negócio determinística e complexa (ex.: Agenda Inteligente) → construir em camadas Dart puras, testáveis isoladamente, **antes** de qualquer integração com UI/Riverpod; toda lógica dependente de "agora" deve receber relógio injetável desde o primeiro componente que o usa.

@@ -72,12 +72,26 @@ DJ Marcelo PP Festas e Eventos
 
 **TASK-025 encerrada.** Documento final: `docs/tasks/TASK-025.md`.
 
+### TASK-026 — Agenda Inteligente e Análise de Disponibilidade
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Motor puro de análise de disponibilidade (`AgendaAvailabilityAnalyzer`) | ✅ Concluído |
+| **CP-B** | Serviço de consulta por dia/intervalo/semana/mês | ✅ Concluído |
+| **CP-C** | Interpretação determinística de frases em português | ✅ Concluído |
+| **CP-D** | Resposta textual determinística | ✅ Concluído |
+| **CP-E** | Integração com a interface da Agenda | ✅ Concluído |
+| **CP-F** | Hardening do pipeline completo | ✅ Concluído |
+| **CP-G** | Documentação final da task | ✅ Concluído |
+
+**TASK-026 encerrada.** Documento final: `docs/tasks/TASK-026.md`.
+
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-025-agenda` |
-| Último commit | `0a56c0e` — `test(agenda): harden agenda database integrity` |
+| Branch | `cursor/task-026-agenda-inteligente` |
+| Último commit | `fd73d84` — `test(agenda): harden intelligent availability query pipeline` |
 | Alterações locais | CP-G implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
 | Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
 
@@ -117,6 +131,7 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Orçamentos com PDF e exportação (persistência local do grafo completo — TASK-024 CP-E)
 - Configurações da empresa (persistência local — TASK-024 CP-C)
 - Agenda: propostas e confirmados computados a partir dos orçamentos + bloqueios manuais persistidos (TASK-025 CP-A a CP-C)
+- Agenda Inteligente: consultas de disponibilidade em português, deterministas e sem persistência, integradas à tela de Agenda (TASK-026)
 - Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E)
 
 ---

@@ -4,6 +4,136 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-026 — Agenda Inteligente e Análise de Disponibilidade
+
+**Branch:** `cursor/task-026-agenda-inteligente`
+
+**Objetivo:** Permitir que o usuário pergunte, em português simples, sobre a disponibilidade da Agenda e receba uma resposta textual determinística — sem IA/LLM, sem rede, sem persistência nova. Toda a interpretação, análise e resposta são construídas por regras deterministas em Dart puro, operando exclusivamente sobre `AgendaOccupancy` (já existente, TASK-025 CP-C).
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Motor puro de análise de disponibilidade (`AgendaAvailabilityAnalyzer`) | `f058d00` | ✅ Concluído |
+| B | Serviço de consulta por dia/intervalo/semana/mês (`AgendaAvailabilityQueryService`) | `fe0129f` | ✅ Concluído |
+| C | Interpretação determinística de frases em português (`AgendaAvailabilityRequestParser`) | `49b4c66` | ✅ Concluído |
+| D | Resposta textual determinística (`AgendaAvailabilityResponseFormatter`/`AgendaAvailabilityAssistantService`) | `52f3a2e` | ✅ Concluído |
+| E | Integração com a interface da Agenda (`AgendaAvailabilityQueryCard`) | `bffb6db` | ✅ Concluído |
+| F | Hardening — testes ponta a ponta, virada de mês/ano, meia-noite, ausência de efeitos colaterais | `fd73d84` | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-026.md`, `docs/business-rules/agenda-inteligente.md`, revisão de `ARCHITECTURE.md` | *(pendente de commit)* | ✅ Concluído |
+
+**TASK-026 encerrada.** Histórico completo consolidado em `docs/tasks/TASK-026.md`.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- `AgendaAvailabilityAnalyzer`: motor puro, analisa `List<AgendaOccupancy>` contra um dia/intervalo e classifica `free`/`partial`/`busy`, com intervalos livres e conflitos
+- `AgendaAvailabilityResult`, `AgendaAvailabilityStatus`, `AgendaFreeInterval`, `AgendaOccupancyConflict` — novos modelos, sem persistência
+- Regra de bordas (intervalos que se tocam não geram falso conflito) e recorte correto de eventos que atravessam a meia-noite
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 924 testes passando.
+
+**Fora de escopo do CP-A (mantido):** consultas de múltiplos dias, interpretação de linguagem natural, resposta textual, UI.
+
+**Commit:** `f058d00` — `feat(agenda): analyze agenda availability`
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- `AgendaQuery`: consulta estruturada resolvida em intervalo de datas civis (`day`, `dateRange`, `week`, `month`)
+- `AgendaAvailabilityQueryService`: itera os dias da `AgendaQuery`, chama o Analyzer por dia e agrega — nenhuma regra de disponibilidade é reimplementada
+- `AgendaDailyAvailability`, `AgendaAvailabilitySummary`, `AgendaQueryResult`; conflitos agregados deduplicados por par
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 941 testes passando.
+
+**Fora de escopo do CP-B (mantido):** interpretação de linguagem natural, resposta textual, UI, IA/LLM.
+
+**Commit:** `fe0129f` — `feat(agenda): query agenda availability by day, range, week and month`
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `AgendaAvailabilityRequestParser`: interpretador baseado em regras (regex/palavras-chave), sem LLM/rede; converte frase em português em `AgendaAvailabilityRequest` ou erro estruturado
+- `AgendaAvailabilityIntent`, `AgendaAvailabilityParseResult`/`AgendaAvailabilityParseError` (`ambiguous`/`unsupported`)
+- Suporta hoje/amanhã/dia da semana/data explícita/intervalo de datas/semana atual-próxima/mês atual-nomeado/intervalo de horário; relógio injetável para determinismo em teste
+- Decisão de design aprovada: mês nomeado sem ano resolve sempre para o ano do relógio injetado
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 965 testes passando.
+
+**Fora de escopo do CP-C (mantido):** resposta textual, UI, IA/LLM, voz, chat.
+
+**Commit:** `49b4c66` — `feat(agenda): parse structured availability requests`
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- `AgendaAvailabilityResponseFormatter`: converte resultados já computados em texto PT-BR determinístico — nenhuma regra de disponibilidade recalculada
+- `AgendaAvailabilityResponse`/`AgendaAvailabilityResponseKind` (`success`/`ambiguous`/`unsupported`)
+- `AgendaAvailabilityAssistantService`: orquestra parser → analyzer/query service → formatter em um único método `ask({phrase, occupancies})`
+- Singular/plural, datas/horários formatados, rótulos de período contextuais; erros nunca expõem dado real de disponibilidade
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 994 testes passando.
+
+**Fora de escopo do CP-D (mantido):** UI, IA/LLM, rede, Riverpod, SQLite, chat.
+
+**Commit:** `52f3a2e` — `feat(agenda): generate deterministic availability responses`
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- `AgendaAvailabilityQueryCard`: campo de pergunta, botão "Consultar" e resposta textual, inserido no topo do corpo da `AgendaScreen`, acima da lista/estado vazio existente
+- Reaproveita `agendaBlockClockProvider` já existente — nenhum provider novo criado; recebe `AgendaOccupancy` já computada, sem leitura/duplicação adicional
+- Proteção contra duplo clique (`await Future<void>.delayed(Duration.zero)` + guard `_isQuerying`); resposta limpa ao alterar a pergunta
+- Ajuste necessário em teste pré-existente (`ensureVisible` antes do tap no botão "Novo bloqueio", que ficou fora da viewport após o novo card)
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1002 testes passando.
+
+**Fora de escopo do CP-E (mantido):** IA/LLM, rede, persistência nova, schema, DAO, repository, bootstrap.
+
+**Commit:** `bffb6db` — `feat(agenda): add intelligent availability queries to agenda`
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- Revisão do fluxo completo (frase → parser → analyzer/query service → formatter → assistant service → UI) — nenhum defeito real encontrado, nenhuma alteração em `lib/`
+- 11 testes de integração ponta a ponta (`agenda_availability_end_to_end_test.dart`): relógio injetável, virada de ano/mês, meia-noite, conflito singular/plural, determinismo, imutabilidade da lista de ocupações
+- 3 testes de hardening de widget: sem leitura/escrita adicional no repositório, sem alteração do estado hidratado, acessibilidade básica do campo/botão/resposta
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1016 testes passando.
+
+**Fora de escopo do CP-F (mantido):** schema, banco, DAO, repository, bootstrap, rotas, regras de negócio já aprovadas, documentação.
+
+**Commit:** `fd73d84` — `test(agenda): harden intelligent availability query pipeline`
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-026.md` criado, consolidando os 7 checkpoints (A–G)
+- `docs/business-rules/agenda-inteligente.md` criado, documentando o pipeline, as regras `free`/`partial`/`busy`, a interpretação de frases, o relógio injetável e os itens fora de escopo
+- `ARCHITECTURE.md` atualizado: seção do pipeline determinístico da Agenda Inteligente, sem novas tabelas/providers de persistência
+- `PROJECT.md` e este documento atualizados com o encerramento da TASK-026
+- `docs/roadmap.md` atualizado: item promovido parcialmente, com o recorte que permanece futuro
+- Nenhuma alteração em `lib/`, `test/`, schema, providers, repositories, DAOs ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1016 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de commit)*
+
+### TASK-026 — encerrada
+
+Todos os checkpoints (A–G) concluídos. Documento final consolidado: `docs/tasks/TASK-026.md`. Encerramento aguardando aprovação do PO/CTO para commit e push; merge na `main` permanece de responsabilidade externa (fluxo de PR), conforme `CLAUDE.md`.
+
+**Último commit:** `fd73d84`
+
+---
+
 ## TASK-025 — Agenda
 
 **Branch:** `cursor/task-025-agenda`

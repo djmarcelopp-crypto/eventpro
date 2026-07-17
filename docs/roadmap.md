@@ -8,28 +8,31 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 
 ## Agenda Inteligente e Análise de Disponibilidade
 
-**Status:** Ideia registrada — sem task associada.
+**Status:** Parcialmente implementado — `TASK-026` (encerrada). Ver `docs/tasks/TASK-026.md` e `docs/business-rules/agenda-inteligente.md`.
 
-### Objetivo
+### O que já foi entregue (TASK-026)
 
-Antes de elaborar um orçamento, permitir que o usuário consulte a disponibilidade de uma data e receba uma análise clara sobre eventos existentes, horários, montagem, desmontagem, equipe, equipamentos e possíveis conflitos.
-
-### Funcionalidades futuras
-
-- Consultar disponibilidade por data.
-- Mostrar eventos confirmados, propostas e bloqueios.
-- Considerar horário, montagem e desmontagem.
-- Identificar disponibilidade total, parcial, conflito ou indisponibilidade.
-- Verificar conflitos de equipe e equipamentos.
-- Permitir perguntas em linguagem natural, como:
+- Consultar disponibilidade por data, intervalo de datas, semana ou mês, em português simples, sem IA/LLM.
+- Mostrar eventos confirmados, propostas e bloqueios (via `AgendaOccupancy`, já existente desde a TASK-025).
+- Identificar disponibilidade total (`busy`), parcial (`partial`) ou livre (`free`), e conflitos entre ocupações.
+- Perguntas em linguagem natural dentro de um conjunto fixo de padrões reconhecidos, como:
+  - "Tenho agenda livre hoje?"
   - "Como está minha agenda no sábado?"
-  - "Quais finais de semana de agosto estão livres?"
-  - "Consigo atender dois eventos no mesmo dia?"
-- Exibir justificativa da análise.
-- Manter a decisão final com o usuário.
+  - "Quais dias desta semana estão livres?"
+  - "Como está o mês de agosto?"
+- Exibir a justificativa em texto determinístico (contagem de ocupações e conflitos).
+- Decisão final permanece com o usuário — a Agenda Inteligente não bloqueia nem decide nada automaticamente.
 
-### Restrições
+### O que permanece futuro (fora do escopo da TASK-026)
 
-- Não altera o escopo da TASK-024 (Persistência local com Drift).
-- Não deve ser antecipada antes da conclusão de CP-F, CP-G e CP-H da TASK-024.
-- Sem task, arquitetura ou implementação definidas neste momento.
+- **IA/LLM generativa** — a interpretação atual é baseada em regras fixas (regex/palavras-chave), não em modelo de linguagem; perguntas fora do conjunto reconhecido retornam erro "não suportada".
+- **Interface de voz.**
+- **Considerar horário de montagem e desmontagem** — a análise opera sobre o intervalo único de cada ocupação (`AgendaOccupancy`); granularidade adicional (`AgendaEventSchedules`) não foi criada.
+- **Verificar conflitos de equipe e equipamentos** — depende de um modelo de recursos (`AgendaResourceReservations`) ainda não criado.
+- **Consultas mais livres e complexas** — comparações, negociação de horário, perguntas compostas (ex.: "consigo atender dois eventos no mesmo dia?") fora do conjunto de padrões reconhecidos.
+- **Chat/histórico de conversa** — cada consulta é independente, sem memória de perguntas anteriores.
+
+### Restrições (herdadas, ainda válidas)
+
+- Não deve ser antecipada antes da definição de task própria para os itens "O que permanece futuro" acima.
+- Qualquer evolução deve manter a decisão final com o usuário — a Agenda Inteligente é uma ferramenta de análise, não de decisão automática.

@@ -9,6 +9,11 @@ import '../../features/catalog/new_catalog_item_screen.dart';
 import '../../features/clients/client_detail_screen.dart';
 import '../../features/clients/clients_screen.dart';
 import '../../features/clients/new_client_screen.dart';
+import '../../features/equipment/equipment_categories_screen.dart';
+import '../../features/equipment/equipment_detail_screen.dart';
+import '../../features/equipment/equipment_screen.dart';
+import '../../features/equipment/new_equipment_screen.dart';
+import '../../features/equipment/quote_equipment_screen.dart';
 import '../../features/financial/financial_categories_screen.dart';
 import '../../features/financial/financial_entry_detail_screen.dart';
 import '../../features/financial/financial_screen.dart';
@@ -35,6 +40,8 @@ abstract class AppRoutes {
   static String quotesEdit(String id) => '$quotes/$id/edit';
 
   static String quotesPdf(String id) => '$quotes/$id/pdf';
+
+  static String quotesEquipment(String id) => '$quotes/$id/equipment';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -62,6 +69,14 @@ abstract class AppRoutes {
   static String financialDetail(String id) => '$financial/$id';
 
   static String financialEdit(String id) => '$financial/$id/edit';
+
+  static const equipment = '/equipment';
+  static const equipmentNew = '/equipment/new';
+  static const equipmentCategories = '/equipment/categories';
+
+  static String equipmentDetail(String id) => '$equipment/$id';
+
+  static String equipmentEdit(String id) => '$equipment/$id/edit';
 }
 
 abstract class AppRouter {
@@ -123,6 +138,12 @@ abstract class AppRouter {
               GoRoute(
                 path: 'pdf',
                 builder: (context, state) => QuotePdfPreviewScreen(
+                  quoteId: state.pathParameters['id']!,
+                ),
+              ),
+              GoRoute(
+                path: 'equipment',
+                builder: (context, state) => QuoteEquipmentScreen(
                   quoteId: state.pathParameters['id']!,
                 ),
               ),
@@ -210,6 +231,34 @@ abstract class AppRouter {
                 path: 'edit',
                 builder: (context, state) => NewFinancialEntryScreen(
                   entryId: state.pathParameters['id'],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.equipment,
+        builder: (context, state) => const EquipmentScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewEquipmentScreen(),
+          ),
+          GoRoute(
+            path: 'categories',
+            builder: (context, state) => const EquipmentCategoriesScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => EquipmentDetailScreen(
+              equipmentId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) => NewEquipmentScreen(
+                  equipmentId: state.pathParameters['id'],
                 ),
               ),
             ],

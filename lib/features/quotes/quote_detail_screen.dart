@@ -14,6 +14,7 @@ import 'utils/quote_detail_presenter.dart';
 import 'utils/quotes_navigation.dart';
 import 'widgets/quote_company_snapshot_missing_notice.dart';
 import 'widgets/quote_detail_section.dart';
+import 'widgets/quote_equipment_section.dart';
 import 'widgets/quote_line_items_section.dart';
 import 'widgets/quote_not_found_state.dart';
 import 'widgets/quote_pdf_actions_section.dart';
@@ -249,6 +250,8 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                     ],
                     const SizedBox(height: 16),
                     QuoteLineItemsSection(items: resolvedQuote.items),
+                    const SizedBox(height: 16),
+                    QuoteEquipmentSection(quoteId: resolvedQuote.id),
                     const SizedBox(height: 16),
                     QuoteDetailSection(
                       title: 'Financeiro',

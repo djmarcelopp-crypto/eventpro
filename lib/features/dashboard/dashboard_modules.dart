@@ -6,6 +6,7 @@ enum DashboardModuleId {
   quotes,
   agenda,
   financial,
+  equipment,
   settings,
 }
 
@@ -53,6 +54,12 @@ const List<DashboardModule> dashboardModules = [
     title: 'Financeiro',
     description: 'Receitas, despesas e saldo',
     icon: Icons.account_balance_wallet_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.equipment,
+    title: 'Estoque',
+    description: 'Equipamentos e inventário',
+    icon: Icons.handyman_outlined,
   ),
   DashboardModule(
     id: DashboardModuleId.settings,

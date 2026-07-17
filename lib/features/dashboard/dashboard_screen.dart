@@ -46,6 +46,8 @@ class DashboardScreen extends ConsumerWidget {
         context.push(AppRoutes.agenda);
       case DashboardModuleId.financial:
         context.push(AppRoutes.financial);
+      case DashboardModuleId.equipment:
+        context.push(AppRoutes.equipment);
       case DashboardModuleId.settings:
         context.push(AppRoutes.settings);
     }

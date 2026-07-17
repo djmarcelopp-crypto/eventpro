@@ -473,3 +473,85 @@ class QuoteTeamMembers extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+/// Vehicle types for the logistics fleet (TASK-030 CP-B).
+@DataClassName('VehicleTypeRow')
+@TableIndex(name: 'idx_vehicle_types_name', columns: {#name})
+class VehicleTypes extends Table {
+  @override
+  String get tableName => 'vehicle_types';
+
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get description => text().nullable()();
+  BoolColumn get active => boolean()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Fleet vehicles (TASK-030 CP-B).
+@DataClassName('VehicleRow')
+@TableIndex(name: 'idx_vehicles_type_id', columns: {#vehicleTypeId})
+@TableIndex(name: 'idx_vehicles_status', columns: {#status})
+@TableIndex(name: 'idx_vehicles_plate', columns: {#plate})
+class Vehicles extends Table {
+  @override
+  String get tableName => 'vehicles';
+
+  TextColumn get id => text()();
+  TextColumn get plate => text()();
+  TextColumn get description => text()();
+  TextColumn get vehicleTypeId => text().references(
+        VehicleTypes,
+        #id,
+        onDelete: KeyAction.restrict,
+        onUpdate: KeyAction.cascade,
+      )();
+  RealColumn get payloadCapacityKg => real()();
+  RealColumn get volumeCapacityM3 => real()();
+  TextColumn get observations => text().nullable()();
+
+  /// Serialized [VehicleStatus] name.
+  TextColumn get status => text()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Planned vehicle assignments attached to a quote (TASK-030 CP-D).
+@DataClassName('QuoteVehicleRow')
+@TableIndex(name: 'idx_quote_vehicles_quote_id', columns: {#quoteId})
+@TableIndex(name: 'idx_quote_vehicles_vehicle_id', columns: {#vehicleId})
+@TableIndex(
+  name: 'idx_quote_vehicles_driver_id',
+  columns: {#driverTeamMemberId},
+)
+class QuoteVehicles extends Table {
+  @override
+  String get tableName => 'quote_vehicles';
+
+  TextColumn get id => text()();
+  TextColumn get quoteId =>
+      text().references(Quotes, #id, onDelete: KeyAction.cascade)();
+  TextColumn get vehicleId =>
+      text().references(Vehicles, #id, onDelete: KeyAction.restrict)();
+  TextColumn get driverTeamMemberId => text().nullable().references(
+        TeamMembers,
+        #id,
+        onDelete: KeyAction.restrict,
+      )();
+  IntColumn get plannedDepartureAt => integer().nullable()();
+  IntColumn get plannedReturnAt => integer().nullable()();
+  IntColumn get freightCostCents => integer()();
+  TextColumn get notes => text().nullable()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

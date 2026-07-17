@@ -73,7 +73,7 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        expect(upgraded.schemaVersion, 8);
+        expect(upgraded.schemaVersion, 10);
 
         expect(
           (await upgraded.select(upgraded.quotes).get()).single.id,

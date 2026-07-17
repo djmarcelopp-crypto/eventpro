@@ -8,6 +8,7 @@ enum DashboardModuleId {
   financial,
   equipment,
   team,
+  logistics,
   settings,
 }
 
@@ -67,6 +68,12 @@ const List<DashboardModule> dashboardModules = [
     title: 'Equipe',
     description: 'Colaboradores e funções',
     icon: Icons.groups_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.logistics,
+    title: 'Logística',
+    description: 'Veículos e transporte',
+    icon: Icons.local_shipping_outlined,
   ),
   DashboardModule(
     id: DashboardModuleId.settings,

@@ -128,14 +128,28 @@ DJ Marcelo PP Festas e Eventos
 
 **TASK-029 encerrada.** Documento final: `docs/tasks/TASK-029.md`. Regras: `docs/business-rules/team.md`.
 
+### TASK-030 — Logística & Transporte
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Fundação do domínio (entidades, enums, validadores, contratos) | ✅ Concluído |
+| **CP-B** | Persistência Drift — tipos/veículos, migração v8→v9 | ✅ Concluído |
+| **CP-C** | Casos de uso — VehicleService / VehicleTypeService | ✅ Concluído |
+| **CP-D** | QuoteVehicle + serviço + migração v9→v10 | ✅ Concluído |
+| **CP-E** | UI, providers, dashboard e seção em orçamentos | ✅ Concluído |
+| **CP-F** | Disponibilidade logística dinâmica (calculator + service + providers) | ✅ Concluído |
+| **CP-G** | Documentação final da task | ✅ Concluído |
+
+**TASK-030 implementada.** Documento final: `docs/tasks/TASK-030.md`. Regras: `docs/business-rules/logistics.md`. Commits aguardam aprovação do PO/CTO.
+
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-029-equipe` |
-| Último commit | `564d196` — `feat(team): compute dynamic team availability from quote schedules` |
-| Alterações locais | CP-G documental implementado e verificado — aguardando aprovação para commit |
-| Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
+| Branch | `cursor/task-030-logistica` |
+| Último commit | `8324576` — `docs(task-029): finalize team module documentation` (base) |
+| Alterações locais | TASK-030 CP-A…G implementados e verificados — **sem commit** (aguardando PO/CTO) |
+| Próximo checkpoint | Nenhum — aguardando versionamento e definição da próxima task pelo Product Owner |
 
 ---
 
@@ -162,7 +176,8 @@ O sistema deverá possuir:
 - Financeiro (categorias, lançamentos, resumos e relatórios por período — TASK-027)
 - Estoque & Equipamentos (inventário operacional, vínculo a orçamentos e disponibilidade dinâmica — TASK-028)
 - Equipe & Escalas (roster, vínculo a orçamentos e disponibilidade dinâmica — TASK-029)
-- Contratos, gráficos/exportações financeiras avançadas, reservas efetivas de estoque, check-in/folha de equipe e IA — **fases futuras**
+- Logística & Transporte (frota, vínculo a orçamentos e disponibilidade logística dinâmica — TASK-030)
+- Contratos, gráficos/exportações financeiras avançadas, reservas efetivas de estoque, check-in/folha de equipe, GPS/rotas e IA — **fases futuras**
 
 ---
 
@@ -180,7 +195,8 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Financeiro: categorias e lançamentos persistidos (schema v4+), vínculo opcional a orçamentos, resumo global, filtros e relatórios por período (TASK-027)
 - Estoque & Equipamentos: categorias e inventário (schema v5), vínculo `quote_equipment` (schema v6), UI de gestão e disponibilidade dinâmica sem persistir quantidades derivadas (TASK-028)
 - Equipe & Escalas: funções e colaboradores (schema v7), vínculo `quote_team_members` (schema v8), UI de gestão e disponibilidade dinâmica sem persistir estado derivado (TASK-029)
-- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro, Estoque e Equipe carregam sob demanda ao abrir o módulo
+- Logística & Transporte: tipos e veículos (schema v9), vínculo `quote_vehicles` (schema v10), UI de gestão e disponibilidade logística dinâmica sem persistir estado derivado (TASK-030)
+- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro, Estoque, Equipe e Logística carregam sob demanda ao abrir o módulo
 
 ---
 

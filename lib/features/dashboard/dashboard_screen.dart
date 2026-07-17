@@ -7,6 +7,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../settings/providers/company_profile_provider.dart';
 import '../settings/utils/company_profile_presenter.dart';
+import '../logistics/models/vehicle_list_summary.dart';
+import '../logistics/providers/vehicle_list_summary_provider.dart';
+import '../logistics/widgets/vehicle_summary_cards.dart';
 import '../team/models/team_list_summary.dart';
 import '../team/providers/team_list_summary_provider.dart';
 import '../team/widgets/team_summary_cards.dart';
@@ -53,6 +56,8 @@ class DashboardScreen extends ConsumerWidget {
         context.push(AppRoutes.equipment);
       case DashboardModuleId.team:
         context.push(AppRoutes.team);
+      case DashboardModuleId.logistics:
+        context.push(AppRoutes.vehicles);
       case DashboardModuleId.settings:
         context.push(AppRoutes.settings);
     }
@@ -65,6 +70,7 @@ class DashboardScreen extends ConsumerWidget {
         ? 'DJ Marcelo PP Festas e Eventos'
         : CompanyProfilePresenter.displayName(profile);
     final teamSummaryAsync = ref.watch(teamListSummaryProvider);
+    final vehicleSummaryAsync = ref.watch(vehicleListSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -105,21 +111,6 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: _sectionSpacing),
                     Text(
-                      'Equipe',
-                      style: AppTextStyles.titleMedium,
-                    ),
-                    const SizedBox(height: _gridSpacing),
-                    teamSummaryAsync.when(
-                      data: (summary) => TeamSummaryCards(summary: summary),
-                      loading: () => const TeamSummaryCards(
-                        summary: TeamListSummary.empty,
-                      ),
-                      error: (_, _) => const TeamSummaryCards(
-                        summary: TeamListSummary.empty,
-                      ),
-                    ),
-                    const SizedBox(height: _sectionSpacing),
-                    Text(
                       'Módulos',
                       style: AppTextStyles.titleMedium,
                     ),
@@ -140,6 +131,36 @@ class DashboardScreen extends ConsumerWidget {
                             ),
                           ),
                       ],
+                    ),
+                    const SizedBox(height: _sectionSpacing),
+                    Text(
+                      'Equipe',
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: _gridSpacing),
+                    teamSummaryAsync.when(
+                      data: (summary) => TeamSummaryCards(summary: summary),
+                      loading: () => const TeamSummaryCards(
+                        summary: TeamListSummary.empty,
+                      ),
+                      error: (_, _) => const TeamSummaryCards(
+                        summary: TeamListSummary.empty,
+                      ),
+                    ),
+                    const SizedBox(height: _sectionSpacing),
+                    Text(
+                      'Logística',
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: _gridSpacing),
+                    vehicleSummaryAsync.when(
+                      data: (summary) => VehicleSummaryCards(summary: summary),
+                      loading: () => const VehicleSummaryCards(
+                        summary: VehicleListSummary.empty,
+                      ),
+                      error: (_, _) => const VehicleSummaryCards(
+                        summary: VehicleListSummary.empty,
+                      ),
                     ),
                   ],
                 ),

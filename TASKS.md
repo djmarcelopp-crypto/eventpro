@@ -4,6 +4,109 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-030 — Logística & Transporte
+
+**Branch:** `cursor/task-030-logistica`
+
+**Objetivo:** Criar o módulo Logística & Transporte — frota (tipos e veículos), vínculo planejado com orçamentos (`quote_vehicles`), UI de gestão e disponibilidade logística calculada dinamicamente — sem GPS/rotas, sem alterar `VehicleStatus` automaticamente e sem persistir disponibilidade.
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Fundação do domínio (entidades, enums, validadores, contratos) | *(pendente)* | ✅ Concluído |
+| B | Persistência Drift — tipos/veículos, migração v8→v9 | *(pendente)* | ✅ Concluído |
+| C | Casos de uso — VehicleService / VehicleTypeService | *(pendente)* | ✅ Concluído |
+| D | QuoteVehicle + serviço + migração v9→v10 | *(pendente)* | ✅ Concluído |
+| E | UI, providers, dashboard e seção em orçamentos | *(pendente)* | ✅ Concluído |
+| F | Disponibilidade logística dinâmica (calculator + service + providers) | *(pendente)* | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-030.md`, `docs/business-rules/logistics.md`, revisão de `ARCHITECTURE.md` | *(pendente)* | ✅ Concluído |
+
+**TASK-030 implementada.** Histórico completo consolidado em `docs/tasks/TASK-030.md`. Commits aguardam aprovação do PO/CTO.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- `Vehicle`, `VehicleType`, `VehicleStatus`, validators, contratos de repositório
+- Sem Drift, providers ou UI
+
+**Verificação:** `flutter analyze` (infos pré-existentes); `flutter test` com 1412 testes passando.
+
+**Fora de escopo do CP-A (mantido):** persistência, providers, telas, QuoteVehicle, disponibilidade.
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- Tabelas `vehicle_types` e `vehicles`; DAOs; mappers; `Drift*Repository`
+- `schemaVersion` 8→9; migração real testada
+
+**Verificação:** `flutter test` com 1418 testes passando.
+
+**Fora de escopo do CP-B (mantido):** providers, telas, QuoteVehicle, disponibilidade.
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `VehicleService` / `VehicleTypeService` com result objects
+- Placa normalizada e única; tipo ativo; exclusão de tipo bloqueada se em uso
+- Schema, providers e UI inalterados
+
+**Verificação:** `flutter test` com 1433 testes passando.
+
+**Fora de escopo do CP-C (mantido):** providers, telas, schema, QuoteVehicle, disponibilidade.
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- `QuoteVehicle` / `QuoteVehicleSummary` / `QuoteVehicleService`
+- Tabela `quote_vehicles` (schema 9→10); FKs CASCADE/RESTRICT
+- Sem disponibilidade, sem GPS, sem alteração de `VehicleStatus`
+
+**Verificação:** `flutter test` com 1439 testes passando.
+
+**Fora de escopo do CP-D (mantido):** providers, UI, cálculo de disponibilidade.
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- Providers Riverpod, telas Logística/tipos/formulário/detalhe, associação a orçamentos
+- Módulo e resumo no Dashboard; filtros por tipo/status/placa
+- Schema inalterado (permanece v10)
+
+**Verificação:** `flutter test` com 1450 testes passando.
+
+**Fora de escopo do CP-E (mantido):** disponibilidade temporal, GPS, rotas.
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- `VehicleAvailabilityCalculator` / `VehicleAvailabilityService` + modelos de conflito/resumo/plano
+- Providers de disponibilidade; sem persistir estado derivado; sem UI dedicada de conflitos neste CP
+
+**Verificação:** `flutter test` com 1468 testes passando.
+
+**Fora de escopo do CP-F (mantido):** UI de conflitos, GPS, schema.
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-030.md` e `docs/business-rules/logistics.md` criados
+- `ARCHITECTURE.md`, `PROJECT.md`, este documento e `docs/roadmap.md` atualizados
+- Nenhuma alteração em `lib/`, `test/`, schema, providers ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` e `flutter test` com 1468 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de aprovação/commit)*
+
+---
+
 ## TASK-029 — Equipe & Escalas
 
 **Branch:** `cursor/task-029-equipe`

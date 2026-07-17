@@ -115,3 +115,31 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 - Hidratação do módulo Equipe no bootstrap do app.
 - UI dedicada de disponibilidade/conflitos (hoje o cálculo existe em domínio/providers).
 - Mutação automática de `TeamMemberStatus` a partir de orçamentos.
+
+---
+
+## Logística & Transporte — evoluções avançadas
+
+**Status:** MVP do módulo entregue na `TASK-030` (implementada; commits pendentes de aprovação). Ver `docs/tasks/TASK-030.md` e `docs/business-rules/logistics.md`.
+
+### O que já foi entregue (TASK-030)
+
+- Tipos e veículos persistidos em Drift (`schemaVersion` 9).
+- Vínculo planejado orçamento ↔ veículo (`quote_vehicles`, schema v10) com motorista opcional, frete e períodos planejados.
+- UI de frota, filtros, tipos e associação a orçamentos.
+- Disponibilidade logística dinâmica (período planejado ou evento, overlap, conflitos, resumo/frete) sem persistir estado derivado.
+- `VehicleStatus` cadastral combinado à elegibilidade, sem mutação automática.
+
+### O que permanece futuro (fora do escopo da TASK-030)
+
+- GPS / rastreamento em tempo real.
+- Cálculo de rotas externo / mapas.
+- Telemetria / abastecimento.
+- Manutenção preventiva.
+- Check-in / check-out de veículos.
+- Baixa automática de estoque na logística.
+- Confirmação de motorista.
+- Integração com Agenda (recursos / conflitos de frota na ocupação).
+- Hidratação do módulo Logística no bootstrap do app.
+- UI dedicada de disponibilidade/conflitos (hoje o cálculo existe em domínio/providers).
+- Mutação automática de `VehicleStatus` a partir de orçamentos.

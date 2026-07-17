@@ -85,7 +85,7 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        expect(upgraded.schemaVersion, 8);
+        expect(upgraded.schemaVersion, 10);
 
         final columnNames = await upgraded
             .customSelect('PRAGMA table_info(financial_entries)')

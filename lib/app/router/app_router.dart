@@ -19,6 +19,11 @@ import '../../features/team/quote_team_screen.dart';
 import '../../features/team/team_member_detail_screen.dart';
 import '../../features/team/team_roles_screen.dart';
 import '../../features/team/team_screen.dart';
+import '../../features/logistics/new_vehicle_screen.dart';
+import '../../features/logistics/quote_vehicles_screen.dart';
+import '../../features/logistics/vehicle_detail_screen.dart';
+import '../../features/logistics/vehicle_types_screen.dart';
+import '../../features/logistics/vehicles_screen.dart';
 import '../../features/financial/financial_categories_screen.dart';
 import '../../features/financial/financial_entry_detail_screen.dart';
 import '../../features/financial/financial_screen.dart';
@@ -49,6 +54,8 @@ abstract class AppRoutes {
   static String quotesEquipment(String id) => '$quotes/$id/equipment';
 
   static String quotesTeam(String id) => '$quotes/$id/team';
+
+  static String quotesVehicles(String id) => '$quotes/$id/vehicles';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -92,6 +99,14 @@ abstract class AppRoutes {
   static String teamDetail(String id) => '$team/$id';
 
   static String teamEdit(String id) => '$team/$id/edit';
+
+  static const vehicles = '/vehicles';
+  static const vehiclesNew = '/vehicles/new';
+  static const vehicleTypes = '/vehicles/types';
+
+  static String vehicleDetail(String id) => '$vehicles/$id';
+
+  static String vehicleEdit(String id) => '$vehicles/$id/edit';
 }
 
 abstract class AppRouter {
@@ -165,6 +180,12 @@ abstract class AppRouter {
               GoRoute(
                 path: 'team',
                 builder: (context, state) => QuoteTeamScreen(
+                  quoteId: state.pathParameters['id']!,
+                ),
+              ),
+              GoRoute(
+                path: 'vehicles',
+                builder: (context, state) => QuoteVehiclesScreen(
                   quoteId: state.pathParameters['id']!,
                 ),
               ),
@@ -308,6 +329,34 @@ abstract class AppRouter {
                 path: 'edit',
                 builder: (context, state) => NewTeamMemberScreen(
                   memberId: state.pathParameters['id'],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.vehicles,
+        builder: (context, state) => const VehiclesScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) => const NewVehicleScreen(),
+          ),
+          GoRoute(
+            path: 'types',
+            builder: (context, state) => const VehicleTypesScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => VehicleDetailScreen(
+              vehicleId: state.pathParameters['id']!,
+            ),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) => NewVehicleScreen(
+                  vehicleId: state.pathParameters['id'],
                 ),
               ),
             ],

@@ -21,6 +21,9 @@ part 'daos/quote_equipment_dao.dart';
 part 'daos/team_roles_dao.dart';
 part 'daos/team_members_dao.dart';
 part 'daos/quote_team_members_dao.dart';
+part 'daos/vehicle_types_dao.dart';
+part 'daos/vehicles_dao.dart';
+part 'daos/quote_vehicles_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -45,6 +48,9 @@ part 'daos/quote_team_members_dao.dart';
     TeamRoles,
     TeamMembers,
     QuoteTeamMembers,
+    VehicleTypes,
+    Vehicles,
+    QuoteVehicles,
   ],
   daos: [
     ClientsDao,
@@ -60,6 +66,9 @@ part 'daos/quote_team_members_dao.dart';
     TeamRolesDao,
     TeamMembersDao,
     QuoteTeamMembersDao,
+    VehicleTypesDao,
+    VehiclesDao,
+    QuoteVehiclesDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -74,7 +83,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -134,6 +143,17 @@ class AppDatabase extends _$AppDatabase {
       // é alterada; apenas `quote_team_members` é criada.
       if (from <= 7 && to >= 8) {
         await migrator.createTable(quoteTeamMembers);
+      }
+      // TASK-030 CP-B — domínio Logística & Transporte. Nenhuma tabela
+      // existente é alterada; apenas `vehicle_types` e `vehicles` são criadas.
+      if (from <= 8 && to >= 9) {
+        await migrator.createTable(vehicleTypes);
+        await migrator.createTable(vehicles);
+      }
+      // TASK-030 CP-D — vínculos quote ↔ veículo. Nenhuma tabela existente
+      // é alterada; apenas `quote_vehicles` é criada.
+      if (from <= 9 && to >= 10) {
+        await migrator.createTable(quoteVehicles);
       }
     },
   );

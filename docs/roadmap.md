@@ -36,3 +36,28 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 
 - Não deve ser antecipada antes da definição de task própria para os itens "O que permanece futuro" acima.
 - Qualquer evolução deve manter a decisão final com o usuário — a Agenda Inteligente é uma ferramenta de análise, não de decisão automática.
+
+---
+
+## Financeiro — evoluções avançadas
+
+**Status:** MVP do módulo entregue na `TASK-027` (encerrada). Ver `docs/tasks/TASK-027.md` e `docs/business-rules/financial.md`.
+
+### O que já foi entregue (TASK-027)
+
+- Categorias e lançamentos (receita/despesa) persistidos em Drift (`schemaVersion` 4).
+- Regras de categoria e status × `paidAt`.
+- Vínculo opcional a orçamentos via `Quote.id` (referência).
+- Resumo global, filtros, resumo por orçamento (serviço/calculator) e relatórios por período com evolução mensal tabular.
+
+### O que permanece futuro (fora do escopo da TASK-027)
+
+- Gráficos (charts) sobre a série mensal já preparada.
+- Exportações PDF / Excel / CSV.
+- Múltiplas moedas.
+- Centros de custo.
+- Conciliação bancária.
+- Integrações fiscais.
+- Dashboards financeiros avançados.
+- Hidratação do Financeiro no bootstrap do app.
+- UI do resumo por orçamento embutida na tela de Quotes.

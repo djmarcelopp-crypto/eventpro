@@ -1,6 +1,6 @@
 # Arquitetura — EventPro ERP
 
-Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025) e a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026).
+Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025), a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026) — e o módulo Financeiro com categorias, lançamentos, resumos e relatórios por período (TASK-027).
 
 ---
 
@@ -52,6 +52,7 @@ Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 | Orçamentos | `quotes/` | ✅ Drift (TASK-024 CP-E) |
 | Configurações | `settings/` | ✅ Drift (TASK-024 CP-C) |
 | Agenda | `agenda/` | ✅ Drift para bloqueios manuais (TASK-025 CP-A/B); ocupação de orçamentos é **computada**, nunca persistida (CP-C); Agenda Inteligente (TASK-026) é um pipeline Dart puro sem persistência própria, consumindo a ocupação já computada |
+| Financeiro | `financial/` | ✅ Drift — `financial_categories` + `financial_entries` (TASK-027 CP-B); `quoteId` opcional desde schema v4 (CP-D); carregamento sob demanda (não hidratado no bootstrap) |
 
 ### Estrutura interna de uma feature (quando complexa)
 
@@ -107,7 +108,14 @@ appDatabaseProvider
 | `agendaBlocksProvider` | Agenda | `AsyncNotifier<List<AgendaBlock>>` | Memória + escrita SQLite + hidratado no startup (TASK-025 CP-B/E) |
 | `agendaBlockRepositoryProvider` | Agenda | `Provider<AgendaBlockRepository>` | — |
 | `agendaOccupancyProvider` | Agenda | `Provider<AsyncValue<List<AgendaOccupancy>>>` | **Computado** — combina `quotesProvider` + `agendaBlocksProvider`; sem estado próprio, sem persistência (TASK-025 CP-C) |
-| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos cinco notifiers no startup (TASK-024 CP-F; estendido na TASK-025 CP-E) |
+| `financialEntriesProvider` | Financeiro | `AsyncNotifierProvider` | Memória + escrita SQLite via serviços; load sob demanda no `build()` (TASK-027 CP-E) |
+| `financialCategoriesProvider` | Financeiro | `AsyncNotifierProvider` | Idem para categorias |
+| `financialEntryFiltersProvider` | Financeiro | `NotifierProvider` | Filtros da lista (período, kind, status) |
+| `financialFilteredEntriesProvider` | Financeiro | `Provider` | Lista após filtros |
+| `financialGlobalSummaryProvider` | Financeiro | `Provider` | Resumo global da lista filtrada (calculator puro) |
+| `financialReportQueryProvider` | Financeiro | `NotifierProvider` | Preset/período do relatório |
+| `financialPeriodReportProvider` | Financeiro | `Provider` | Relatório por período (lista completa + query) |
+| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos cinco notifiers no startup (TASK-024 CP-F; estendido na TASK-025 CP-E) — **não** inclui Financeiro nesta fase |
 
 ### Regras
 
@@ -138,8 +146,10 @@ Drift<Feature>Repository     # implementação usando AppDatabase + DAO
 | `CatalogRepository` | `DriftCatalogRepository` | `CatalogDao` |
 | `QuoteRepository` | `DriftQuoteRepository` | `QuotesDao` |
 | `AgendaBlockRepository` | `DriftAgendaBlockRepository` | `AgendaBlocksDao` |
+| `FinancialCategoryRepository` | `DriftFinancialCategoryRepository` | `FinancialCategoriesDao` |
+| `FinancialEntryRepository` | `DriftFinancialEntryRepository` | `FinancialEntriesDao` |
 
-`AgendaOccupancy` **não** possui repository, DAO ou mapper — é sempre computado (seção 7).
+`AgendaOccupancy` **não** possui repository, DAO ou mapper — é sempre computado (seção 7). Agregações financeiras (`FinancialGlobalSummary`, `FinancialEventSummary`, `FinancialPeriodReport`) também **não** são persistidas — são calculadas em utils/services.
 
 ### Contrato típico
 
@@ -163,7 +173,7 @@ Operações de pacotes (catálogo) usam transações no DAO (`CatalogDao`) para 
 
 - **Drift** é a camada ORM/type-safe sobre **SQLite**.
 - Banco local: arquivo `eventpro.sqlite` (path resolvido por `database_path.dart`).
-- `schemaVersion`: **2** (v1 na TASK-024 CP-A; v2 na TASK-025 CP-A, adicionando `agenda_blocks`).
+- `schemaVersion`: **4** (v1 TASK-024; v2 TASK-025 `agenda_blocks`; v3 TASK-027 tabelas financeiras; v4 TASK-027 coluna `quote_id` em `financial_entries`).
 - FKs habilitadas via `PRAGMA foreign_keys = ON`.
 
 ### Estrutura em `lib/core/database/`
@@ -184,9 +194,11 @@ lib/core/database/
     catalog_dao.dart
     quotes_dao.dart
     agenda_blocks_dao.dart
+    financial_categories_dao.dart
+    financial_entries_dao.dart
 ```
 
-### Tabelas (schema v2)
+### Tabelas (schema v4)
 
 | Tabela | Feature | Status DAO | Desde |
 |--------|---------|------------|-------|
@@ -196,6 +208,8 @@ lib/core/database/
 | `catalog_package_components` | Catálogo | ✅ | v1 |
 | `quotes` + snapshots + lines + history + sequences | Orçamentos | ✅ | v1 |
 | `agenda_blocks` | Agenda | ✅ | v2 (TASK-025 CP-A) |
+| `financial_categories` | Financeiro | ✅ | v3 (TASK-027 CP-B) |
+| `financial_entries` | Financeiro | ✅ | v3 (TASK-027 CP-B); coluna `quote_id` em v4 (CP-D) |
 
 ### Geração de código
 
@@ -218,17 +232,22 @@ dart run build_runner build --delete-conflicting-outputs
 
 **Desvio documentado:** `dart run drift_dev schema dump` não funcionou nesta versão do `drift_dev` (incompatibilidade com `drift 2.34.2`); o snapshot do passo 1 foi construído manualmente copiando `tables.dart` e sobrescrevendo `tableName` de cada tabela legada para bater com os nomes físicos originais — aprovado explicitamente pelo PO/CTO como alternativa válida quando a ferramenta de dump automático não está disponível.
 
-**Quando `schemaVersion` precisar avançar novamente (v2 → v3), seguir o mesmo checklist:**
+**Migrações seguintes (TASK-027):**
+
+- **v2 → v3 (CP-B):** cria `financial_categories` e `financial_entries` (`from <= 2 && to >= 3`); snapshot legado `LegacyAppDatabaseV2`; testes de migração real (incluindo salto v1→v3).
+- **v3 → v4 (CP-D):** adiciona `quote_id` em `financial_entries` com `from == 3` **estrito** — salto v1/v2→v4 cria a tabela já com a coluna via `createTable` atual, evitando "duplicate column"; snapshot legado `LegacyAppDatabaseV3`.
+
+**Quando `schemaVersion` precisar avançar novamente (v4 → v5+), seguir o mesmo checklist:**
 
 1. **Snapshot do schema anterior** — antes de alterar `tables.dart`, gerar um snapshot do schema vigente (ex.: `dart run drift_dev schema dump`) para servir de fixture real de "banco legado" nos testes de migração.
 2. **Alteração incremental** — mudar `tables.dart` e incrementar `schemaVersion` em uma unidade por vez (nunca saltar versões).
-3. **`onUpgrade` explícito** — implementar `onUpgrade` no `MigrationStrategy` tratando explicitamente o par `(from, to)` da transição real (ex.: `from == 1 && to == 2`), sem cobrir hipoteticamente versões que não existem.
+3. **`onUpgrade` explícito** — implementar `onUpgrade` no `MigrationStrategy` tratando explicitamente o par `(from, to)` da transição real (ex.: `from == 1 && to == 2`), sem cobrir hipoteticamente versões que não existem; ao adicionar colunas em tabelas criadas em saltos, preferir condições `from == N` estritas quando o `createTable` da versão atual já inclui a coluna.
 4. **Teste de migração real** — escrever um teste que abre o snapshot da versão anterior (passo 1), aplica a migração e confirma: dados antigos preservados, novas colunas/tabelas com defaults corretos, nenhuma perda de linhas.
 5. **Testes de compatibilidade e constraints** — reexecutar os testes de `test/core/database/app_database_test.dart` (reabertura, cascades, PKs, `PRAGMA integrity_check`) contra o banco pós-migração.
 6. **Suíte completa** — `flutter analyze` e `flutter test` completos antes de considerar a migração concluída.
 7. **Documentar** — registrar a migração em `TASKS.md`/`docs/tasks/` com o motivo da mudança e o par de versões tratado.
 
-Checklist validado na prática pela primeira vez na TASK-025 CP-A; deve continuar sendo seguido em toda migração futura.
+Checklist validado na prática na TASK-025 CP-A e reaplicado na TASK-027 CP-B/CP-D; deve continuar sendo seguido em toda migração futura.
 
 ---
 
@@ -307,6 +326,27 @@ AgendaAvailabilityRequestParser        (interpretação por regex/palavras-chave
 - **Sem provider novo:** a integração com a UI (`AgendaAvailabilityQueryCard`, um `ConsumerStatefulWidget`) reaproveita o `agendaBlockClockProvider` já existente (criado na TASK-025 para timestamps de `AgendaBlock`) para injetar o relógio no parser, em vez de criar um provider de relógio dedicado.
 - Detalhes de regras (status `free`/`partial`/`busy`, conflitos, interpretação de frases, erros estruturados) em `docs/business-rules/agenda-inteligente.md`.
 
+### Financeiro — domínio, serviços e relatórios (TASK-027)
+
+```text
+UI (telas + FinancialReportPanel)
+      │
+      ▼
+Providers (entries/categories/filters/report query)
+      │
+      ▼
+Services (Entry/Category/EventSummary/PeriodReport)
+      │
+      ├─► Calculators / Filter puros
+      └─► Drift repositories → DAOs → SQLite (v4)
+```
+
+- Entidade única `FinancialEntry` + `FinancialFlowKind`; categorias tipadas; status × `paidAt` normalizados no serviço.
+- Vínculo opcional `quoteId` → `Quotes.id` (`ON DELETE SET NULL`), sem duplicar dados do evento.
+- Resumo global e relatório por período **reutilizam** `FinancialGlobalSummaryCalculator` / `FinancialEntryFilter` — a UI não recalcula dinheiro.
+- Evolução mensal é estrutura tabular pronta para gráficos futuros (sem biblioteca de charts nesta task).
+- Detalhes em `docs/business-rules/financial.md` e `docs/tasks/TASK-027.md`.
+
 ### Imagens e arquivos
 
 - Referências (`imageReference`, `logoReference`) ficam no SQLite.
@@ -338,19 +378,21 @@ lib/
     quotes/
     settings/
     agenda/
+    financial/
 
 test/                           # espelha lib/features/ e lib/core/
 docs/
   business-rules/               # regras por módulo
-  tasks/                        # histórico TASK-001 … TASK-026
+  tasks/                        # histórico TASK-001 … TASK-027
 ```
 
 ### Navegação (GoRouter)
 
 - Rotas nomeadas centralizadas em `lib/app/router/app_router.dart`.
-- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda) tem rota dedicada.
+- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda, financeiro) tem rota dedicada.
 - Deep links e parâmetros de rota seguem convenção snake_case nos paths.
 - Ocupações da Agenda originadas de orçamento **não** têm rota própria — abrem a rota já existente de detalhes do orçamento (`/quotes/:id`).
+- Financeiro: `/financial`, `/financial/new`, `/financial/categories`, `/financial/:id`, `/financial/:id/edit`.
 
 ---
 
@@ -382,7 +424,8 @@ Sempre executar `flutter analyze` e `flutter test` após implementação (ver `C
 - Novas features → nova pasta em `lib/features/`.
 - Nova persistência → seguir padrão Repository + DAO + Mapper + Notifier async.
 - Dado que é **função** de outras entidades já persistidas (ex.: `AgendaOccupancy` a partir de Orçamentos + Agenda) → computar via `Provider`, não criar tabela própria.
-- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); primeira migração real aplicada na TASK-025 CP-A (v1 → v2, `agenda_blocks`).
+- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); migrações reais: TASK-025 CP-A (v1 → v2), TASK-027 CP-B (v2 → v3) e CP-D (v3 → v4).
 - Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.
-- Evoluções previstas para a Agenda (IA/LLM na Agenda Inteligente, voz, Recursos, integração com Financeiro/Contratos/Equipe/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` e `docs/business-rules/agenda-inteligente.md` (seções "Fora de escopo") e `docs/roadmap.md`.
-- Lógica de negócio determinística e complexa (ex.: Agenda Inteligente) → construir em camadas Dart puras, testáveis isoladamente, **antes** de qualquer integração com UI/Riverpod; toda lógica dependente de "agora" deve receber relógio injetável desde o primeiro componente que o usa.
+- Evoluções previstas para a Agenda (IA/LLM na Agenda Inteligente, voz, Recursos, Contratos/Equipe/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` e `docs/business-rules/agenda-inteligente.md` (seções "Fora de escopo") e `docs/roadmap.md`.
+- Evoluções do Financeiro (gráficos, exportações, multi-moeda, conciliação, fiscal, dashboards avançados) — ver `docs/business-rules/financial.md` e `docs/roadmap.md`.
+- Lógica de negócio determinística e complexa (ex.: Agenda Inteligente, calculadoras financeiras) → construir em camadas Dart puras, testáveis isoladamente, **antes** de qualquer integração com UI/Riverpod; toda lógica dependente de "agora" deve receber relógio injetável desde o primeiro componente que o usa.

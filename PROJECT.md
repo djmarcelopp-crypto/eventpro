@@ -86,13 +86,27 @@ DJ Marcelo PP Festas e Eventos
 
 **TASK-026 encerrada.** Documento final: `docs/tasks/TASK-026.md`.
 
+### TASK-027 — Financeiro
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Fundação do domínio (entidades, enums, validadores, contratos) | ✅ Concluído |
+| **CP-B** | Persistência Drift — tabelas, DAOs, mappers, migração v2→v3 | ✅ Concluído |
+| **CP-C** | Casos de uso — categorias, lançamentos, status × paidAt | ✅ Concluído |
+| **CP-D** | Vínculo `quoteId` + resumo por orçamento (schema v3→v4) | ✅ Concluído |
+| **CP-E** | UI, providers, resumo global e filtros | ✅ Concluído |
+| **CP-F** | Relatórios por período (reuso de filtros/calculadoras) | ✅ Concluído |
+| **CP-G** | Documentação final da task | ✅ Concluído |
+
+**TASK-027 encerrada.** Documento final: `docs/tasks/TASK-027.md`. Regras: `docs/business-rules/financial.md`.
+
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-026-agenda-inteligente` |
-| Último commit | `fd73d84` — `test(agenda): harden intelligent availability query pipeline` |
-| Alterações locais | CP-G implementado e verificado (`flutter analyze` e `flutter test` ok) — aguardando aprovação para commit |
+| Branch | `cursor/task-027-financeiro` |
+| Último commit | `936e952` — `feat(financial): add period reports reusing existing summary calculators` |
+| Alterações locais | CP-G documental implementado e verificado — aguardando aprovação para commit |
 | Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
 
 ---
@@ -117,7 +131,8 @@ O sistema deverá possuir:
 - Configurações da empresa
 - Dashboard
 - Agenda (propostas, confirmados e bloqueios manuais)
-- Contratos, financeiro, equipe, estoque, relatórios e IA — **fases futuras**
+- Financeiro (categorias, lançamentos, resumos e relatórios por período — TASK-027)
+- Contratos, equipe, estoque, gráficos/exportações financeiras avançadas e IA — **fases futuras**
 
 ---
 
@@ -132,7 +147,8 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Configurações da empresa (persistência local — TASK-024 CP-C)
 - Agenda: propostas e confirmados computados a partir dos orçamentos + bloqueios manuais persistidos (TASK-025 CP-A a CP-C)
 - Agenda Inteligente: consultas de disponibilidade em português, deterministas e sem persistência, integradas à tela de Agenda (TASK-026)
-- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E)
+- Financeiro: categorias e lançamentos persistidos (schema v4), vínculo opcional a orçamentos, resumo global, filtros e relatórios por período (TASK-027)
+- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro carrega sob demanda ao abrir o módulo
 
 ---
 

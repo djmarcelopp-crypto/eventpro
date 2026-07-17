@@ -4,6 +4,129 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-027 — Financeiro
+
+**Branch:** `cursor/task-027-financeiro`
+
+**Objetivo:** Criar o módulo Financeiro — categorias e lançamentos de receita/despesa persistidos localmente, regras de negócio testáveis, vínculo opcional com `Quote.id`, resumo global, filtros e relatórios por período — sem gráficos, sem exportações e sem alterar Agenda nem Orçamentos.
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Fundação do domínio (entidades, enums, validadores, contratos) | `da2867f` | ✅ Concluído |
+| B | Persistência Drift — tabelas, DAOs, mappers, migração v2→v3 | `0ac8239` | ✅ Concluído |
+| C | Casos de uso — categorias, lançamentos, status × paidAt | `839afae` | ✅ Concluído |
+| D | Vínculo `quoteId` + resumo por orçamento (schema v3→v4) | `cb72215` | ✅ Concluído |
+| E | UI, providers, resumo global e filtros | `0923014` | ✅ Concluído |
+| F | Relatórios por período (reuso de filtros/calculadoras) | `936e952` | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-027.md`, `docs/business-rules/financial.md`, revisão de `ARCHITECTURE.md` | *(pendente de commit)* | ✅ Concluído |
+
+**TASK-027 encerrada.** Histórico completo consolidado em `docs/tasks/TASK-027.md`.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- `FinancialEntry` (entidade única) + `FinancialFlowKind` (`income`/`expense`) + `FinancialEntryStatus` (`pending`/`paid`)
+- `FinancialCategory`, validadores de campos, contratos abstratos de repositório
+- Sem Drift, providers ou UI
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1048 testes passando.
+
+**Fora de escopo do CP-A (mantido):** persistência, providers, telas, integração Agenda/Orçamentos.
+
+**Commit:** `da2867f` — `feat(financial): create financial domain foundation`
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- Tabelas `financial_categories` e `financial_entries`; DAOs; mappers; `Drift*Repository`
+- `schemaVersion` 2→3; migração real testada (v2→v3 e salto v1→v3)
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1071 testes passando.
+
+**Fora de escopo do CP-B (mantido):** providers, telas, regras de negócio além da persistência, integração com Orçamentos.
+
+**Commit:** `0ac8239` — `feat(financial): persist financial categories and entries with Drift`
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `FinancialEntryService` / `FinancialCategoryService` com result objects
+- Regras de categoria (existe/ativa/kind) e status × `paidAt` com relógio injetável
+- Schema, providers e UI inalterados
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1100 testes passando.
+
+**Fora de escopo do CP-C (mantido):** providers, telas, schema, dashboard/relatórios, integração Agenda/Orçamentos.
+
+**Commit:** `839afae` — `feat(financial): implement financial entry and category use cases`
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- Coluna opcional `quote_id` (schema 3→4); FK `SET NULL`; `listByQuoteId`
+- `FinancialEventSummaryCalculator` / `FinancialEventSummaryService` (receita, despesa, lucro)
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1123 testes passando.
+
+**Fora de escopo do CP-D (mantido):** providers, telas, alteração de regras de Agenda/Orçamentos.
+
+**Commit:** `cb72215` — `feat(financial): link entries to quotes and compute event summaries`
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- Providers Riverpod, telas Financeiro/categorias/formulário/detalhe, módulo no Dashboard
+- Resumo global (`FinancialGlobalSummaryCalculator`) e filtros de lista
+- Schema inalterado (permanece v4)
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1146 testes passando.
+
+**Fora de escopo do CP-E (mantido):** gráficos, exportações, relatórios por período (CP-F), schema.
+
+**Commit:** `0923014` — `feat(financial): add financial module UI with summary and filters`
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- Relatórios: mês atual, ano atual, período personalizado
+- Indicadores, categorias ordenadas, evolução mensal tabular
+- Reuso integral de `FinancialEntryFilter` + `FinancialGlobalSummaryCalculator`
+- `FinancialReportPanel` na tela Financeiro
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1163 testes passando.
+
+**Fora de escopo do CP-F (mantido):** gráficos, PDF/Excel/CSV, schema/migração, Agenda/Orçamentos, documentação.
+
+**Commit:** `936e952` — `feat(financial): add period reports reusing existing summary calculators`
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-027.md` e `docs/business-rules/financial.md` criados
+- `ARCHITECTURE.md`, `PROJECT.md`, este documento e `docs/roadmap.md` atualizados
+- Nenhuma alteração em `lib/`, `test/`, schema, providers ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` e `flutter test` com 1163 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de commit)*
+
+### TASK-027 — encerrada
+
+Todos os checkpoints (A–G) concluídos. Documento final: `docs/tasks/TASK-027.md`. Encerramento aguardando aprovação do PO/CTO para commit e push; merge na `main` permanece de responsabilidade externa (fluxo de PR), conforme `CLAUDE.md`.
+
+**Último commit de código:** `936e952`
+
+---
+
 ## TASK-026 — Agenda Inteligente e Análise de Disponibilidade
 
 **Branch:** `cursor/task-026-agenda-inteligente`

@@ -91,7 +91,12 @@ void main() {
   group('EquipmentCategoryRepository interface', () {
     test('in-memory implementation supports CRUD', () async {
       final repository = _MemoryEquipmentCategoryRepository();
-      const category = EquipmentCategory(id: 'cat-1', name: 'Som');
+      final category = EquipmentCategory(
+        id: 'cat-1',
+        name: 'Som',
+        createdAt: DateTime(2026, 7, 1),
+        updatedAt: DateTime(2026, 7, 1),
+      );
 
       await repository.insert(category);
       expect(await repository.findById('cat-1'), category);

@@ -15,6 +15,8 @@ part 'daos/quotes_dao.dart';
 part 'daos/agenda_blocks_dao.dart';
 part 'daos/financial_categories_dao.dart';
 part 'daos/financial_entries_dao.dart';
+part 'daos/equipment_categories_dao.dart';
+part 'daos/equipments_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -33,6 +35,8 @@ part 'daos/financial_entries_dao.dart';
     AgendaBlocks,
     FinancialCategories,
     FinancialEntries,
+    EquipmentCategories,
+    Equipments,
   ],
   daos: [
     ClientsDao,
@@ -42,6 +46,8 @@ part 'daos/financial_entries_dao.dart';
     AgendaBlocksDao,
     FinancialCategoriesDao,
     FinancialEntriesDao,
+    EquipmentCategoriesDao,
+    EquipmentsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -56,7 +62,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -92,6 +98,14 @@ class AppDatabase extends _$AppDatabase {
       // so adding the column again here would fail with "duplicate column".
       if (from == 3 && to >= 4) {
         await migrator.addColumn(financialEntries, financialEntries.quoteId);
+      }
+      // TASK-028 CP-B — v4 (schema após a TASK-027) não tinha as tabelas do
+      // domínio Estoque & Equipamentos. Nenhuma tabela existente é alterada;
+      // apenas as tabelas novas são criadas. Cobre quem já estava na v4 e
+      // quem salta de versões anteriores direto para a v5.
+      if (from <= 4 && to >= 5) {
+        await migrator.createTable(equipmentCategories);
+        await migrator.createTable(equipments);
       }
     },
   );

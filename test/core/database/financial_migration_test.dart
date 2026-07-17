@@ -94,9 +94,9 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        // AppDatabase is now at v4 (TASK-027 CP-D); a v2 database upgrades
-        // straight through v3 (financial tables) and v4 (quoteId link).
-        expect(upgraded.schemaVersion, 4);
+        // AppDatabase is now at v5 (TASK-028 CP-B); a v2 database upgrades
+        // through v3 (financial), v4 (quoteId) and v5 (equipment tables).
+        expect(upgraded.schemaVersion, 5);
 
         final tableNames = await upgraded
             .customSelect(
@@ -199,9 +199,9 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        // Direct v1 -> v4 jump: agenda_blocks, financial tables and the
-        // quoteId link are all created in a single migration run.
-        expect(upgraded.schemaVersion, 4);
+        // Direct v1 -> v5 jump: agenda_blocks, financial tables, quoteId and
+        // equipment tables are all created across onUpgrade steps.
+        expect(upgraded.schemaVersion, 5);
 
         expect(await upgraded.select(upgraded.clients).get(), hasLength(1));
         expect(

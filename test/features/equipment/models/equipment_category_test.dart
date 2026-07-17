@@ -3,6 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('EquipmentCategory', () {
+    final createdAt = DateTime(2026, 7, 1, 10);
+    final updatedAt = DateTime(2026, 7, 1, 10);
+
     EquipmentCategory buildCategory({
       String id = 'cat-1',
       String name = 'Som',
@@ -14,11 +17,18 @@ void main() {
         name: name,
         description: description,
         active: active,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
       );
     }
 
     test('active defaults to true and description defaults to null', () {
-      final category = EquipmentCategory(id: 'cat-1', name: 'Iluminação');
+      final category = EquipmentCategory(
+        id: 'cat-1',
+        name: 'Iluminação',
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+      );
 
       expect(category.active, isTrue);
       expect(category.description, isNull);
@@ -50,12 +60,15 @@ void main() {
         name: 'Iluminação',
         description: 'Refletores',
         active: false,
+        updatedAt: DateTime(2026, 7, 2),
       );
 
       expect(copy.id, original.id);
       expect(copy.name, 'Iluminação');
       expect(copy.description, 'Refletores');
       expect(copy.active, isFalse);
+      expect(copy.createdAt, original.createdAt);
+      expect(copy.updatedAt, DateTime(2026, 7, 2));
     });
 
     test('copyWith can clear description', () {

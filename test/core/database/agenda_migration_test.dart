@@ -184,7 +184,7 @@ void main() {
         // migration) and the financial tables + quoteId link (see
         // financial_migration_test.dart and
         // financial_entry_quote_link_migration_test.dart) together.
-        expect(upgraded.schemaVersion, 4);
+        expect(upgraded.schemaVersion, 5);
 
         final tableNames = await upgraded
             .customSelect(

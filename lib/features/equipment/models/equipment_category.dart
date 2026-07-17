@@ -3,6 +3,8 @@ class EquipmentCategory {
   const EquipmentCategory({
     required this.id,
     required this.name,
+    required this.createdAt,
+    required this.updatedAt,
     this.description,
     this.active = true,
   });
@@ -11,12 +13,16 @@ class EquipmentCategory {
   final String name;
   final String? description;
   final bool active;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   EquipmentCategory copyWith({
     String? id,
     String? name,
     String? description,
     bool? active,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     bool clearDescription = false,
   }) {
     return EquipmentCategory(
@@ -25,6 +31,8 @@ class EquipmentCategory {
       description:
           clearDescription ? null : (description ?? this.description),
       active: active ?? this.active,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -35,9 +43,12 @@ class EquipmentCategory {
             other.id == id &&
             other.name == name &&
             other.description == description &&
-            other.active == active;
+            other.active == active &&
+            other.createdAt == createdAt &&
+            other.updatedAt == updatedAt;
   }
 
   @override
-  int get hashCode => Object.hash(id, name, description, active);
+  int get hashCode =>
+      Object.hash(id, name, description, active, createdAt, updatedAt);
 }

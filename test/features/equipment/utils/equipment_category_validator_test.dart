@@ -23,8 +23,18 @@ void main() {
     });
 
     test('validate delegates to fields from the entity', () {
-      final valid = EquipmentCategory(id: 'c1', name: 'Som');
-      final invalid = EquipmentCategory(id: 'c2', name: '  ');
+      final valid = EquipmentCategory(
+        id: 'c1',
+        name: 'Som',
+        createdAt: DateTime(2026, 7, 1),
+        updatedAt: DateTime(2026, 7, 1),
+      );
+      final invalid = EquipmentCategory(
+        id: 'c2',
+        name: '  ',
+        createdAt: DateTime(2026, 7, 1),
+        updatedAt: DateTime(2026, 7, 1),
+      );
 
       expect(EquipmentCategoryValidator.validate(valid).isValid, isTrue);
       expect(EquipmentCategoryValidator.validate(invalid).isValid, isFalse);

@@ -100,12 +100,26 @@ DJ Marcelo PP Festas e Eventos
 
 **TASK-027 encerrada.** Documento final: `docs/tasks/TASK-027.md`. Regras: `docs/business-rules/financial.md`.
 
+### TASK-028 — Estoque & Equipamentos
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Fundação do domínio (entidades, enums, validadores, contratos) | ✅ Concluído |
+| **CP-B** | Persistência Drift — categorias/equipamentos, migração v4→v5 | ✅ Concluído |
+| **CP-C** | Casos de uso — EquipmentService / EquipmentCategoryService | ✅ Concluído |
+| **CP-D** | QuoteEquipment + serviço + migração v5→v6 | ✅ Concluído |
+| **CP-E** | UI, providers, filtros e associação a orçamentos | ✅ Concluído |
+| **CP-F** | Disponibilidade dinâmica (calculator + service + providers) | ✅ Concluído |
+| **CP-G** | Documentação final da task | ✅ Concluído |
+
+**TASK-028 encerrada.** Documento final: `docs/tasks/TASK-028.md`. Regras: `docs/business-rules/equipment.md`.
+
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-027-financeiro` |
-| Último commit | `936e952` — `feat(financial): add period reports reusing existing summary calculators` |
+| Branch | `cursor/task-028-estoque` |
+| Último commit | `cebe010` — `feat(equipment): compute dynamic quote equipment availability without persistence` |
 | Alterações locais | CP-G documental implementado e verificado — aguardando aprovação para commit |
 | Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
 
@@ -132,7 +146,8 @@ O sistema deverá possuir:
 - Dashboard
 - Agenda (propostas, confirmados e bloqueios manuais)
 - Financeiro (categorias, lançamentos, resumos e relatórios por período — TASK-027)
-- Contratos, equipe, estoque, gráficos/exportações financeiras avançadas e IA — **fases futuras**
+- Estoque & Equipamentos (inventário operacional, vínculo a orçamentos e disponibilidade dinâmica — TASK-028)
+- Contratos, equipe, gráficos/exportações financeiras avançadas, reservas efetivas de estoque e IA — **fases futuras**
 
 ---
 
@@ -147,8 +162,9 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Configurações da empresa (persistência local — TASK-024 CP-C)
 - Agenda: propostas e confirmados computados a partir dos orçamentos + bloqueios manuais persistidos (TASK-025 CP-A a CP-C)
 - Agenda Inteligente: consultas de disponibilidade em português, deterministas e sem persistência, integradas à tela de Agenda (TASK-026)
-- Financeiro: categorias e lançamentos persistidos (schema v4), vínculo opcional a orçamentos, resumo global, filtros e relatórios por período (TASK-027)
-- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro carrega sob demanda ao abrir o módulo
+- Financeiro: categorias e lançamentos persistidos (schema v4+), vínculo opcional a orçamentos, resumo global, filtros e relatórios por período (TASK-027)
+- Estoque & Equipamentos: categorias e inventário (schema v5), vínculo `quote_equipment` (schema v6), UI de gestão e disponibilidade dinâmica sem persistir quantidades derivadas (TASK-028)
+- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro e Estoque carregam sob demanda ao abrir o módulo
 
 ---
 

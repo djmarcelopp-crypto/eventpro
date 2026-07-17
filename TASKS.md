@@ -4,6 +4,127 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-028 — Estoque & Equipamentos
+
+**Branch:** `cursor/task-028-estoque`
+
+**Objetivo:** Criar o módulo Estoque & Equipamentos — inventário operacional (categorias e equipamentos), vínculo planejado com orçamentos (`quote_equipment`), UI de gestão e disponibilidade calculada dinamicamente — sem reservas efetivas, sem alterar `EquipmentStatus` automaticamente e sem integrar Agenda.
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Fundação do domínio (entidades, enums, validadores, contratos) | `0efc7b1` | ✅ Concluído |
+| B | Persistência Drift — categorias/equipamentos, migração v4→v5 | `5f22264` | ✅ Concluído |
+| C | Casos de uso — EquipmentService / EquipmentCategoryService | `d94aeef` | ✅ Concluído |
+| D | QuoteEquipment + serviço + migração v5→v6 | `76a14ba` | ✅ Concluído |
+| E | UI, providers, filtros e associação a orçamentos | `e4328f8` | ✅ Concluído |
+| F | Disponibilidade dinâmica (calculator + service + providers) | `cebe010` | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-028.md`, `docs/business-rules/equipment.md`, revisão de `ARCHITECTURE.md` | *(pendente de commit)* | ✅ Concluído |
+
+**TASK-028 encerrada.** Histórico completo consolidado em `docs/tasks/TASK-028.md`.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- `Equipment`, `EquipmentCategory`, `EquipmentStatus`, validadores, contratos de repositório
+- Sem Drift, providers ou UI
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1188 testes passando.
+
+**Fora de escopo do CP-A (mantido):** persistência, providers, telas, QuoteEquipment, disponibilidade.
+
+**Commit:** `0efc7b1` — `feat(equipment): create inventory equipment domain foundation`
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- Tabelas `equipment_categories` e `equipment`; DAOs; mappers; `Drift*Repository`
+- `schemaVersion` 4→5; migração real testada
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1202 testes passando.
+
+**Fora de escopo do CP-B (mantido):** providers, telas, QuoteEquipment, disponibilidade.
+
+**Commit:** `5f22264` — `feat(equipment): persist equipment categories and items with Drift`
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `EquipmentService` / `EquipmentCategoryService` com result objects
+- Regras de categoria (existe/ativa; exclusão bloqueada se em uso)
+- Schema, providers e UI inalterados
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1224 testes passando.
+
+**Fora de escopo do CP-C (mantido):** providers, telas, schema, QuoteEquipment, disponibilidade.
+
+**Commit:** `d94aeef` — `feat(equipment): implement equipment and category use cases`
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- `QuoteEquipment` / `QuoteEquipmentSummary` / `QuoteEquipmentService`
+- Tabela `quote_equipment` (schema 5→6); FKs CASCADE/RESTRICT
+- Sem disponibilidade, sem reserva, sem alteração de `EquipmentStatus`
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1241 testes passando.
+
+**Fora de escopo do CP-D (mantido):** providers, UI, Agenda, cálculo de disponibilidade.
+
+**Commit:** `76a14ba` — `feat(equipment): link equipment quantities to quotes without stock reservation`
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- Providers Riverpod, telas Estoque/categorias/formulário/detalhe, associação a orçamentos
+- Módulo no Dashboard; filtros por categoria/status/nome
+- Schema inalterado (permanece v6)
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1259 testes passando.
+
+**Fora de escopo do CP-E (mantido):** disponibilidade, reservas, Agenda, gráficos.
+
+**Commit:** `e4328f8` — `feat(equipment): add inventory UI with providers and quote association`
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- `EquipmentAvailabilityCalculator` / `EquipmentAvailabilityService` + modelos de conflito/resumo
+- Providers de disponibilidade; sem persistir quantidades derivadas; sem UI neste CP
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1275 testes passando.
+
+**Fora de escopo do CP-F (mantido):** UI de disponibilidade, reservas efetivas, Agenda, schema.
+
+**Commit:** `cebe010` — `feat(equipment): compute dynamic quote equipment availability without persistence`
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-028.md` e `docs/business-rules/equipment.md` criados
+- `ARCHITECTURE.md`, `PROJECT.md`, este documento e `docs/roadmap.md` atualizados
+- Nenhuma alteração em `lib/`, `test/`, schema, providers ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` e `flutter test` com 1275 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de commit)*
+
+### TASK-028 — encerrada
+
+Todos os checkpoints (A–G) concluídos. Documento final: `docs/tasks/TASK-028.md`. Encerramento aguardando aprovação do PO/CTO para commit e push; merge na `main` permanece de responsabilidade externa (fluxo de PR), conforme `CLAUDE.md`.
+
+**Último commit de código:** `cebe010`
+
+---
+
 ## TASK-027 — Financeiro
 
 **Branch:** `cursor/task-027-financeiro`

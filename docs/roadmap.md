@@ -61,3 +61,29 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 - Dashboards financeiros avançados.
 - Hidratação do Financeiro no bootstrap do app.
 - UI do resumo por orçamento embutida na tela de Quotes.
+
+---
+
+## Estoque & Equipamentos — evoluções avançadas
+
+**Status:** MVP do módulo entregue na `TASK-028` (encerrada). Ver `docs/tasks/TASK-028.md` e `docs/business-rules/equipment.md`.
+
+### O que já foi entregue (TASK-028)
+
+- Categorias e equipamentos persistidos em Drift (`schemaVersion` 5).
+- Vínculo planejado orçamento ↔ equipamento (`quote_equipment`, schema v6).
+- UI de inventário, filtros e associação a orçamentos.
+- Disponibilidade dinâmica (pico concorrente, conflitos, resumo) sem persistir quantidades derivadas.
+- `EquipmentStatus` cadastral independente do cálculo de disponibilidade.
+
+### O que permanece futuro (fora do escopo da TASK-028)
+
+- Reservas efetivas / bloqueio automático de estoque.
+- Integração com Agenda (ocupação, recursos, conflitos de agenda × equipamento).
+- Gráficos e exportações de inventário.
+- Leitura por QR Code / RFID.
+- Rastreamento em tempo real.
+- Manutenção preventiva.
+- Logística de retirada / devolução.
+- Hidratação do Estoque no bootstrap do app.
+- UI dedicada de disponibilidade/conflitos (hoje o cálculo existe em domínio/providers).

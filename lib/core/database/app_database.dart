@@ -20,6 +20,7 @@ part 'daos/equipments_dao.dart';
 part 'daos/quote_equipment_dao.dart';
 part 'daos/team_roles_dao.dart';
 part 'daos/team_members_dao.dart';
+part 'daos/quote_team_members_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -43,6 +44,7 @@ part 'daos/team_members_dao.dart';
     QuoteEquipmentItems,
     TeamRoles,
     TeamMembers,
+    QuoteTeamMembers,
   ],
   daos: [
     ClientsDao,
@@ -57,6 +59,7 @@ part 'daos/team_members_dao.dart';
     QuoteEquipmentDao,
     TeamRolesDao,
     TeamMembersDao,
+    QuoteTeamMembersDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -71,7 +74,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -126,6 +129,11 @@ class AppDatabase extends _$AppDatabase {
       if (from <= 6 && to >= 7) {
         await migrator.createTable(teamRoles);
         await migrator.createTable(teamMembers);
+      }
+      // TASK-029 CP-D — vínculos quote ↔ equipe. Nenhuma tabela existente
+      // é alterada; apenas `quote_team_members` é criada.
+      if (from <= 7 && to >= 8) {
+        await migrator.createTable(quoteTeamMembers);
       }
     },
   );

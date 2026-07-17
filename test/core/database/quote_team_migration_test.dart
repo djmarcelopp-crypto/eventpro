@@ -1,19 +1,19 @@
-// TASK-028 CP-D — migração real schema v5 -> v6 (tabela quote_equipment).
+// TASK-029 CP-D — migração real schema v7 -> v8 (quote_team_members).
 import 'dart:io';
 
 import 'package:eventpro/core/database/app_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'legacy_schema/legacy_app_database_v5.dart';
+import 'legacy_schema/legacy_app_database_v7.dart';
 
 void main() {
-  group('schema migration v5 -> v6 (QuoteEquipmentItems)', () {
+  group('schema migration v7 -> v8 (QuoteTeamMembers)', () {
     late Directory tempDir;
     late File dbFile;
 
     setUp(() async {
       tempDir = await Directory.systemTemp.createTemp(
-        'eventpro_quote_equipment_migration_',
+        'eventpro_quote_team_migration_',
       );
       dbFile = File('${tempDir.path}/eventpro.sqlite');
     });
@@ -25,14 +25,14 @@ void main() {
     });
 
     test(
-      'upgrading a genuine v5 database creates quote_equipment and preserves data',
+      'upgrading a genuine v7 database creates quote_team_members and preserves data',
       () async {
-        final legacy = LegacyAppDatabaseV5.forTesting(dbFile);
+        final legacy = LegacyAppDatabaseV7.forTesting(dbFile);
         await legacy.batch((batch) {
           batch.insert(
             legacy.legacyQuotes,
             LegacyQuotesCompanion.insert(
-              id: 'quote-v5',
+              id: 'quote-v7',
               number: 'ORC-2026-0001',
               status: 'draft',
               subtotalCents: 0,
@@ -44,30 +44,30 @@ void main() {
             ),
           );
           batch.insert(
-            legacy.legacyEquipmentCategories,
-            LegacyEquipmentCategoriesCompanion.insert(
-              id: 'eq-cat-v5',
-              name: 'Som',
+            legacy.legacyTeamRoles,
+            LegacyTeamRolesCompanion.insert(
+              id: 'role-v7',
+              name: 'DJ',
               active: true,
               createdAt: 1_700_000_000_000,
               updatedAt: 1_700_000_000_000,
             ),
           );
           batch.insert(
-            legacy.legacyEquipments,
-            LegacyEquipmentsCompanion.insert(
-              id: 'eq-v5',
-              name: 'Caixa',
-              description: '',
-              categoryId: 'eq-cat-v5',
-              totalQuantity: 2,
-              status: 'available',
+            legacy.legacyTeamMembers,
+            LegacyTeamMembersCompanion.insert(
+              id: 'member-v7',
+              name: 'Ana',
+              phone: '11999999999',
+              roleId: 'role-v7',
+              dailyRate: 25_000,
+              status: 'active',
               createdAt: 1_700_000_000_000,
               updatedAt: 1_700_000_000_000,
             ),
           );
         });
-        expect(legacy.schemaVersion, 5);
+        expect(legacy.schemaVersion, 7);
         await legacy.close();
 
         final upgraded = AppDatabase.forTesting(dbFile);
@@ -75,15 +75,16 @@ void main() {
 
         expect(upgraded.schemaVersion, 8);
 
-        final quotes = await upgraded.select(upgraded.quotes).get();
-        expect(quotes.single.id, 'quote-v5');
+        expect(
+          (await upgraded.select(upgraded.quotes).get()).single.id,
+          'quote-v7',
+        );
+        expect(
+          (await upgraded.select(upgraded.teamMembers).get()).single.id,
+          'member-v7',
+        );
 
-        final equipment = await upgraded.select(upgraded.equipments).get();
-        expect(equipment.single.id, 'eq-v5');
-        expect(equipment.single.status, 'available');
-
-        final links =
-            await upgraded.select(upgraded.quoteEquipmentItems).get();
+        final links = await upgraded.select(upgraded.quoteTeamMembers).get();
         expect(links, isEmpty);
 
         final integrity = await upgraded
@@ -91,27 +92,22 @@ void main() {
             .getSingle();
         expect(integrity.data.values.single, 'ok');
 
-        await upgraded.into(upgraded.quoteEquipmentItems).insert(
-              QuoteEquipmentItemsCompanion.insert(
+        await upgraded.into(upgraded.quoteTeamMembers).insert(
+              QuoteTeamMembersCompanion.insert(
                 id: 'link-1',
-                quoteId: 'quote-v5',
-                equipmentId: 'eq-v5',
-                quantity: 2,
+                quoteId: 'quote-v7',
+                teamMemberId: 'member-v7',
+                roleId: 'role-v7',
+                dailyRate: 25_000,
                 createdAt: 1_700_000_000_000,
                 updatedAt: 1_700_000_000_000,
               ),
             );
 
         expect(
-          (await upgraded.select(upgraded.quoteEquipmentItems).getSingle())
-              .quantity,
-          2,
-        );
-
-        // Equipment status untouched by the link insert.
-        expect(
-          (await upgraded.select(upgraded.equipments).getSingle()).status,
-          'available',
+          (await upgraded.select(upgraded.quoteTeamMembers).getSingle())
+              .dailyRate,
+          25_000,
         );
       },
     );

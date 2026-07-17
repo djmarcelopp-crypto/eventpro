@@ -1,6 +1,6 @@
 # Arquitetura — EventPro ERP
 
-Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025), a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026) —, o módulo Financeiro com categorias, lançamentos, resumos e relatórios por período (TASK-027) e o módulo Estoque & Equipamentos com inventário, vínculo a orçamentos e disponibilidade dinâmica (TASK-028).
+Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025), a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026) —, o módulo Financeiro com categorias, lançamentos, resumos e relatórios por período (TASK-027), o módulo Estoque & Equipamentos com inventário, vínculo a orçamentos e disponibilidade dinâmica (TASK-028) e o módulo Equipe & Escalas com roster, vínculo a orçamentos e disponibilidade dinâmica (TASK-029).
 
 ---
 
@@ -54,6 +54,7 @@ Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 | Agenda | `agenda/` | ✅ Drift para bloqueios manuais (TASK-025 CP-A/B); ocupação de orçamentos é **computada**, nunca persistida (CP-C); Agenda Inteligente (TASK-026) é um pipeline Dart puro sem persistência própria, consumindo a ocupação já computada |
 | Financeiro | `financial/` | ✅ Drift — `financial_categories` + `financial_entries` (TASK-027 CP-B); `quoteId` opcional desde schema v4 (CP-D); carregamento sob demanda (não hidratado no bootstrap) |
 | Estoque & Equipamentos | `equipment/` | ✅ Drift — `equipment_categories` + `equipment` (TASK-028 CP-B, schema v5); `quote_equipment` (CP-D, schema v6); disponibilidade **computada** (CP-F), nunca persistida; carregamento sob demanda |
+| Equipe & Escalas | `team/` | ✅ Drift — `team_roles` + `team_members` (TASK-029 CP-B, schema v7); `quote_team_members` (CP-D, schema v8); disponibilidade **computada** (CP-F), nunca persistida; carregamento sob demanda |
 
 ### Estrutura interna de uma feature (quando complexa)
 
@@ -122,7 +123,13 @@ appDatabaseProvider
 | `quoteEquipmentProvider` | Estoque | `AsyncNotifierProvider.family` | Linhas de equipamento por `quoteId` |
 | `equipmentAvailabilityProvider` | Estoque | `FutureProvider` | Disponibilidade **computada** (TASK-028 CP-F) |
 | `equipmentAvailabilitySummaryProvider` | Estoque | `FutureProvider` | Contagens fully / partial / unavailable |
-| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos cinco notifiers no startup (TASK-024 CP-F; estendido na TASK-025 CP-E) — **não** inclui Financeiro nem Estoque nesta fase |
+| `teamMemberProvider` | Equipe | `AsyncNotifierProvider` | Roster; load sob demanda via serviço (TASK-029 CP-E) |
+| `teamRoleProvider` | Equipe | `AsyncNotifierProvider` | Funções da equipe |
+| `teamFiltersProvider` / `filteredTeamMembersProvider` | Equipe | `Notifier` / `Provider` | Filtros de lista (função, status, nome) |
+| `quoteTeamProvider` | Equipe | `AsyncNotifierProvider.family` | Linhas de equipe por `quoteId` |
+| `teamAvailabilityProvider` | Equipe | `FutureProvider` | Disponibilidade **computada** (TASK-029 CP-F) |
+| `teamAvailabilitySummaryProvider` | Equipe | `FutureProvider` | Totais disponíveis / indisponíveis / conflitos / percentual |
+| `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos cinco notifiers no startup (TASK-024 CP-F; estendido na TASK-025 CP-E) — **não** inclui Financeiro, Estoque nem Equipe nesta fase |
 
 ### Regras
 
@@ -183,7 +190,7 @@ Operações de pacotes (catálogo) usam transações no DAO (`CatalogDao`) para 
 
 - **Drift** é a camada ORM/type-safe sobre **SQLite**.
 - Banco local: arquivo `eventpro.sqlite` (path resolvido por `database_path.dart`).
-- `schemaVersion`: **6** (v1 TASK-024; v2 TASK-025 `agenda_blocks`; v3–v4 TASK-027 financeiro; v5 TASK-028 inventário; v6 TASK-028 `quote_equipment`).
+- `schemaVersion`: **8** (v1 TASK-024; v2 TASK-025 `agenda_blocks`; v3–v4 TASK-027 financeiro; v5–v6 TASK-028 estoque; v7–v8 TASK-029 equipe).
 - FKs habilitadas via `PRAGMA foreign_keys = ON`.
 
 ### Estrutura em `lib/core/database/`
@@ -209,9 +216,12 @@ lib/core/database/
     equipment_categories_dao.dart
     equipments_dao.dart
     quote_equipment_dao.dart
+    team_roles_dao.dart
+    team_members_dao.dart
+    quote_team_members_dao.dart
 ```
 
-### Tabelas (schema v6)
+### Tabelas (schema v8)
 
 | Tabela | Feature | Status DAO | Desde |
 |--------|---------|------------|-------|
@@ -226,6 +236,9 @@ lib/core/database/
 | `equipment_categories` | Estoque | ✅ | v5 (TASK-028 CP-B) |
 | `equipment` | Estoque | ✅ | v5 (TASK-028 CP-B) |
 | `quote_equipment` | Estoque ↔ Orçamentos | ✅ | v6 (TASK-028 CP-D) |
+| `team_roles` | Equipe | ✅ | v7 (TASK-029 CP-B) |
+| `team_members` | Equipe | ✅ | v7 (TASK-029 CP-B) |
+| `quote_team_members` | Equipe ↔ Orçamentos | ✅ | v8 (TASK-029 CP-D) |
 
 ### Geração de código
 
@@ -254,8 +267,10 @@ dart run build_runner build --delete-conflicting-outputs
 - **v3 → v4 (TASK-027 CP-D):** adiciona `quote_id` em `financial_entries` com `from == 3` **estrito** — salto v1/v2→v4 cria a tabela já com a coluna via `createTable` atual, evitando "duplicate column"; snapshot legado `LegacyAppDatabaseV3`.
 - **v4 → v5 (TASK-028 CP-B):** cria `equipment_categories` e `equipment` (`from <= 4 && to >= 5`); snapshot legado v4.
 - **v5 → v6 (TASK-028 CP-D):** cria `quote_equipment` (`from <= 5 && to >= 6`); FKs CASCADE (quote) / RESTRICT (equipment); snapshot legado v5.
+- **v6 → v7 (TASK-029 CP-B):** cria `team_roles` e `team_members` (`from <= 6 && to >= 7`); snapshot legado v6.
+- **v7 → v8 (TASK-029 CP-D):** cria `quote_team_members` (`from <= 7 && to >= 8`); FKs CASCADE (quote) / RESTRICT (member, role); snapshot legado v7.
 
-**Quando `schemaVersion` precisar avançar novamente (v6 → v7+), seguir o mesmo checklist:**
+**Quando `schemaVersion` precisar avançar novamente (v8 → v9+), seguir o mesmo checklist:**
 
 1. **Snapshot do schema anterior** — antes de alterar `tables.dart`, gerar um snapshot do schema vigente (ex.: `dart run drift_dev schema dump`) para servir de fixture real de "banco legado" nos testes de migração.
 2. **Alteração incremental** — mudar `tables.dart` e incrementar `schemaVersion` em uma unidade por vez (nunca saltar versões).
@@ -265,7 +280,7 @@ dart run build_runner build --delete-conflicting-outputs
 6. **Suíte completa** — `flutter analyze` e `flutter test` completos antes de considerar a migração concluída.
 7. **Documentar** — registrar a migração em `TASKS.md`/`docs/tasks/` com o motivo da mudança e o par de versões tratado.
 
-Checklist validado na prática na TASK-025 CP-A, reaplicado na TASK-027 CP-B/CP-D e na TASK-028 CP-B/CP-D; deve continuar sendo seguido em toda migração futura.
+Checklist validado na prática na TASK-025 CP-A, reaplicado na TASK-027 CP-B/CP-D, TASK-028 CP-B/CP-D e TASK-029 CP-B/CP-D; deve continuar sendo seguido em toda migração futura.
 
 ---
 
@@ -385,6 +400,26 @@ Services (Equipment / Category / QuoteEquipment / Availability)
 - Disponibilidade = pico concorrente sobre períodos de eventos (`draft`/`sent`/`approved`); resultado **nunca** persistido.
 - Detalhes em `docs/business-rules/equipment.md` e `docs/tasks/TASK-028.md`.
 
+### Equipe & Escalas — roster e disponibilidade (TASK-029)
+
+```text
+UI (TeamScreen, funções, QuoteTeamScreen)
+      │
+      ▼
+Providers (members / roles / filters / quoteTeam / availability)
+      │
+      ▼
+Services (TeamMember / TeamRole / QuoteTeam / Availability)
+      │
+      ├─► Calculators / Filter / PeriodResolver puros
+      └─► Drift repositories → DAOs → SQLite (v8)
+```
+
+- Roster operacional (`TeamRole` + `TeamMember`) com `TeamMemberStatus` cadastral.
+- `QuoteTeamMember` planeja equipe por orçamento com snapshot de função/diária — **não** cria check-in/folha nem altera `TeamMemberStatus`.
+- Disponibilidade = overlap de períodos entre orçamentos consumidores (`draft`/`sent`/`approved`); resultado **nunca** persistido.
+- Detalhes em `docs/business-rules/team.md` e `docs/tasks/TASK-029.md`.
+
 ### Imagens e arquivos
 
 - Referências (`imageReference`, `logoReference`) ficam no SQLite.
@@ -418,21 +453,23 @@ lib/
     agenda/
     financial/
     equipment/
+    team/
 
 test/                           # espelha lib/features/ e lib/core/
 docs/
   business-rules/               # regras por módulo
-  tasks/                        # histórico TASK-001 … TASK-028
+  tasks/                        # histórico TASK-001 … TASK-029
 ```
 
 ### Navegação (GoRouter)
 
 - Rotas nomeadas centralizadas em `lib/app/router/app_router.dart`.
-- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda, financeiro, estoque) tem rota dedicada.
+- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda, financeiro, estoque, equipe) tem rota dedicada.
 - Deep links e parâmetros de rota seguem convenção snake_case nos paths.
 - Ocupações da Agenda originadas de orçamento **não** têm rota própria — abrem a rota já existente de detalhes do orçamento (`/quotes/:id`).
 - Financeiro: `/financial`, `/financial/new`, `/financial/categories`, `/financial/:id`, `/financial/:id/edit`.
 - Estoque: `/equipment`, `/equipment/new`, `/equipment/categories`, `/equipment/:id`, `/equipment/:id/edit`; associação: `/quotes/:id/equipment`.
+- Equipe: `/team`, `/team/new`, `/team/roles`, `/team/:id`, `/team/:id/edit`; associação: `/quotes/:id/team`.
 
 ---
 
@@ -464,9 +501,10 @@ Sempre executar `flutter analyze` e `flutter test` após implementação (ver `C
 - Novas features → nova pasta em `lib/features/`.
 - Nova persistência → seguir padrão Repository + DAO + Mapper + Notifier async.
 - Dado que é **função** de outras entidades já persistidas (ex.: `AgendaOccupancy` a partir de Orçamentos + Agenda) → computar via `Provider`, não criar tabela própria.
-- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); migrações reais: TASK-025 CP-A (v1 → v2), TASK-027 CP-B (v2 → v3) e CP-D (v3 → v4), TASK-028 CP-B (v4 → v5) e CP-D (v5 → v6).
+- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); migrações reais: TASK-025 CP-A (v1 → v2), TASK-027 CP-B (v2 → v3) e CP-D (v3 → v4), TASK-028 CP-B (v4 → v5) e CP-D (v5 → v6), TASK-029 CP-B (v6 → v7) e CP-D (v7 → v8).
 - Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.
-- Evoluções previstas para a Agenda (IA/LLM na Agenda Inteligente, voz, Recursos, Contratos/Equipe/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` e `docs/business-rules/agenda-inteligente.md` (seções "Fora de escopo") e `docs/roadmap.md`.
+- Evoluções previstas para a Agenda (IA/LLM na Agenda Inteligente, voz, Recursos, Contratos/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` e `docs/business-rules/agenda-inteligente.md` (seções "Fora de escopo") e `docs/roadmap.md`.
 - Evoluções do Financeiro (gráficos, exportações, multi-moeda, conciliação, fiscal, dashboards avançados) — ver `docs/business-rules/financial.md` e `docs/roadmap.md`.
 - Evoluções do Estoque (reservas efetivas, Agenda, QR/RFID, logística, manutenção preventiva) — ver `docs/business-rules/equipment.md` e `docs/roadmap.md`.
-- Lógica de negócio determinística e complexa (ex.: Agenda Inteligente, calculadoras financeiras, disponibilidade de equipamentos) → construir em camadas Dart puras, testáveis isoladamente, **antes** de qualquer integração com UI/Riverpod; toda lógica dependente de "agora" deve receber relógio injetável desde o primeiro componente que o usa.
+- Evoluções da Equipe (check-in/out, horas, folha, agenda visual, permissões, logística, comunicação) — ver `docs/business-rules/team.md` e `docs/roadmap.md`.
+- Lógica de negócio determinística e complexa (ex.: Agenda Inteligente, calculadoras financeiras, disponibilidade de equipamentos/equipe) → construir em camadas Dart puras, testáveis isoladamente, **antes** de qualquer integração com UI/Riverpod; toda lógica dependente de "agora" deve receber relógio injetável desde o primeiro componente que o usa.

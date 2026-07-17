@@ -87,3 +87,31 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 - Logística de retirada / devolução.
 - Hidratação do Estoque no bootstrap do app.
 - UI dedicada de disponibilidade/conflitos (hoje o cálculo existe em domínio/providers).
+
+---
+
+## Equipe & Escalas — evoluções avançadas
+
+**Status:** MVP do módulo entregue na `TASK-029` (encerrada). Ver `docs/tasks/TASK-029.md` e `docs/business-rules/team.md`.
+
+### O que já foi entregue (TASK-029)
+
+- Funções e colaboradores persistidos em Drift (`schemaVersion` 7).
+- Vínculo planejado orçamento ↔ equipe (`quote_team_members`, schema v8) com snapshot de função/diária.
+- UI de roster, filtros, funções e associação a orçamentos.
+- Disponibilidade dinâmica (overlap de períodos, conflitos, resumo) sem persistir estado derivado.
+- `TeamMemberStatus` cadastral independente do cálculo de disponibilidade.
+
+### O que permanece futuro (fora do escopo da TASK-029)
+
+- Check-in / check-out.
+- Apontamento de horas.
+- Folha de pagamento.
+- Permissões e autenticação.
+- Agenda visual de escalas.
+- Logística de equipes.
+- Comunicação interna da equipe.
+- Integração com Agenda (recursos / conflitos de equipe na ocupação).
+- Hidratação do módulo Equipe no bootstrap do app.
+- UI dedicada de disponibilidade/conflitos (hoje o cálculo existe em domínio/providers).
+- Mutação automática de `TeamMemberStatus` a partir de orçamentos.

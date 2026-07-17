@@ -114,12 +114,26 @@ DJ Marcelo PP Festas e Eventos
 
 **TASK-028 encerrada.** Documento final: `docs/tasks/TASK-028.md`. Regras: `docs/business-rules/equipment.md`.
 
+### TASK-029 — Equipe & Escalas
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
+| **CP-A** | Fundação do domínio (entidades, enums, validadores, contratos) | ✅ Concluído |
+| **CP-B** | Persistência Drift — roles/membros, migração v6→v7 | ✅ Concluído |
+| **CP-C** | Casos de uso — TeamMemberService / TeamRoleService | ✅ Concluído |
+| **CP-D** | QuoteTeamMember + serviço + migração v7→v8 | ✅ Concluído |
+| **CP-E** | UI, providers, dashboard e seção em orçamentos | ✅ Concluído |
+| **CP-F** | Disponibilidade dinâmica (calculator + service + providers) | ✅ Concluído |
+| **CP-G** | Documentação final da task | ✅ Concluído |
+
+**TASK-029 encerrada.** Documento final: `docs/tasks/TASK-029.md`. Regras: `docs/business-rules/team.md`.
+
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-028-estoque` |
-| Último commit | `cebe010` — `feat(equipment): compute dynamic quote equipment availability without persistence` |
+| Branch | `cursor/task-029-equipe` |
+| Último commit | `564d196` — `feat(team): compute dynamic team availability from quote schedules` |
 | Alterações locais | CP-G documental implementado e verificado — aguardando aprovação para commit |
 | Próximo checkpoint | Nenhum — aguardando definição da próxima task pelo Product Owner |
 
@@ -147,7 +161,8 @@ O sistema deverá possuir:
 - Agenda (propostas, confirmados e bloqueios manuais)
 - Financeiro (categorias, lançamentos, resumos e relatórios por período — TASK-027)
 - Estoque & Equipamentos (inventário operacional, vínculo a orçamentos e disponibilidade dinâmica — TASK-028)
-- Contratos, equipe, gráficos/exportações financeiras avançadas, reservas efetivas de estoque e IA — **fases futuras**
+- Equipe & Escalas (roster, vínculo a orçamentos e disponibilidade dinâmica — TASK-029)
+- Contratos, gráficos/exportações financeiras avançadas, reservas efetivas de estoque, check-in/folha de equipe e IA — **fases futuras**
 
 ---
 
@@ -164,7 +179,8 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Agenda Inteligente: consultas de disponibilidade em português, deterministas e sem persistência, integradas à tela de Agenda (TASK-026)
 - Financeiro: categorias e lançamentos persistidos (schema v4+), vínculo opcional a orçamentos, resumo global, filtros e relatórios por período (TASK-027)
 - Estoque & Equipamentos: categorias e inventário (schema v5), vínculo `quote_equipment` (schema v6), UI de gestão e disponibilidade dinâmica sem persistir quantidades derivadas (TASK-028)
-- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro e Estoque carregam sob demanda ao abrir o módulo
+- Equipe & Escalas: funções e colaboradores (schema v7), vínculo `quote_team_members` (schema v8), UI de gestão e disponibilidade dinâmica sem persistir estado derivado (TASK-029)
+- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro, Estoque e Equipe carregam sob demanda ao abrir o módulo
 
 ---
 

@@ -4,6 +4,127 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-029 — Equipe & Escalas
+
+**Branch:** `cursor/task-029-equipe`
+
+**Objetivo:** Criar o módulo Equipe & Escalas — roster operacional (funções e colaboradores), vínculo planejado com orçamentos (`quote_team_members`), UI de gestão e disponibilidade calculada dinamicamente — sem check-in/out, sem folha, sem alterar `TeamMemberStatus` automaticamente e sem agenda visual.
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Fundação do domínio (entidades, enums, validadores, contratos) | `d3af1ba` | ✅ Concluído |
+| B | Persistência Drift — roles/membros, migração v6→v7 | `28dccef` | ✅ Concluído |
+| C | Casos de uso — TeamMemberService / TeamRoleService | `b7cee40` | ✅ Concluído |
+| D | QuoteTeamMember + serviço + migração v7→v8 | `a1e16fd` | ✅ Concluído |
+| E | UI, providers, dashboard e seção em orçamentos | `c80349c` | ✅ Concluído |
+| F | Disponibilidade dinâmica (calculator + service + providers) | `564d196` | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-029.md`, `docs/business-rules/team.md`, revisão de `ARCHITECTURE.md` | *(pendente de commit)* | ✅ Concluído |
+
+**TASK-029 encerrada.** Histórico completo consolidado em `docs/tasks/TASK-029.md`.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- `TeamMember`, `TeamRole`, `TeamMemberStatus`, validadores, contratos de repositório
+- Sem Drift, providers ou UI
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1298 testes passando.
+
+**Fora de escopo do CP-A (mantido):** persistência, providers, telas, QuoteTeam, disponibilidade.
+
+**Commit:** `d3af1ba` — `feat(team): create team members and roles domain foundation`
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- Tabelas `team_roles` e `team_members`; DAOs; mappers; `Drift*Repository`
+- `schemaVersion` 6→7; migração real testada
+
+**Verificação:** `flutter analyze` sem apontamentos; `flutter test` com 1309 testes passando.
+
+**Fora de escopo do CP-B (mantido):** providers, telas, QuoteTeam, disponibilidade.
+
+**Commit:** `28dccef` — `feat(team): persist team roles and members with Drift schema v7`
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `TeamMemberService` / `TeamRoleService` com result objects
+- Regras de função (existe/ativa; nome único; exclusão bloqueada se em uso)
+- Schema, providers e UI inalterados
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1333 testes passando.
+
+**Fora de escopo do CP-C (mantido):** providers, telas, schema, QuoteTeam, disponibilidade.
+
+**Commit:** `b7cee40` — `feat(team): implement team member and role use cases`
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- `QuoteTeamMember` / `QuoteTeamSummary` / `QuoteTeamService`
+- Tabela `quote_team_members` (schema 7→8); FKs CASCADE/RESTRICT
+- Sem disponibilidade, sem check-in, sem alteração de `TeamMemberStatus`
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1351 testes passando.
+
+**Fora de escopo do CP-D (mantido):** providers, UI, Agenda visual, cálculo de disponibilidade.
+
+**Commit:** `a1e16fd` — `feat(team): link team members to quotes with Drift schema v8`
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- Providers Riverpod, telas Equipe/funções/formulário/detalhe, associação a orçamentos
+- Módulo no Dashboard; filtros por função/status/nome
+- Schema inalterado (permanece v8)
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1367 testes passando.
+
+**Fora de escopo do CP-E (mantido):** disponibilidade, check-in, Agenda visual, folha.
+
+**Commit:** `c80349c` — `feat(team): add team UI with providers, dashboard and quote section`
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- `TeamAvailabilityCalculator` / `TeamAvailabilityService` + modelos de conflito/resumo
+- Providers de disponibilidade; sem persistir estado derivado; sem mutar `TeamMemberStatus`
+
+**Verificação:** `flutter analyze` sem erros/warnings; `flutter test` com 1386 testes passando.
+
+**Fora de escopo do CP-F (mantido):** UI dedicada de disponibilidade, check-in, Agenda visual, schema.
+
+**Commit:** `564d196` — `feat(team): compute dynamic team availability from quote schedules`
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-029.md` e `docs/business-rules/team.md` criados
+- `ARCHITECTURE.md`, `PROJECT.md`, este documento e `docs/roadmap.md` atualizados
+- Nenhuma alteração em `lib/`, `test/`, schema, providers ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` e `flutter test` com 1386 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de commit)*
+
+### TASK-029 — encerrada
+
+Todos os checkpoints (A–G) concluídos. Documento final: `docs/tasks/TASK-029.md`. Encerramento aguardando aprovação do PO/CTO para commit e push; merge na `main` permanece de responsabilidade externa (fluxo de PR), conforme `CLAUDE.md`.
+
+**Último commit de código:** `564d196`
+
+---
+
 ## TASK-028 — Estoque & Equipamentos
 
 **Branch:** `cursor/task-028-estoque`

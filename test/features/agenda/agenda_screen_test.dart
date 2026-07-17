@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:eventpro/features/agenda/models/agenda_block.dart';
+import 'package:eventpro/features/agenda/providers/agenda_block_clock_provider.dart';
 import 'package:eventpro/features/agenda/providers/agenda_blocks_provider.dart';
 import 'package:eventpro/features/quotes/models/quote.dart';
 import 'package:eventpro/features/quotes/models/quote_event_snapshot.dart';
@@ -76,7 +77,10 @@ void main() {
     ) async {
       await pumpAgendaApp(tester);
 
-      await tester.tap(find.text('Novo bloqueio'));
+      final newBlockButton = find.text('Novo bloqueio');
+      await tester.ensureVisible(newBlockButton);
+      await tester.pumpAndSettle();
+      await tester.tap(newBlockButton);
       await tester.pumpAndSettle();
 
       expect(find.text('Novo bloqueio'), findsOneWidget);
@@ -245,6 +249,179 @@ void main() {
 
       expect(find.byKey(const Key('agenda_block_edit_button')), findsOneWidget);
       expect(find.byKey(const Key('agenda_block_delete_button')), findsOneWidget);
+    });
+  });
+
+  group('AgendaScreen — Agenda Inteligente', () {
+    Future<void> askQuestion(WidgetTester tester, String phrase) async {
+      await tester.ensureVisible(find.byKey(const Key('agenda_query_field')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('agenda_query_field')),
+        phrase,
+      );
+      await tester.tap(find.byKey(const Key('agenda_query_button')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('responde consulta de dia livre com agenda vazia', (
+      tester,
+    ) async {
+      await pumpAgendaApp(tester);
+
+      await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+
+      expect(
+        find.text('Sua agenda está livre em 20/08/2026.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Nenhum evento ou bloqueio na agenda'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('responde consulta de dia parcialmente ocupado', (
+      tester,
+    ) async {
+      final block = _sampleBlock(
+        start: DateTime(2026, 8, 20, 9, 0),
+        end: DateTime(2026, 8, 20, 11, 0),
+      );
+
+      await pumpAgendaApp(tester, blocks: [block]);
+
+      await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+
+      expect(
+        find.text(
+          'Sua agenda está parcialmente ocupada em 20/08/2026. '
+          'Existe 1 ocupação.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('responde consulta de semana com resumo de dias', (
+      tester,
+    ) async {
+      final busyDay = _sampleBlock(
+        title: 'Bloqueio da semana',
+        start: DateTime(2026, 8, 19, 0, 0),
+        end: DateTime(2026, 8, 20, 0, 0),
+      );
+
+      await pumpAgendaApp(
+        tester,
+        blocks: [busyDay],
+        extraOverrides: [
+          agendaBlockClockProvider.overrideWithValue(
+            () => DateTime(2026, 8, 19, 10, 0),
+          ),
+        ],
+      );
+
+      await askQuestion(tester, 'Quais dias desta semana estão livres?');
+
+      expect(
+        find.text('Nesta semana: 6 dias livres e 1 ocupado.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('mostra erro para pergunta ambígua', (tester) async {
+      await pumpAgendaApp(tester);
+
+      await askQuestion(tester, 'Tenho agenda hoje ou amanhã?');
+
+      expect(
+        find.text(
+          'Não entendi exatamente o que você quis perguntar — a frase '
+          'tem mais de uma interpretação possível. Pode reformular de '
+          'forma mais específica (ex.: "Tenho agenda livre no sábado?")?',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('mostra erro para pergunta não suportada', (tester) async {
+      await pumpAgendaApp(tester);
+
+      await askQuestion(tester, 'Qual é a previsão do tempo?');
+
+      expect(
+        find.text(
+          'Ainda não sei responder esse tipo de pergunta sobre a agenda. '
+          'Tente perguntar sobre um dia, uma semana, um mês ou um '
+          'intervalo de datas específico.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('impede duplo clique durante a consulta', (tester) async {
+      await pumpAgendaApp(tester);
+
+      await tester.ensureVisible(find.byKey(const Key('agenda_query_field')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const Key('agenda_query_field')),
+        'Como está minha agenda no dia 20/08/2026?',
+      );
+      await tester.pumpAndSettle();
+
+      final queryButton = find.byKey(const Key('agenda_query_button'));
+      await tester.tap(queryButton);
+      await tester.tap(queryButton, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Sua agenda está livre em 20/08/2026.'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('limpa a resposta quando a pergunta é alterada', (
+      tester,
+    ) async {
+      await pumpAgendaApp(tester);
+
+      await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+      expect(
+        find.text('Sua agenda está livre em 20/08/2026.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(
+        find.byKey(const Key('agenda_query_field')),
+        'Como está minha agenda no dia 21/08/2026?',
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Sua agenda está livre em 20/08/2026.'),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('agenda_query_response')), findsNothing);
+    });
+
+    testWidgets('mantém a lista de ocupações após consultar a agenda', (
+      tester,
+    ) async {
+      await pumpAgendaApp(tester, blocks: [_sampleBlock()]);
+
+      await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+
+      expect(find.text('Bloqueio'), findsOneWidget);
+      expect(find.text('Montagem de palco'), findsOneWidget);
+      expect(find.byKey(const Key('agenda_occupancy_list')), findsOneWidget);
+
+      await tester.tap(find.text('Montagem de palco'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('agenda_block_edit_button')), findsOneWidget);
     });
   });
 }

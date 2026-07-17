@@ -9,6 +9,7 @@ import 'agenda_block_feedback.dart';
 import 'models/agenda_occupancy.dart';
 import 'providers/agenda_blocks_provider.dart';
 import 'providers/agenda_occupancy_provider.dart';
+import 'widgets/agenda_availability_query_card.dart';
 import 'widgets/agenda_empty_state.dart';
 import 'widgets/agenda_occupancy_list_item.dart';
 
@@ -69,32 +70,53 @@ class AgendaScreen extends ConsumerWidget {
       ),
       body: occupancyAsync.when(
         data: (occupancies) {
-          if (occupancies.isEmpty) {
-            return AgendaEmptyState(
-              onNewBlock: () => _openNewBlock(context),
-            );
-          }
-
-          return ListView.separated(
-            key: const Key('agenda_occupancy_list'),
-            padding: const EdgeInsets.all(24),
-            itemCount: occupancies.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final occupancy = occupancies[index];
-              return Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: _maxContentWidth,
-                  ),
-                  child: AgendaOccupancyListItem(
-                    key: Key('agenda_occupancy_item_${occupancy.id}'),
-                    occupancy: occupancy,
-                    onTap: () => _openOccupancy(context, occupancy),
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: _maxContentWidth,
+                    ),
+                    child: AgendaAvailabilityQueryCard(
+                      occupancies: occupancies,
+                    ),
                   ),
                 ),
-              );
-            },
+              ),
+              Expanded(
+                child: occupancies.isEmpty
+                    ? AgendaEmptyState(
+                        onNewBlock: () => _openNewBlock(context),
+                      )
+                    : ListView.separated(
+                        key: const Key('agenda_occupancy_list'),
+                        padding: const EdgeInsets.all(24),
+                        itemCount: occupancies.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final occupancy = occupancies[index];
+                          return Center(
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(
+                                maxWidth: _maxContentWidth,
+                              ),
+                              child: AgendaOccupancyListItem(
+                                key: Key(
+                                  'agenda_occupancy_item_${occupancy.id}',
+                                ),
+                                occupancy: occupancy,
+                                onTap: () =>
+                                    _openOccupancy(context, occupancy),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
         loading: () => const Center(

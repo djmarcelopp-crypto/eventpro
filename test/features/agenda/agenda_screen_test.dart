@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:eventpro/features/agenda/data/repositories/agenda_block_repository.dart';
 import 'package:eventpro/features/agenda/models/agenda_block.dart';
 import 'package:eventpro/features/agenda/providers/agenda_block_clock_provider.dart';
 import 'package:eventpro/features/agenda/providers/agenda_blocks_provider.dart';
@@ -11,6 +12,7 @@ import 'package:eventpro/features/quotes/models/quote_status.dart';
 
 import '../quotes/quotes_test_helpers.dart';
 import 'agenda_test_helpers.dart';
+import 'fakes/fake_agenda_block_repository.dart';
 
 class _HangingAgendaBlocksNotifier extends AgendaBlocksNotifier {
   @override
@@ -23,6 +25,45 @@ class _ThrowingAgendaBlocksNotifier extends AgendaBlocksNotifier {
   @override
   Future<List<AgendaBlock>> build() async {
     throw Exception('Falha simulada de leitura da agenda');
+  }
+}
+
+/// CP-F hardening helper: counts calls delegated to a wrapped
+/// [AgendaBlockRepository], so tests can prove that querying the Agenda
+/// Inteligente never touches the repository (i.e. never reads/writes
+/// persisted state) beyond the initial bootstrap/hydration read.
+class _CountingAgendaBlockRepository implements AgendaBlockRepository {
+  _CountingAgendaBlockRepository(this._delegate);
+
+  final AgendaBlockRepository _delegate;
+  int listAllCallCount = 0;
+  int writeCallCount = 0;
+
+  @override
+  Future<List<AgendaBlock>> listAll() {
+    listAllCallCount++;
+    return _delegate.listAll();
+  }
+
+  @override
+  Future<AgendaBlock?> findById(String id) => _delegate.findById(id);
+
+  @override
+  Future<void> insert(AgendaBlock block) {
+    writeCallCount++;
+    return _delegate.insert(block);
+  }
+
+  @override
+  Future<void> update(AgendaBlock block) {
+    writeCallCount++;
+    return _delegate.update(block);
+  }
+
+  @override
+  Future<void> delete(String id) {
+    writeCallCount++;
+    return _delegate.delete(id);
   }
 }
 
@@ -58,6 +99,14 @@ AgendaBlock _sampleBlock({
     createdAt: DateTime(2026, 8, 1),
     updatedAt: DateTime(2026, 8, 1),
   );
+}
+
+Future<void> askQuestion(WidgetTester tester, String phrase) async {
+  await tester.ensureVisible(find.byKey(const Key('agenda_query_field')));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const Key('agenda_query_field')), phrase);
+  await tester.tap(find.byKey(const Key('agenda_query_button')));
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -253,17 +302,6 @@ void main() {
   });
 
   group('AgendaScreen — Agenda Inteligente', () {
-    Future<void> askQuestion(WidgetTester tester, String phrase) async {
-      await tester.ensureVisible(find.byKey(const Key('agenda_query_field')));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const Key('agenda_query_field')),
-        phrase,
-      );
-      await tester.tap(find.byKey(const Key('agenda_query_button')));
-      await tester.pumpAndSettle();
-    }
-
     testWidgets('responde consulta de dia livre com agenda vazia', (
       tester,
     ) async {
@@ -423,5 +461,70 @@ void main() {
 
       expect(find.byKey(const Key('agenda_block_edit_button')), findsOneWidget);
     });
+  });
+
+  group('AgendaScreen — Agenda Inteligente (hardening CP-F)', () {
+    testWidgets(
+      'consultar a agenda não realiza nenhuma leitura ou escrita adicional '
+      'no repositório de bloqueios',
+      (tester) async {
+        final countingRepository = _CountingAgendaBlockRepository(
+          FakeAgendaBlockRepository(initialBlocks: [_sampleBlock()]),
+        );
+
+        await pumpAgendaApp(tester, repository: countingRepository);
+
+        final callsAfterBootstrap = countingRepository.listAllCallCount;
+
+        await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+        await askQuestion(tester, 'Quais dias desta semana estão livres?');
+        await askQuestion(tester, 'Qual é a previsão do tempo?');
+
+        expect(countingRepository.listAllCallCount, callsAfterBootstrap);
+        expect(countingRepository.writeCallCount, 0);
+      },
+    );
+
+    testWidgets(
+      'consultar a agenda não altera a lista de bloqueios hidratada',
+      (tester) async {
+        final block = _sampleBlock();
+        final container = await pumpAgendaApp(tester, blocks: [block]);
+
+        final blocksBefore = container.read(agendaBlocksProvider).value;
+
+        await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+
+        final blocksAfter = container.read(agendaBlocksProvider).value;
+        expect(blocksAfter, equals(blocksBefore));
+        expect(blocksAfter!.single.id, block.id);
+      },
+    );
+
+    testWidgets(
+      'campo, botão e resposta expõem rótulos acessíveis para leitores de tela',
+      (tester) async {
+        await pumpAgendaApp(tester, blocks: [_sampleBlock()]);
+
+        expect(find.bySemanticsLabel('Pergunta'), findsOneWidget);
+        expect(
+          find.byWidgetPredicate(
+            (widget) => widget is Semantics && widget.properties.button == true,
+          ),
+          findsWidgets,
+        );
+
+        await askQuestion(tester, 'Como está minha agenda no dia 20/08/2026?');
+
+        final responseFinder = find.byKey(const Key('agenda_query_response'));
+        expect(responseFinder, findsOneWidget);
+
+        final responseText = tester.widget<Text>(responseFinder).data!;
+        expect(responseText, isNotEmpty);
+        // A mensagem em si (não apenas a cor) deve carregar o significado,
+        // para não depender de percepção visual de cor.
+        expect(responseText, contains('Sua agenda está'));
+      },
+    );
   });
 }

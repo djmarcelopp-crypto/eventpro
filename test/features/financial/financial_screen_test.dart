@@ -64,9 +64,23 @@ void main() {
     expect(find.byKey(const Key('financial_summary_expense')), findsOneWidget);
     expect(find.byKey(const Key('financial_summary_balance')), findsOneWidget);
     expect(find.byKey(const Key('financial_summary_pending')), findsOneWidget);
-    expect(find.text('Sinal do evento'), findsOneWidget);
-    expect(find.text('Aluguel do salão'), findsOneWidget);
     expect(find.byKey(const Key('financial_entry_list')), findsOneWidget);
+
+    final scrollable = find.byKey(const Key('financial_scroll'));
+    await tester.dragUntilVisible(
+      find.text('Sinal do evento'),
+      scrollable,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Sinal do evento'), findsOneWidget);
+    await tester.dragUntilVisible(
+      find.text('Aluguel do salão'),
+      scrollable,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Aluguel do salão'), findsOneWidget);
   });
 
   testWidgets('filters by kind to income only', (tester) async {
@@ -115,7 +129,20 @@ void main() {
     await tester.tap(find.byKey(const Key('financial_filter_clear')));
     await tester.pumpAndSettle();
 
+    final scrollable = find.byKey(const Key('financial_scroll'));
+    await tester.dragUntilVisible(
+      find.text('Receita filtrada'),
+      scrollable,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Receita filtrada'), findsOneWidget);
+    await tester.dragUntilVisible(
+      find.text('Despesa filtrada'),
+      scrollable,
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
     expect(find.text('Despesa filtrada'), findsOneWidget);
   });
 
@@ -208,7 +235,14 @@ void main() {
       ],
     );
 
-    await tester.tap(find.byKey(const Key('financial_entry_item_entry-1')));
+    final entryItem = find.byKey(const Key('financial_entry_item_entry-1'));
+    await tester.dragUntilVisible(
+      entryItem,
+      find.byKey(const Key('financial_scroll')),
+      const Offset(0, -200),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(entryItem);
     await tester.pumpAndSettle();
 
     expect(find.text('Detalhe do lançamento'), findsOneWidget);

@@ -16,6 +16,7 @@ import 'providers/financial_global_summary_provider.dart';
 import 'widgets/financial_empty_state.dart';
 import 'widgets/financial_entry_list_item.dart';
 import 'widgets/financial_filters_bar.dart';
+import 'widgets/financial_report_panel.dart';
 import 'widgets/financial_summary_cards.dart';
 
 class FinancialScreen extends ConsumerWidget {
@@ -159,6 +160,8 @@ class FinancialScreen extends ConsumerWidget {
                                 .read(financialEntryFiltersProvider.notifier)
                                 .clear(),
                           ),
+                          const SizedBox(height: 16),
+                          const FinancialReportPanel(),
                         ],
                       ),
                     ),
@@ -166,14 +169,23 @@ class FinancialScreen extends ConsumerWidget {
                 ),
               ),
               if (entries.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: FinancialEmptyState(
-                    onNewEntry: () => _openNewEntry(context),
-                    hasActiveFilters: filters.hasActiveFilters,
-                    onClearFilters: () => ref
-                        .read(financialEntryFiltersProvider.notifier)
-                        .clear(),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: _maxContentWidth,
+                        ),
+                        child: FinancialEmptyState(
+                          onNewEntry: () => _openNewEntry(context),
+                          hasActiveFilters: filters.hasActiveFilters,
+                          onClearFilters: () => ref
+                              .read(financialEntryFiltersProvider.notifier)
+                              .clear(),
+                        ),
+                      ),
+                    ),
                   ),
                 )
               else

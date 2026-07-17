@@ -17,6 +17,7 @@ part 'daos/financial_categories_dao.dart';
 part 'daos/financial_entries_dao.dart';
 part 'daos/equipment_categories_dao.dart';
 part 'daos/equipments_dao.dart';
+part 'daos/quote_equipment_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -37,6 +38,7 @@ part 'daos/equipments_dao.dart';
     FinancialEntries,
     EquipmentCategories,
     Equipments,
+    QuoteEquipmentItems,
   ],
   daos: [
     ClientsDao,
@@ -48,6 +50,7 @@ part 'daos/equipments_dao.dart';
     FinancialEntriesDao,
     EquipmentCategoriesDao,
     EquipmentsDao,
+    QuoteEquipmentDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -62,7 +65,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -106,6 +109,11 @@ class AppDatabase extends _$AppDatabase {
       if (from <= 4 && to >= 5) {
         await migrator.createTable(equipmentCategories);
         await migrator.createTable(equipments);
+      }
+      // TASK-028 CP-D — vínculos quote ↔ equipment. Nenhuma tabela existente
+      // é alterada; apenas `quote_equipment` é criada.
+      if (from <= 5 && to >= 6) {
+        await migrator.createTable(quoteEquipmentItems);
       }
     },
   );

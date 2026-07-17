@@ -179,10 +179,12 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        // TASK-027 CP-B bumped schemaVersion to 3; a genuine v1 database now
-        // jumps directly to v3, creating agenda_blocks (this migration) and
-        // the financial tables (see financial_migration_test.dart) together.
-        expect(upgraded.schemaVersion, 3);
+        // TASK-027 CP-B/CP-D bumped schemaVersion to 4; a genuine v1
+        // database now jumps directly to v4, creating agenda_blocks (this
+        // migration) and the financial tables + quoteId link (see
+        // financial_migration_test.dart and
+        // financial_entry_quote_link_migration_test.dart) together.
+        expect(upgraded.schemaVersion, 4);
 
         final tableNames = await upgraded
             .customSelect(

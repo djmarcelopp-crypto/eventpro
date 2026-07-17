@@ -24,6 +24,14 @@ class DriftFinancialEntryRepository implements FinancialEntryRepository {
   }
 
   @override
+  Future<List<FinancialEntry>> listByQuoteId(String quoteId) async {
+    final rows = await _database.financialEntriesDao.getAllByQuoteId(
+      quoteId,
+    );
+    return rows.map(FinancialEntryMapper.toDomain).toList(growable: false);
+  }
+
+  @override
   Future<void> insert(FinancialEntry entry) async {
     await _database.financialEntriesDao.insertRow(
       FinancialEntryMapper.toInsertCompanion(entry),

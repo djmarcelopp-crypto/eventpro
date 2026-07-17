@@ -56,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -80,6 +80,18 @@ class AppDatabase extends _$AppDatabase {
       if (from <= 2 && to >= 3) {
         await migrator.createTable(financialCategories);
         await migrator.createTable(financialEntries);
+      }
+      // TASK-027 CP-D — links FinancialEntries to the existing Quote/event
+      // aggregate (single source of truth, no data duplication). v3 already
+      // had `financial_entries` but without `quoteId`; existing rows simply
+      // get `quoteId = NULL` (no event) after the column is added.
+      //
+      // Strict `from == 3` (not `<= 3`): when jumping from v1/v2 straight to
+      // v4, `createTable(financialEntries)` above already builds the table
+      // from the *current* definition — which already includes `quoteId` —
+      // so adding the column again here would fail with "duplicate column".
+      if (from == 3 && to >= 4) {
+        await migrator.addColumn(financialEntries, financialEntries.quoteId);
       }
     },
   );

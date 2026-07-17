@@ -10,6 +10,7 @@ void main() {
       FinancialEntryStatus status = FinancialEntryStatus.pending,
       DateTime? paidAt,
       String? notes,
+      String? quoteId,
     }) {
       return FinancialEntry(
         id: 'entry-1',
@@ -21,6 +22,7 @@ void main() {
         status: status,
         paidAt: paidAt,
         notes: notes,
+        quoteId: quoteId,
         createdAt: DateTime(2026, 8, 1, 9, 0),
         updatedAt: DateTime(2026, 8, 1, 9, 0),
       );
@@ -41,6 +43,7 @@ void main() {
       expect(entry.status, FinancialEntryStatus.pending);
       expect(entry.paidAt, isNull);
       expect(entry.notes, isNull);
+      expect(entry.quoteId, isNull);
     });
 
     test('isIncome and isExpense reflect kind', () {
@@ -134,6 +137,30 @@ void main() {
       final copy = original.copyWith(amountCents: 160000);
 
       expect(copy.notes, 'Pago via Pix');
+    });
+
+    test('copyWith sets quoteId to link an entry to an event', () {
+      final original = buildEntry();
+
+      final linked = original.copyWith(quoteId: 'quote-1');
+
+      expect(linked.quoteId, 'quote-1');
+    });
+
+    test('copyWith clearQuoteId removes an existing quoteId', () {
+      final original = buildEntry(quoteId: 'quote-1');
+
+      final unlinked = original.copyWith(clearQuoteId: true);
+
+      expect(unlinked.quoteId, isNull);
+    });
+
+    test('copyWith without clearQuoteId keeps existing quoteId', () {
+      final original = buildEntry(quoteId: 'quote-1');
+
+      final copy = original.copyWith(amountCents: 160000);
+
+      expect(copy.quoteId, 'quote-1');
     });
   });
 }

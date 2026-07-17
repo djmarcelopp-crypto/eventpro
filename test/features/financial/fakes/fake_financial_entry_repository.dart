@@ -29,6 +29,13 @@ class FakeFinancialEntryRepository implements FinancialEntryRepository {
   }
 
   @override
+  Future<List<FinancialEntry>> listByQuoteId(String quoteId) async {
+    final matches = _entries.where((entry) => entry.quoteId == quoteId).toList()
+      ..sort((a, b) => a.date.compareTo(b.date));
+    return List<FinancialEntry>.unmodifiable(matches);
+  }
+
+  @override
   Future<void> insert(FinancialEntry entry) async {
     _failIfRequested();
     _entries.add(entry);

@@ -3,14 +3,15 @@
 // test/core/database/legacy_schema/ (fotografia real do schema da TASK-025).
 //
 // Fluxo: grava dados usando o schema legado (v2, com agenda_blocks) -> fecha
-// -> reabre o MESMO arquivo com o AppDatabase atual (v3) -> onUpgrade cria
-// `financial_categories` e `financial_entries` -> valida que nenhum dado
-// anterior foi perdido ou alterado.
+// -> reabre o MESMO arquivo com o AppDatabase atual (hoje na v4, ver
+// financial_entry_quote_link_migration_test.dart para o CP-D) -> onUpgrade
+// cria `financial_categories` e `financial_entries` -> valida que nenhum
+// dado anterior foi perdido ou alterado.
 //
-// Também testa o salto direto v1 -> v3 (usuário que nunca abriu a versão
+// Também testa o salto direto v1 -> v4 (usuário que nunca abriu a versão
 // v2), reutilizando o snapshot v1 já existente da TASK-025 CP-A, para
-// garantir que `agenda_blocks` e as tabelas financeiras são criadas juntas
-// em uma única migração.
+// garantir que `agenda_blocks`, as tabelas financeiras e o vínculo
+// `quoteId` são criados juntos em uma única migração.
 import 'dart:io';
 
 import 'package:eventpro/core/database/app_database.dart';
@@ -93,7 +94,9 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        expect(upgraded.schemaVersion, 3);
+        // AppDatabase is now at v4 (TASK-027 CP-D); a v2 database upgrades
+        // straight through v3 (financial tables) and v4 (quoteId link).
+        expect(upgraded.schemaVersion, 4);
 
         final tableNames = await upgraded
             .customSelect(
@@ -196,7 +199,9 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        expect(upgraded.schemaVersion, 3);
+        // Direct v1 -> v4 jump: agenda_blocks, financial tables and the
+        // quoteId link are all created in a single migration run.
+        expect(upgraded.schemaVersion, 4);
 
         expect(await upgraded.select(upgraded.clients).get(), hasLength(1));
         expect(

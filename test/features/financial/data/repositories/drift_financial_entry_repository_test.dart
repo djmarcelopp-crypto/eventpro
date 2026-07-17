@@ -24,6 +24,7 @@ void main() {
       DateTime? date,
       FinancialFlowKind kind = FinancialFlowKind.expense,
       String categoryId = 'category-1',
+      String? quoteId,
     }) {
       return FinancialEntry(
         id: id,
@@ -32,9 +33,28 @@ void main() {
         amountCents: 150000,
         date: date ?? DateTime(2026, 8, 5),
         categoryId: categoryId,
+        quoteId: quoteId,
         createdAt: createdAt,
         updatedAt: createdAt,
       );
+    }
+
+    Future<void> insertSampleQuote(String id) {
+      return database
+          .into(database.quotes)
+          .insert(
+            QuotesCompanion.insert(
+              id: id,
+              number: 'ORC-2026-$id',
+              status: 'approved',
+              subtotalCents: 50000,
+              discountCents: 0,
+              freightCents: 0,
+              totalCents: 50000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+          );
     }
 
     setUp(() async {
@@ -144,5 +164,76 @@ void main() {
         await expectLater(repository.insert(entry), throwsException);
       },
     );
+
+    group('listByQuoteId', () {
+      test('returns only entries linked to the given quote, ordered by date', () async {
+        await insertSampleQuote('quote-1');
+        await insertSampleQuote('quote-2');
+
+        await repository.insert(
+          buildEntry(
+            id: 'entry-later',
+            description: 'Buffet',
+            date: DateTime(2026, 8, 20),
+            quoteId: 'quote-1',
+          ),
+        );
+        await repository.insert(
+          buildEntry(
+            id: 'entry-earlier',
+            description: 'Decoração',
+            date: DateTime(2026, 8, 10),
+            quoteId: 'quote-1',
+          ),
+        );
+        await repository.insert(
+          buildEntry(
+            id: 'entry-other-quote',
+            description: 'Outro evento',
+            quoteId: 'quote-2',
+          ),
+        );
+        await repository.insert(
+          buildEntry(id: 'entry-unlinked', description: 'Sem evento'),
+        );
+
+        final linked = await repository.listByQuoteId('quote-1');
+
+        expect(linked.map((entry) => entry.id).toList(), [
+          'entry-earlier',
+          'entry-later',
+        ]);
+      });
+
+      test('returns an empty list when no entries are linked', () async {
+        await insertSampleQuote('quote-1');
+
+        expect(await repository.listByQuoteId('quote-1'), isEmpty);
+      });
+    });
+
+    test(
+      'inserting an entry with an unknown quoteId violates the foreign key constraint',
+      () async {
+        final entry = buildEntry(
+          id: 'entry-dangling-quote',
+          description: 'Evento inexistente',
+          quoteId: 'missing-quote',
+        );
+
+        await expectLater(repository.insert(entry), throwsException);
+      },
+    );
+
+    test('quoteId round-trips through insert and findById', () async {
+      await insertSampleQuote('quote-1');
+      await repository.insert(
+        buildEntry(id: 'entry-linked', description: 'Vinculada', quoteId: 'quote-1'),
+      );
+
+      final loaded = await repository.findById('entry-linked');
+
+      expect(loaded?.quoteId, 'quote-1');
+    });
   });
 }

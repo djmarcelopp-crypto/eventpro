@@ -21,6 +21,7 @@ class FinancialEntry {
     this.status = FinancialEntryStatus.pending,
     this.paidAt,
     this.notes,
+    this.quoteId,
   });
 
   final String id;
@@ -41,6 +42,12 @@ class FinancialEntry {
   /// when [status] is [FinancialEntryStatus.paid].
   final DateTime? paidAt;
   final String? notes;
+
+  /// Optional reference to the event/quote this entry belongs to. Points to
+  /// `Quote.id` — the single source of truth for events — so no event data
+  /// (client, date, venue, etc.) is duplicated here. `null` means this entry
+  /// is not tied to any specific event (e.g. general company overhead).
+  final String? quoteId;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -58,10 +65,12 @@ class FinancialEntry {
     FinancialEntryStatus? status,
     DateTime? paidAt,
     String? notes,
+    String? quoteId,
     DateTime? createdAt,
     DateTime? updatedAt,
     bool clearPaidAt = false,
     bool clearNotes = false,
+    bool clearQuoteId = false,
   }) {
     return FinancialEntry(
       id: id ?? this.id,
@@ -73,6 +82,7 @@ class FinancialEntry {
       status: status ?? this.status,
       paidAt: clearPaidAt ? null : (paidAt ?? this.paidAt),
       notes: clearNotes ? null : (notes ?? this.notes),
+      quoteId: clearQuoteId ? null : (quoteId ?? this.quoteId),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

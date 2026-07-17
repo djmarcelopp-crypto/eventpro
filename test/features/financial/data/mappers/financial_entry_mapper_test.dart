@@ -30,11 +30,30 @@ void main() {
           );
     }
 
+    Future<void> insertSampleQuote(String id) {
+      return database
+          .into(database.quotes)
+          .insert(
+            QuotesCompanion.insert(
+              id: id,
+              number: 'ORC-2026-0001',
+              status: 'approved',
+              subtotalCents: 50000,
+              discountCents: 0,
+              freightCents: 0,
+              totalCents: 50000,
+              createdAt: 1_700_000_000_000,
+              updatedAt: 1_700_000_000_000,
+            ),
+          );
+    }
+
     FinancialEntry buildSampleEntry({
       FinancialFlowKind kind = FinancialFlowKind.expense,
       FinancialEntryStatus status = FinancialEntryStatus.pending,
       DateTime? paidAt,
       String? notes,
+      String? quoteId,
     }) {
       return FinancialEntry(
         id: 'entry-1',
@@ -46,6 +65,7 @@ void main() {
         status: status,
         paidAt: paidAt,
         notes: notes,
+        quoteId: quoteId,
         createdAt: createdAt,
         updatedAt: createdAt,
       );
@@ -96,17 +116,28 @@ void main() {
       expect(restored.status, original.status);
       expect(restored.paidAt, original.paidAt);
       expect(restored.notes, original.notes);
+      expect(restored.quoteId, original.quoteId);
       expect(restored.createdAt, original.createdAt);
       expect(restored.updatedAt, original.updatedAt);
     });
 
-    test('round-trips null paidAt and null notes', () async {
+    test('round-trips null paidAt, null notes and null quoteId', () async {
       final original = buildSampleEntry();
 
       final restored = await persistAndReload(original);
 
       expect(restored.paidAt, isNull);
       expect(restored.notes, isNull);
+      expect(restored.quoteId, isNull);
+    });
+
+    test('round-trips a quoteId linked to an existing event', () async {
+      await insertSampleQuote('quote-1');
+      final original = buildSampleEntry(quoteId: 'quote-1');
+
+      final restored = await persistAndReload(original);
+
+      expect(restored.quoteId, 'quote-1');
     });
 
     test('round-trips income kind', () async {
@@ -158,6 +189,25 @@ void main() {
       expect(row.paidAt, isNull);
       expect(row.notes, isNull);
       expect(row.status, 'pending');
+    });
+
+    test('update companion clears quoteId when unlinking from an event', () async {
+      await insertSampleQuote('quote-1');
+      final linked = buildSampleEntry(quoteId: 'quote-1');
+      await database
+          .into(database.financialEntries)
+          .insert(FinancialEntryMapper.toInsertCompanion(linked));
+
+      final unlinked = buildSampleEntry();
+      await database
+          .update(database.financialEntries)
+          .replace(FinancialEntryMapper.toUpdateCompanion(unlinked));
+
+      final row = await (database.select(
+        database.financialEntries,
+      )..where((tbl) => tbl.id.equals(unlinked.id))).getSingle();
+
+      expect(row.quoteId, isNull);
     });
   });
 }

@@ -20,6 +20,7 @@ abstract class FinancialEntryMapper {
           ? null
           : TimestampConverter.fromUtcMillis(row.paidAt!),
       notes: row.notes,
+      quoteId: row.quoteId,
       createdAt: TimestampConverter.fromUtcMillis(row.createdAt),
       updatedAt: TimestampConverter.fromUtcMillis(row.updatedAt),
     );
@@ -48,6 +49,7 @@ abstract class FinancialEntryMapper {
             : TimestampConverter.toUtcMillis(entry.paidAt!),
       ),
       notes: Value(entry.notes),
+      quoteId: Value(entry.quoteId),
       createdAt: TimestampConverter.toUtcMillis(entry.createdAt),
       updatedAt: TimestampConverter.toUtcMillis(entry.updatedAt),
     );

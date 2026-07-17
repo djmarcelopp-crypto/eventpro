@@ -12,6 +12,11 @@ abstract class FinancialEntryRepository {
 
   Future<FinancialEntry?> findById(String id);
 
+  /// Entries linked to a given event/quote (TASK-027 CP-D), ordered by
+  /// [FinancialEntry.date]. Never duplicates event data — filters purely by
+  /// the `quoteId` reference.
+  Future<List<FinancialEntry>> listByQuoteId(String quoteId);
+
   Future<void> insert(FinancialEntry entry);
 
   Future<void> update(FinancialEntry entry);

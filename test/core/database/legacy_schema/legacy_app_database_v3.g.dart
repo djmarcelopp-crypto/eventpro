@@ -1,13 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'app_database.dart';
+part of 'legacy_app_database_v3.dart';
 
 // ignore_for_file: type=lint
-class $ClientsTable extends Clients with TableInfo<$ClientsTable, ClientRow> {
+class $LegacyClientsTable extends LegacyClients
+    with TableInfo<$LegacyClientsTable, LegacyClientRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ClientsTable(this.attachedDatabase, [this._alias]);
+  $LegacyClientsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -230,7 +231,7 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, ClientRow> {
   static const String $name = 'clients';
   @override
   VerificationContext validateIntegrity(
-    Insertable<ClientRow> instance, {
+    Insertable<LegacyClientRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -375,9 +376,9 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, ClientRow> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  ClientRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyClientRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return ClientRow(
+    return LegacyClientRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -458,12 +459,12 @@ class $ClientsTable extends Clients with TableInfo<$ClientsTable, ClientRow> {
   }
 
   @override
-  $ClientsTable createAlias(String alias) {
-    return $ClientsTable(attachedDatabase, alias);
+  $LegacyClientsTable createAlias(String alias) {
+    return $LegacyClientsTable(attachedDatabase, alias);
   }
 }
 
-class ClientRow extends DataClass implements Insertable<ClientRow> {
+class LegacyClientRow extends DataClass implements Insertable<LegacyClientRow> {
   final String id;
   final int createdAt;
   final String type;
@@ -483,7 +484,7 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
   final String? neighborhood;
   final String? city;
   final String? state;
-  const ClientRow({
+  const LegacyClientRow({
     required this.id,
     required this.createdAt,
     required this.type,
@@ -559,8 +560,8 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
     return map;
   }
 
-  ClientsCompanion toCompanion(bool nullToAbsent) {
-    return ClientsCompanion(
+  LegacyClientsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyClientsCompanion(
       id: Value(id),
       createdAt: Value(createdAt),
       type: Value(type),
@@ -611,12 +612,12 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
     );
   }
 
-  factory ClientRow.fromJson(
+  factory LegacyClientRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return ClientRow(
+    return LegacyClientRow(
       id: serializer.fromJson<String>(json['id']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       type: serializer.fromJson<String>(json['type']),
@@ -664,7 +665,7 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
     };
   }
 
-  ClientRow copyWith({
+  LegacyClientRow copyWith({
     String? id,
     int? createdAt,
     String? type,
@@ -684,7 +685,7 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
     Value<String?> neighborhood = const Value.absent(),
     Value<String?> city = const Value.absent(),
     Value<String?> state = const Value.absent(),
-  }) => ClientRow(
+  }) => LegacyClientRow(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
     type: type ?? this.type,
@@ -711,8 +712,8 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
     city: city.present ? city.value : this.city,
     state: state.present ? state.value : this.state,
   );
-  ClientRow copyWithCompanion(ClientsCompanion data) {
-    return ClientRow(
+  LegacyClientRow copyWithCompanion(LegacyClientsCompanion data) {
+    return LegacyClientRow(
       id: data.id.present ? data.id.value : this.id,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       type: data.type.present ? data.type.value : this.type,
@@ -751,7 +752,7 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
 
   @override
   String toString() {
-    return (StringBuffer('ClientRow(')
+    return (StringBuffer('LegacyClientRow(')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('type: $type, ')
@@ -800,7 +801,7 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is ClientRow &&
+      (other is LegacyClientRow &&
           other.id == this.id &&
           other.createdAt == this.createdAt &&
           other.type == this.type &&
@@ -822,7 +823,7 @@ class ClientRow extends DataClass implements Insertable<ClientRow> {
           other.state == this.state);
 }
 
-class ClientsCompanion extends UpdateCompanion<ClientRow> {
+class LegacyClientsCompanion extends UpdateCompanion<LegacyClientRow> {
   final Value<String> id;
   final Value<int> createdAt;
   final Value<String> type;
@@ -843,7 +844,7 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
   final Value<String?> city;
   final Value<String?> state;
   final Value<int> rowid;
-  const ClientsCompanion({
+  const LegacyClientsCompanion({
     this.id = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.type = const Value.absent(),
@@ -865,7 +866,7 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
     this.state = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  ClientsCompanion.insert({
+  LegacyClientsCompanion.insert({
     required String id,
     required int createdAt,
     required String type,
@@ -890,7 +891,7 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
        createdAt = Value(createdAt),
        type = Value(type),
        name = Value(name);
-  static Insertable<ClientRow> custom({
+  static Insertable<LegacyClientRow> custom({
     Expression<String>? id,
     Expression<int>? createdAt,
     Expression<String>? type,
@@ -936,7 +937,7 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
     });
   }
 
-  ClientsCompanion copyWith({
+  LegacyClientsCompanion copyWith({
     Value<String>? id,
     Value<int>? createdAt,
     Value<String>? type,
@@ -958,7 +959,7 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
     Value<String?>? state,
     Value<int>? rowid,
   }) {
-    return ClientsCompanion(
+    return LegacyClientsCompanion(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       type: type ?? this.type,
@@ -1050,7 +1051,7 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
 
   @override
   String toString() {
-    return (StringBuffer('ClientsCompanion(')
+    return (StringBuffer('LegacyClientsCompanion(')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('type: $type, ')
@@ -1076,12 +1077,12 @@ class ClientsCompanion extends UpdateCompanion<ClientRow> {
   }
 }
 
-class $CatalogItemsTable extends CatalogItems
-    with TableInfo<$CatalogItemsTable, CatalogItemRow> {
+class $LegacyCatalogItemsTable extends LegacyCatalogItems
+    with TableInfo<$LegacyCatalogItemsTable, LegacyCatalogItemRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CatalogItemsTable(this.attachedDatabase, [this._alias]);
+  $LegacyCatalogItemsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -1205,7 +1206,7 @@ class $CatalogItemsTable extends CatalogItems
   static const String $name = 'catalog_items';
   @override
   VerificationContext validateIntegrity(
-    Insertable<CatalogItemRow> instance, {
+    Insertable<LegacyCatalogItemRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1295,9 +1296,9 @@ class $CatalogItemsTable extends CatalogItems
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  CatalogItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyCatalogItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatalogItemRow(
+    return LegacyCatalogItemRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -1342,12 +1343,13 @@ class $CatalogItemsTable extends CatalogItems
   }
 
   @override
-  $CatalogItemsTable createAlias(String alias) {
-    return $CatalogItemsTable(attachedDatabase, alias);
+  $LegacyCatalogItemsTable createAlias(String alias) {
+    return $LegacyCatalogItemsTable(attachedDatabase, alias);
   }
 }
 
-class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
+class LegacyCatalogItemRow extends DataClass
+    implements Insertable<LegacyCatalogItemRow> {
   final String id;
   final int createdAt;
   final String type;
@@ -1358,7 +1360,7 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
   final int priceCents;
   final bool active;
   final String? imageReference;
-  const CatalogItemRow({
+  const LegacyCatalogItemRow({
     required this.id,
     required this.createdAt,
     required this.type,
@@ -1390,8 +1392,8 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
     return map;
   }
 
-  CatalogItemsCompanion toCompanion(bool nullToAbsent) {
-    return CatalogItemsCompanion(
+  LegacyCatalogItemsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyCatalogItemsCompanion(
       id: Value(id),
       createdAt: Value(createdAt),
       type: Value(type),
@@ -1409,12 +1411,12 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
     );
   }
 
-  factory CatalogItemRow.fromJson(
+  factory LegacyCatalogItemRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatalogItemRow(
+    return LegacyCatalogItemRow(
       id: serializer.fromJson<String>(json['id']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       type: serializer.fromJson<String>(json['type']),
@@ -1444,7 +1446,7 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
     };
   }
 
-  CatalogItemRow copyWith({
+  LegacyCatalogItemRow copyWith({
     String? id,
     int? createdAt,
     String? type,
@@ -1455,7 +1457,7 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
     int? priceCents,
     bool? active,
     Value<String?> imageReference = const Value.absent(),
-  }) => CatalogItemRow(
+  }) => LegacyCatalogItemRow(
     id: id ?? this.id,
     createdAt: createdAt ?? this.createdAt,
     type: type ?? this.type,
@@ -1469,8 +1471,8 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
         ? imageReference.value
         : this.imageReference,
   );
-  CatalogItemRow copyWithCompanion(CatalogItemsCompanion data) {
-    return CatalogItemRow(
+  LegacyCatalogItemRow copyWithCompanion(LegacyCatalogItemsCompanion data) {
+    return LegacyCatalogItemRow(
       id: data.id.present ? data.id.value : this.id,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       type: data.type.present ? data.type.value : this.type,
@@ -1492,7 +1494,7 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
 
   @override
   String toString() {
-    return (StringBuffer('CatalogItemRow(')
+    return (StringBuffer('LegacyCatalogItemRow(')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('type: $type, ')
@@ -1523,7 +1525,7 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is CatalogItemRow &&
+      (other is LegacyCatalogItemRow &&
           other.id == this.id &&
           other.createdAt == this.createdAt &&
           other.type == this.type &&
@@ -1536,7 +1538,8 @@ class CatalogItemRow extends DataClass implements Insertable<CatalogItemRow> {
           other.imageReference == this.imageReference);
 }
 
-class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
+class LegacyCatalogItemsCompanion
+    extends UpdateCompanion<LegacyCatalogItemRow> {
   final Value<String> id;
   final Value<int> createdAt;
   final Value<String> type;
@@ -1548,7 +1551,7 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
   final Value<bool> active;
   final Value<String?> imageReference;
   final Value<int> rowid;
-  const CatalogItemsCompanion({
+  const LegacyCatalogItemsCompanion({
     this.id = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.type = const Value.absent(),
@@ -1561,7 +1564,7 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
     this.imageReference = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  CatalogItemsCompanion.insert({
+  LegacyCatalogItemsCompanion.insert({
     required String id,
     required int createdAt,
     required String type,
@@ -1581,7 +1584,7 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
        unit = Value(unit),
        priceCents = Value(priceCents),
        active = Value(active);
-  static Insertable<CatalogItemRow> custom({
+  static Insertable<LegacyCatalogItemRow> custom({
     Expression<String>? id,
     Expression<int>? createdAt,
     Expression<String>? type,
@@ -1609,7 +1612,7 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
     });
   }
 
-  CatalogItemsCompanion copyWith({
+  LegacyCatalogItemsCompanion copyWith({
     Value<String>? id,
     Value<int>? createdAt,
     Value<String>? type,
@@ -1622,7 +1625,7 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
     Value<String?>? imageReference,
     Value<int>? rowid,
   }) {
-    return CatalogItemsCompanion(
+    return LegacyCatalogItemsCompanion(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       type: type ?? this.type,
@@ -1678,7 +1681,7 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
 
   @override
   String toString() {
-    return (StringBuffer('CatalogItemsCompanion(')
+    return (StringBuffer('LegacyCatalogItemsCompanion(')
           ..write('id: $id, ')
           ..write('createdAt: $createdAt, ')
           ..write('type: $type, ')
@@ -1695,12 +1698,17 @@ class CatalogItemsCompanion extends UpdateCompanion<CatalogItemRow> {
   }
 }
 
-class $CatalogPackageComponentsTable extends CatalogPackageComponents
-    with TableInfo<$CatalogPackageComponentsTable, CatalogPackageComponentRow> {
+class $LegacyCatalogPackageComponentsTable
+    extends LegacyCatalogPackageComponents
+    with
+        TableInfo<
+          $LegacyCatalogPackageComponentsTable,
+          LegacyCatalogPackageComponentRow
+        > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CatalogPackageComponentsTable(this.attachedDatabase, [this._alias]);
+  $LegacyCatalogPackageComponentsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _packageIdMeta = const VerificationMeta(
     'packageId',
   );
@@ -1801,7 +1809,7 @@ class $CatalogPackageComponentsTable extends CatalogPackageComponents
   static const String $name = 'catalog_package_components';
   @override
   VerificationContext validateIntegrity(
-    Insertable<CatalogPackageComponentRow> instance, {
+    Insertable<LegacyCatalogPackageComponentRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1886,12 +1894,12 @@ class $CatalogPackageComponentsTable extends CatalogPackageComponents
   @override
   Set<GeneratedColumn> get $primaryKey => {packageId, componentItemId};
   @override
-  CatalogPackageComponentRow map(
+  LegacyCatalogPackageComponentRow map(
     Map<String, dynamic> data, {
     String? tablePrefix,
   }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CatalogPackageComponentRow(
+    return LegacyCatalogPackageComponentRow(
       packageId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}package_id'],
@@ -1924,13 +1932,13 @@ class $CatalogPackageComponentsTable extends CatalogPackageComponents
   }
 
   @override
-  $CatalogPackageComponentsTable createAlias(String alias) {
-    return $CatalogPackageComponentsTable(attachedDatabase, alias);
+  $LegacyCatalogPackageComponentsTable createAlias(String alias) {
+    return $LegacyCatalogPackageComponentsTable(attachedDatabase, alias);
   }
 }
 
-class CatalogPackageComponentRow extends DataClass
-    implements Insertable<CatalogPackageComponentRow> {
+class LegacyCatalogPackageComponentRow extends DataClass
+    implements Insertable<LegacyCatalogPackageComponentRow> {
   final String packageId;
   final String componentItemId;
   final String nameSnapshot;
@@ -1938,7 +1946,7 @@ class CatalogPackageComponentRow extends DataClass
   final String typeSnapshot;
   final String categorySnapshot;
   final double quantityPerPackage;
-  const CatalogPackageComponentRow({
+  const LegacyCatalogPackageComponentRow({
     required this.packageId,
     required this.componentItemId,
     required this.nameSnapshot,
@@ -1960,8 +1968,8 @@ class CatalogPackageComponentRow extends DataClass
     return map;
   }
 
-  CatalogPackageComponentsCompanion toCompanion(bool nullToAbsent) {
-    return CatalogPackageComponentsCompanion(
+  LegacyCatalogPackageComponentsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyCatalogPackageComponentsCompanion(
       packageId: Value(packageId),
       componentItemId: Value(componentItemId),
       nameSnapshot: Value(nameSnapshot),
@@ -1972,12 +1980,12 @@ class CatalogPackageComponentRow extends DataClass
     );
   }
 
-  factory CatalogPackageComponentRow.fromJson(
+  factory LegacyCatalogPackageComponentRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CatalogPackageComponentRow(
+    return LegacyCatalogPackageComponentRow(
       packageId: serializer.fromJson<String>(json['packageId']),
       componentItemId: serializer.fromJson<String>(json['componentItemId']),
       nameSnapshot: serializer.fromJson<String>(json['nameSnapshot']),
@@ -2003,7 +2011,7 @@ class CatalogPackageComponentRow extends DataClass
     };
   }
 
-  CatalogPackageComponentRow copyWith({
+  LegacyCatalogPackageComponentRow copyWith({
     String? packageId,
     String? componentItemId,
     String? nameSnapshot,
@@ -2011,7 +2019,7 @@ class CatalogPackageComponentRow extends DataClass
     String? typeSnapshot,
     String? categorySnapshot,
     double? quantityPerPackage,
-  }) => CatalogPackageComponentRow(
+  }) => LegacyCatalogPackageComponentRow(
     packageId: packageId ?? this.packageId,
     componentItemId: componentItemId ?? this.componentItemId,
     nameSnapshot: nameSnapshot ?? this.nameSnapshot,
@@ -2020,10 +2028,10 @@ class CatalogPackageComponentRow extends DataClass
     categorySnapshot: categorySnapshot ?? this.categorySnapshot,
     quantityPerPackage: quantityPerPackage ?? this.quantityPerPackage,
   );
-  CatalogPackageComponentRow copyWithCompanion(
-    CatalogPackageComponentsCompanion data,
+  LegacyCatalogPackageComponentRow copyWithCompanion(
+    LegacyCatalogPackageComponentsCompanion data,
   ) {
-    return CatalogPackageComponentRow(
+    return LegacyCatalogPackageComponentRow(
       packageId: data.packageId.present ? data.packageId.value : this.packageId,
       componentItemId: data.componentItemId.present
           ? data.componentItemId.value
@@ -2048,7 +2056,7 @@ class CatalogPackageComponentRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('CatalogPackageComponentRow(')
+    return (StringBuffer('LegacyCatalogPackageComponentRow(')
           ..write('packageId: $packageId, ')
           ..write('componentItemId: $componentItemId, ')
           ..write('nameSnapshot: $nameSnapshot, ')
@@ -2073,7 +2081,7 @@ class CatalogPackageComponentRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is CatalogPackageComponentRow &&
+      (other is LegacyCatalogPackageComponentRow &&
           other.packageId == this.packageId &&
           other.componentItemId == this.componentItemId &&
           other.nameSnapshot == this.nameSnapshot &&
@@ -2083,8 +2091,8 @@ class CatalogPackageComponentRow extends DataClass
           other.quantityPerPackage == this.quantityPerPackage);
 }
 
-class CatalogPackageComponentsCompanion
-    extends UpdateCompanion<CatalogPackageComponentRow> {
+class LegacyCatalogPackageComponentsCompanion
+    extends UpdateCompanion<LegacyCatalogPackageComponentRow> {
   final Value<String> packageId;
   final Value<String> componentItemId;
   final Value<String> nameSnapshot;
@@ -2093,7 +2101,7 @@ class CatalogPackageComponentsCompanion
   final Value<String> categorySnapshot;
   final Value<double> quantityPerPackage;
   final Value<int> rowid;
-  const CatalogPackageComponentsCompanion({
+  const LegacyCatalogPackageComponentsCompanion({
     this.packageId = const Value.absent(),
     this.componentItemId = const Value.absent(),
     this.nameSnapshot = const Value.absent(),
@@ -2103,7 +2111,7 @@ class CatalogPackageComponentsCompanion
     this.quantityPerPackage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  CatalogPackageComponentsCompanion.insert({
+  LegacyCatalogPackageComponentsCompanion.insert({
     required String packageId,
     required String componentItemId,
     required String nameSnapshot,
@@ -2119,7 +2127,7 @@ class CatalogPackageComponentsCompanion
        typeSnapshot = Value(typeSnapshot),
        categorySnapshot = Value(categorySnapshot),
        quantityPerPackage = Value(quantityPerPackage);
-  static Insertable<CatalogPackageComponentRow> custom({
+  static Insertable<LegacyCatalogPackageComponentRow> custom({
     Expression<String>? packageId,
     Expression<String>? componentItemId,
     Expression<String>? nameSnapshot,
@@ -2142,7 +2150,7 @@ class CatalogPackageComponentsCompanion
     });
   }
 
-  CatalogPackageComponentsCompanion copyWith({
+  LegacyCatalogPackageComponentsCompanion copyWith({
     Value<String>? packageId,
     Value<String>? componentItemId,
     Value<String>? nameSnapshot,
@@ -2152,7 +2160,7 @@ class CatalogPackageComponentsCompanion
     Value<double>? quantityPerPackage,
     Value<int>? rowid,
   }) {
-    return CatalogPackageComponentsCompanion(
+    return LegacyCatalogPackageComponentsCompanion(
       packageId: packageId ?? this.packageId,
       componentItemId: componentItemId ?? this.componentItemId,
       nameSnapshot: nameSnapshot ?? this.nameSnapshot,
@@ -2196,7 +2204,7 @@ class CatalogPackageComponentsCompanion
 
   @override
   String toString() {
-    return (StringBuffer('CatalogPackageComponentsCompanion(')
+    return (StringBuffer('LegacyCatalogPackageComponentsCompanion(')
           ..write('packageId: $packageId, ')
           ..write('componentItemId: $componentItemId, ')
           ..write('nameSnapshot: $nameSnapshot, ')
@@ -2210,12 +2218,12 @@ class CatalogPackageComponentsCompanion
   }
 }
 
-class $CompanyProfilesTable extends CompanyProfiles
-    with TableInfo<$CompanyProfilesTable, CompanyProfileRow> {
+class $LegacyCompanyProfilesTable extends LegacyCompanyProfiles
+    with TableInfo<$LegacyCompanyProfilesTable, LegacyCompanyProfileRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $CompanyProfilesTable(this.attachedDatabase, [this._alias]);
+  $LegacyCompanyProfilesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -2560,7 +2568,7 @@ class $CompanyProfilesTable extends CompanyProfiles
   static const String $name = 'company_profile';
   @override
   VerificationContext validateIntegrity(
-    Insertable<CompanyProfileRow> instance, {
+    Insertable<LegacyCompanyProfileRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -2788,9 +2796,12 @@ class $CompanyProfilesTable extends CompanyProfiles
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  CompanyProfileRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyCompanyProfileRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return CompanyProfileRow(
+    return LegacyCompanyProfileRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -2911,13 +2922,13 @@ class $CompanyProfilesTable extends CompanyProfiles
   }
 
   @override
-  $CompanyProfilesTable createAlias(String alias) {
-    return $CompanyProfilesTable(attachedDatabase, alias);
+  $LegacyCompanyProfilesTable createAlias(String alias) {
+    return $LegacyCompanyProfilesTable(attachedDatabase, alias);
   }
 }
 
-class CompanyProfileRow extends DataClass
-    implements Insertable<CompanyProfileRow> {
+class LegacyCompanyProfileRow extends DataClass
+    implements Insertable<LegacyCompanyProfileRow> {
   final String id;
   final String tradeName;
   final String? legalName;
@@ -2947,7 +2958,7 @@ class CompanyProfileRow extends DataClass
   final String? defaultPublicNotes;
   final int createdAt;
   final int updatedAt;
-  const CompanyProfileRow({
+  const LegacyCompanyProfileRow({
     required this.id,
     required this.tradeName,
     this.legalName,
@@ -3061,8 +3072,8 @@ class CompanyProfileRow extends DataClass
     return map;
   }
 
-  CompanyProfilesCompanion toCompanion(bool nullToAbsent) {
-    return CompanyProfilesCompanion(
+  LegacyCompanyProfilesCompanion toCompanion(bool nullToAbsent) {
+    return LegacyCompanyProfilesCompanion(
       id: Value(id),
       tradeName: Value(tradeName),
       legalName: legalName == null && nullToAbsent
@@ -3141,12 +3152,12 @@ class CompanyProfileRow extends DataClass
     );
   }
 
-  factory CompanyProfileRow.fromJson(
+  factory LegacyCompanyProfileRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return CompanyProfileRow(
+    return LegacyCompanyProfileRow(
       id: serializer.fromJson<String>(json['id']),
       tradeName: serializer.fromJson<String>(json['tradeName']),
       legalName: serializer.fromJson<String?>(json['legalName']),
@@ -3220,7 +3231,7 @@ class CompanyProfileRow extends DataClass
     };
   }
 
-  CompanyProfileRow copyWith({
+  LegacyCompanyProfileRow copyWith({
     String? id,
     String? tradeName,
     Value<String?> legalName = const Value.absent(),
@@ -3250,7 +3261,7 @@ class CompanyProfileRow extends DataClass
     Value<String?> defaultPublicNotes = const Value.absent(),
     int? createdAt,
     int? updatedAt,
-  }) => CompanyProfileRow(
+  }) => LegacyCompanyProfileRow(
     id: id ?? this.id,
     tradeName: tradeName ?? this.tradeName,
     legalName: legalName.present ? legalName.value : this.legalName,
@@ -3291,8 +3302,10 @@ class CompanyProfileRow extends DataClass
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  CompanyProfileRow copyWithCompanion(CompanyProfilesCompanion data) {
-    return CompanyProfileRow(
+  LegacyCompanyProfileRow copyWithCompanion(
+    LegacyCompanyProfilesCompanion data,
+  ) {
+    return LegacyCompanyProfileRow(
       id: data.id.present ? data.id.value : this.id,
       tradeName: data.tradeName.present ? data.tradeName.value : this.tradeName,
       legalName: data.legalName.present ? data.legalName.value : this.legalName,
@@ -3357,7 +3370,7 @@ class CompanyProfileRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('CompanyProfileRow(')
+    return (StringBuffer('LegacyCompanyProfileRow(')
           ..write('id: $id, ')
           ..write('tradeName: $tradeName, ')
           ..write('legalName: $legalName, ')
@@ -3426,7 +3439,7 @@ class CompanyProfileRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is CompanyProfileRow &&
+      (other is LegacyCompanyProfileRow &&
           other.id == this.id &&
           other.tradeName == this.tradeName &&
           other.legalName == this.legalName &&
@@ -3458,7 +3471,8 @@ class CompanyProfileRow extends DataClass
           other.updatedAt == this.updatedAt);
 }
 
-class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
+class LegacyCompanyProfilesCompanion
+    extends UpdateCompanion<LegacyCompanyProfileRow> {
   final Value<String> id;
   final Value<String> tradeName;
   final Value<String?> legalName;
@@ -3489,7 +3503,7 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
-  const CompanyProfilesCompanion({
+  const LegacyCompanyProfilesCompanion({
     this.id = const Value.absent(),
     this.tradeName = const Value.absent(),
     this.legalName = const Value.absent(),
@@ -3521,7 +3535,7 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  CompanyProfilesCompanion.insert({
+  LegacyCompanyProfilesCompanion.insert({
     required String id,
     required String tradeName,
     this.legalName = const Value.absent(),
@@ -3557,7 +3571,7 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
        defaultValidityDays = Value(defaultValidityDays),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<CompanyProfileRow> custom({
+  static Insertable<LegacyCompanyProfileRow> custom({
     Expression<String>? id,
     Expression<String>? tradeName,
     Expression<String>? legalName,
@@ -3625,7 +3639,7 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
     });
   }
 
-  CompanyProfilesCompanion copyWith({
+  LegacyCompanyProfilesCompanion copyWith({
     Value<String>? id,
     Value<String>? tradeName,
     Value<String?>? legalName,
@@ -3657,7 +3671,7 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
     Value<int>? updatedAt,
     Value<int>? rowid,
   }) {
-    return CompanyProfilesCompanion(
+    return LegacyCompanyProfilesCompanion(
       id: id ?? this.id,
       tradeName: tradeName ?? this.tradeName,
       legalName: legalName ?? this.legalName,
@@ -3789,7 +3803,7 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
 
   @override
   String toString() {
-    return (StringBuffer('CompanyProfilesCompanion(')
+    return (StringBuffer('LegacyCompanyProfilesCompanion(')
           ..write('id: $id, ')
           ..write('tradeName: $tradeName, ')
           ..write('legalName: $legalName, ')
@@ -3825,11 +3839,12 @@ class CompanyProfilesCompanion extends UpdateCompanion<CompanyProfileRow> {
   }
 }
 
-class $QuotesTable extends Quotes with TableInfo<$QuotesTable, QuoteRow> {
+class $LegacyQuotesTable extends LegacyQuotes
+    with TableInfo<$LegacyQuotesTable, LegacyQuoteRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuotesTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuotesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -3988,7 +4003,7 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, QuoteRow> {
   static const String $name = 'quotes';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteRow> instance, {
+    Insertable<LegacyQuoteRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -4104,9 +4119,9 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, QuoteRow> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  QuoteRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyQuoteRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteRow(
+    return LegacyQuoteRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -4163,12 +4178,12 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, QuoteRow> {
   }
 
   @override
-  $QuotesTable createAlias(String alias) {
-    return $QuotesTable(attachedDatabase, alias);
+  $LegacyQuotesTable createAlias(String alias) {
+    return $LegacyQuotesTable(attachedDatabase, alias);
   }
 }
 
-class QuoteRow extends DataClass implements Insertable<QuoteRow> {
+class LegacyQuoteRow extends DataClass implements Insertable<LegacyQuoteRow> {
   final String id;
   final String number;
   final String status;
@@ -4182,7 +4197,7 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
   final int createdAt;
   final int updatedAt;
   final int? approvedAt;
-  const QuoteRow({
+  const LegacyQuoteRow({
     required this.id,
     required this.number,
     required this.status,
@@ -4224,8 +4239,8 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
     return map;
   }
 
-  QuotesCompanion toCompanion(bool nullToAbsent) {
-    return QuotesCompanion(
+  LegacyQuotesCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuotesCompanion(
       id: Value(id),
       number: Value(number),
       status: Value(status),
@@ -4250,12 +4265,12 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
     );
   }
 
-  factory QuoteRow.fromJson(
+  factory LegacyQuoteRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteRow(
+    return LegacyQuoteRow(
       id: serializer.fromJson<String>(json['id']),
       number: serializer.fromJson<String>(json['number']),
       status: serializer.fromJson<String>(json['status']),
@@ -4291,7 +4306,7 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
     };
   }
 
-  QuoteRow copyWith({
+  LegacyQuoteRow copyWith({
     String? id,
     String? number,
     String? status,
@@ -4305,7 +4320,7 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
     int? createdAt,
     int? updatedAt,
     Value<int?> approvedAt = const Value.absent(),
-  }) => QuoteRow(
+  }) => LegacyQuoteRow(
     id: id ?? this.id,
     number: number ?? this.number,
     status: status ?? this.status,
@@ -4322,8 +4337,8 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
     updatedAt: updatedAt ?? this.updatedAt,
     approvedAt: approvedAt.present ? approvedAt.value : this.approvedAt,
   );
-  QuoteRow copyWithCompanion(QuotesCompanion data) {
-    return QuoteRow(
+  LegacyQuoteRow copyWithCompanion(LegacyQuotesCompanion data) {
+    return LegacyQuoteRow(
       id: data.id.present ? data.id.value : this.id,
       number: data.number.present ? data.number.value : this.number,
       status: data.status.present ? data.status.value : this.status,
@@ -4356,7 +4371,7 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
 
   @override
   String toString() {
-    return (StringBuffer('QuoteRow(')
+    return (StringBuffer('LegacyQuoteRow(')
           ..write('id: $id, ')
           ..write('number: $number, ')
           ..write('status: $status, ')
@@ -4393,7 +4408,7 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteRow &&
+      (other is LegacyQuoteRow &&
           other.id == this.id &&
           other.number == this.number &&
           other.status == this.status &&
@@ -4409,7 +4424,7 @@ class QuoteRow extends DataClass implements Insertable<QuoteRow> {
           other.approvedAt == this.approvedAt);
 }
 
-class QuotesCompanion extends UpdateCompanion<QuoteRow> {
+class LegacyQuotesCompanion extends UpdateCompanion<LegacyQuoteRow> {
   final Value<String> id;
   final Value<String> number;
   final Value<String> status;
@@ -4424,7 +4439,7 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
   final Value<int> updatedAt;
   final Value<int?> approvedAt;
   final Value<int> rowid;
-  const QuotesCompanion({
+  const LegacyQuotesCompanion({
     this.id = const Value.absent(),
     this.number = const Value.absent(),
     this.status = const Value.absent(),
@@ -4440,7 +4455,7 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
     this.approvedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuotesCompanion.insert({
+  LegacyQuotesCompanion.insert({
     required String id,
     required String number,
     required String status,
@@ -4464,7 +4479,7 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
        totalCents = Value(totalCents),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<QuoteRow> custom({
+  static Insertable<LegacyQuoteRow> custom({
     Expression<String>? id,
     Expression<String>? number,
     Expression<String>? status,
@@ -4498,7 +4513,7 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
     });
   }
 
-  QuotesCompanion copyWith({
+  LegacyQuotesCompanion copyWith({
     Value<String>? id,
     Value<String>? number,
     Value<String>? status,
@@ -4514,7 +4529,7 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
     Value<int?>? approvedAt,
     Value<int>? rowid,
   }) {
-    return QuotesCompanion(
+    return LegacyQuotesCompanion(
       id: id ?? this.id,
       number: number ?? this.number,
       status: status ?? this.status,
@@ -4582,7 +4597,7 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
 
   @override
   String toString() {
-    return (StringBuffer('QuotesCompanion(')
+    return (StringBuffer('LegacyQuotesCompanion(')
           ..write('id: $id, ')
           ..write('number: $number, ')
           ..write('status: $status, ')
@@ -4602,12 +4617,16 @@ class QuotesCompanion extends UpdateCompanion<QuoteRow> {
   }
 }
 
-class $QuoteClientSnapshotsTable extends QuoteClientSnapshots
-    with TableInfo<$QuoteClientSnapshotsTable, QuoteClientSnapshotRow> {
+class $LegacyQuoteClientSnapshotsTable extends LegacyQuoteClientSnapshots
+    with
+        TableInfo<
+          $LegacyQuoteClientSnapshotsTable,
+          LegacyQuoteClientSnapshotRow
+        > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteClientSnapshotsTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteClientSnapshotsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _quoteIdMeta = const VerificationMeta(
     'quoteId',
   );
@@ -4737,7 +4756,7 @@ class $QuoteClientSnapshotsTable extends QuoteClientSnapshots
   static const String $name = 'quote_client_snapshots';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteClientSnapshotRow> instance, {
+    Insertable<LegacyQuoteClientSnapshotRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -4832,9 +4851,12 @@ class $QuoteClientSnapshotsTable extends QuoteClientSnapshots
   @override
   Set<GeneratedColumn> get $primaryKey => {quoteId};
   @override
-  QuoteClientSnapshotRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyQuoteClientSnapshotRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteClientSnapshotRow(
+    return LegacyQuoteClientSnapshotRow(
       quoteId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}quote_id'],
@@ -4879,13 +4901,13 @@ class $QuoteClientSnapshotsTable extends QuoteClientSnapshots
   }
 
   @override
-  $QuoteClientSnapshotsTable createAlias(String alias) {
-    return $QuoteClientSnapshotsTable(attachedDatabase, alias);
+  $LegacyQuoteClientSnapshotsTable createAlias(String alias) {
+    return $LegacyQuoteClientSnapshotsTable(attachedDatabase, alias);
   }
 }
 
-class QuoteClientSnapshotRow extends DataClass
-    implements Insertable<QuoteClientSnapshotRow> {
+class LegacyQuoteClientSnapshotRow extends DataClass
+    implements Insertable<LegacyQuoteClientSnapshotRow> {
   final String quoteId;
   final String? sourceClientId;
   final String type;
@@ -4896,7 +4918,7 @@ class QuoteClientSnapshotRow extends DataClass
   final String? whatsappDigits;
   final String? email;
   final String? addressSummary;
-  const QuoteClientSnapshotRow({
+  const LegacyQuoteClientSnapshotRow({
     required this.quoteId,
     this.sourceClientId,
     required this.type,
@@ -4938,8 +4960,8 @@ class QuoteClientSnapshotRow extends DataClass
     return map;
   }
 
-  QuoteClientSnapshotsCompanion toCompanion(bool nullToAbsent) {
-    return QuoteClientSnapshotsCompanion(
+  LegacyQuoteClientSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteClientSnapshotsCompanion(
       quoteId: Value(quoteId),
       sourceClientId: sourceClientId == null && nullToAbsent
           ? const Value.absent()
@@ -4967,12 +4989,12 @@ class QuoteClientSnapshotRow extends DataClass
     );
   }
 
-  factory QuoteClientSnapshotRow.fromJson(
+  factory LegacyQuoteClientSnapshotRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteClientSnapshotRow(
+    return LegacyQuoteClientSnapshotRow(
       quoteId: serializer.fromJson<String>(json['quoteId']),
       sourceClientId: serializer.fromJson<String?>(json['sourceClientId']),
       type: serializer.fromJson<String>(json['type']),
@@ -5002,7 +5024,7 @@ class QuoteClientSnapshotRow extends DataClass
     };
   }
 
-  QuoteClientSnapshotRow copyWith({
+  LegacyQuoteClientSnapshotRow copyWith({
     String? quoteId,
     Value<String?> sourceClientId = const Value.absent(),
     String? type,
@@ -5013,7 +5035,7 @@ class QuoteClientSnapshotRow extends DataClass
     Value<String?> whatsappDigits = const Value.absent(),
     Value<String?> email = const Value.absent(),
     Value<String?> addressSummary = const Value.absent(),
-  }) => QuoteClientSnapshotRow(
+  }) => LegacyQuoteClientSnapshotRow(
     quoteId: quoteId ?? this.quoteId,
     sourceClientId: sourceClientId.present
         ? sourceClientId.value
@@ -5033,8 +5055,10 @@ class QuoteClientSnapshotRow extends DataClass
         ? addressSummary.value
         : this.addressSummary,
   );
-  QuoteClientSnapshotRow copyWithCompanion(QuoteClientSnapshotsCompanion data) {
-    return QuoteClientSnapshotRow(
+  LegacyQuoteClientSnapshotRow copyWithCompanion(
+    LegacyQuoteClientSnapshotsCompanion data,
+  ) {
+    return LegacyQuoteClientSnapshotRow(
       quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
       sourceClientId: data.sourceClientId.present
           ? data.sourceClientId.value
@@ -5062,7 +5086,7 @@ class QuoteClientSnapshotRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteClientSnapshotRow(')
+    return (StringBuffer('LegacyQuoteClientSnapshotRow(')
           ..write('quoteId: $quoteId, ')
           ..write('sourceClientId: $sourceClientId, ')
           ..write('type: $type, ')
@@ -5093,7 +5117,7 @@ class QuoteClientSnapshotRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteClientSnapshotRow &&
+      (other is LegacyQuoteClientSnapshotRow &&
           other.quoteId == this.quoteId &&
           other.sourceClientId == this.sourceClientId &&
           other.type == this.type &&
@@ -5106,8 +5130,8 @@ class QuoteClientSnapshotRow extends DataClass
           other.addressSummary == this.addressSummary);
 }
 
-class QuoteClientSnapshotsCompanion
-    extends UpdateCompanion<QuoteClientSnapshotRow> {
+class LegacyQuoteClientSnapshotsCompanion
+    extends UpdateCompanion<LegacyQuoteClientSnapshotRow> {
   final Value<String> quoteId;
   final Value<String?> sourceClientId;
   final Value<String> type;
@@ -5119,7 +5143,7 @@ class QuoteClientSnapshotsCompanion
   final Value<String?> email;
   final Value<String?> addressSummary;
   final Value<int> rowid;
-  const QuoteClientSnapshotsCompanion({
+  const LegacyQuoteClientSnapshotsCompanion({
     this.quoteId = const Value.absent(),
     this.sourceClientId = const Value.absent(),
     this.type = const Value.absent(),
@@ -5132,7 +5156,7 @@ class QuoteClientSnapshotsCompanion
     this.addressSummary = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuoteClientSnapshotsCompanion.insert({
+  LegacyQuoteClientSnapshotsCompanion.insert({
     required String quoteId,
     this.sourceClientId = const Value.absent(),
     required String type,
@@ -5147,7 +5171,7 @@ class QuoteClientSnapshotsCompanion
   }) : quoteId = Value(quoteId),
        type = Value(type),
        displayName = Value(displayName);
-  static Insertable<QuoteClientSnapshotRow> custom({
+  static Insertable<LegacyQuoteClientSnapshotRow> custom({
     Expression<String>? quoteId,
     Expression<String>? sourceClientId,
     Expression<String>? type,
@@ -5175,7 +5199,7 @@ class QuoteClientSnapshotsCompanion
     });
   }
 
-  QuoteClientSnapshotsCompanion copyWith({
+  LegacyQuoteClientSnapshotsCompanion copyWith({
     Value<String>? quoteId,
     Value<String?>? sourceClientId,
     Value<String>? type,
@@ -5188,7 +5212,7 @@ class QuoteClientSnapshotsCompanion
     Value<String?>? addressSummary,
     Value<int>? rowid,
   }) {
-    return QuoteClientSnapshotsCompanion(
+    return LegacyQuoteClientSnapshotsCompanion(
       quoteId: quoteId ?? this.quoteId,
       sourceClientId: sourceClientId ?? this.sourceClientId,
       type: type ?? this.type,
@@ -5244,7 +5268,7 @@ class QuoteClientSnapshotsCompanion
 
   @override
   String toString() {
-    return (StringBuffer('QuoteClientSnapshotsCompanion(')
+    return (StringBuffer('LegacyQuoteClientSnapshotsCompanion(')
           ..write('quoteId: $quoteId, ')
           ..write('sourceClientId: $sourceClientId, ')
           ..write('type: $type, ')
@@ -5261,12 +5285,16 @@ class QuoteClientSnapshotsCompanion
   }
 }
 
-class $QuoteEventSnapshotsTable extends QuoteEventSnapshots
-    with TableInfo<$QuoteEventSnapshotsTable, QuoteEventSnapshotRow> {
+class $LegacyQuoteEventSnapshotsTable extends LegacyQuoteEventSnapshots
+    with
+        TableInfo<
+          $LegacyQuoteEventSnapshotsTable,
+          LegacyQuoteEventSnapshotRow
+        > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteEventSnapshotsTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteEventSnapshotsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _quoteIdMeta = const VerificationMeta(
     'quoteId',
   );
@@ -5384,7 +5412,7 @@ class $QuoteEventSnapshotsTable extends QuoteEventSnapshots
   static const String $name = 'quote_event_snapshots';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteEventSnapshotRow> instance, {
+    Insertable<LegacyQuoteEventSnapshotRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -5454,9 +5482,12 @@ class $QuoteEventSnapshotsTable extends QuoteEventSnapshots
   @override
   Set<GeneratedColumn> get $primaryKey => {quoteId};
   @override
-  QuoteEventSnapshotRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyQuoteEventSnapshotRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteEventSnapshotRow(
+    return LegacyQuoteEventSnapshotRow(
       quoteId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}quote_id'],
@@ -5497,13 +5528,13 @@ class $QuoteEventSnapshotsTable extends QuoteEventSnapshots
   }
 
   @override
-  $QuoteEventSnapshotsTable createAlias(String alias) {
-    return $QuoteEventSnapshotsTable(attachedDatabase, alias);
+  $LegacyQuoteEventSnapshotsTable createAlias(String alias) {
+    return $LegacyQuoteEventSnapshotsTable(attachedDatabase, alias);
   }
 }
 
-class QuoteEventSnapshotRow extends DataClass
-    implements Insertable<QuoteEventSnapshotRow> {
+class LegacyQuoteEventSnapshotRow extends DataClass
+    implements Insertable<LegacyQuoteEventSnapshotRow> {
   final String quoteId;
   final String? name;
   final String? type;
@@ -5513,7 +5544,7 @@ class QuoteEventSnapshotRow extends DataClass
   final String? venueName;
   final String? addressSummary;
   final int? guestCount;
-  const QuoteEventSnapshotRow({
+  const LegacyQuoteEventSnapshotRow({
     required this.quoteId,
     this.name,
     this.type,
@@ -5555,8 +5586,8 @@ class QuoteEventSnapshotRow extends DataClass
     return map;
   }
 
-  QuoteEventSnapshotsCompanion toCompanion(bool nullToAbsent) {
-    return QuoteEventSnapshotsCompanion(
+  LegacyQuoteEventSnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteEventSnapshotsCompanion(
       quoteId: Value(quoteId),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       type: type == null && nullToAbsent ? const Value.absent() : Value(type),
@@ -5581,12 +5612,12 @@ class QuoteEventSnapshotRow extends DataClass
     );
   }
 
-  factory QuoteEventSnapshotRow.fromJson(
+  factory LegacyQuoteEventSnapshotRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteEventSnapshotRow(
+    return LegacyQuoteEventSnapshotRow(
       quoteId: serializer.fromJson<String>(json['quoteId']),
       name: serializer.fromJson<String?>(json['name']),
       type: serializer.fromJson<String?>(json['type']),
@@ -5614,7 +5645,7 @@ class QuoteEventSnapshotRow extends DataClass
     };
   }
 
-  QuoteEventSnapshotRow copyWith({
+  LegacyQuoteEventSnapshotRow copyWith({
     String? quoteId,
     Value<String?> name = const Value.absent(),
     Value<String?> type = const Value.absent(),
@@ -5624,7 +5655,7 @@ class QuoteEventSnapshotRow extends DataClass
     Value<String?> venueName = const Value.absent(),
     Value<String?> addressSummary = const Value.absent(),
     Value<int?> guestCount = const Value.absent(),
-  }) => QuoteEventSnapshotRow(
+  }) => LegacyQuoteEventSnapshotRow(
     quoteId: quoteId ?? this.quoteId,
     name: name.present ? name.value : this.name,
     type: type.present ? type.value : this.type,
@@ -5637,8 +5668,10 @@ class QuoteEventSnapshotRow extends DataClass
         : this.addressSummary,
     guestCount: guestCount.present ? guestCount.value : this.guestCount,
   );
-  QuoteEventSnapshotRow copyWithCompanion(QuoteEventSnapshotsCompanion data) {
-    return QuoteEventSnapshotRow(
+  LegacyQuoteEventSnapshotRow copyWithCompanion(
+    LegacyQuoteEventSnapshotsCompanion data,
+  ) {
+    return LegacyQuoteEventSnapshotRow(
       quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
@@ -5657,7 +5690,7 @@ class QuoteEventSnapshotRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteEventSnapshotRow(')
+    return (StringBuffer('LegacyQuoteEventSnapshotRow(')
           ..write('quoteId: $quoteId, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
@@ -5686,7 +5719,7 @@ class QuoteEventSnapshotRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteEventSnapshotRow &&
+      (other is LegacyQuoteEventSnapshotRow &&
           other.quoteId == this.quoteId &&
           other.name == this.name &&
           other.type == this.type &&
@@ -5698,8 +5731,8 @@ class QuoteEventSnapshotRow extends DataClass
           other.guestCount == this.guestCount);
 }
 
-class QuoteEventSnapshotsCompanion
-    extends UpdateCompanion<QuoteEventSnapshotRow> {
+class LegacyQuoteEventSnapshotsCompanion
+    extends UpdateCompanion<LegacyQuoteEventSnapshotRow> {
   final Value<String> quoteId;
   final Value<String?> name;
   final Value<String?> type;
@@ -5710,7 +5743,7 @@ class QuoteEventSnapshotsCompanion
   final Value<String?> addressSummary;
   final Value<int?> guestCount;
   final Value<int> rowid;
-  const QuoteEventSnapshotsCompanion({
+  const LegacyQuoteEventSnapshotsCompanion({
     this.quoteId = const Value.absent(),
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -5722,7 +5755,7 @@ class QuoteEventSnapshotsCompanion
     this.guestCount = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuoteEventSnapshotsCompanion.insert({
+  LegacyQuoteEventSnapshotsCompanion.insert({
     required String quoteId,
     this.name = const Value.absent(),
     this.type = const Value.absent(),
@@ -5734,7 +5767,7 @@ class QuoteEventSnapshotsCompanion
     this.guestCount = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : quoteId = Value(quoteId);
-  static Insertable<QuoteEventSnapshotRow> custom({
+  static Insertable<LegacyQuoteEventSnapshotRow> custom({
     Expression<String>? quoteId,
     Expression<String>? name,
     Expression<String>? type,
@@ -5760,7 +5793,7 @@ class QuoteEventSnapshotsCompanion
     });
   }
 
-  QuoteEventSnapshotsCompanion copyWith({
+  LegacyQuoteEventSnapshotsCompanion copyWith({
     Value<String>? quoteId,
     Value<String?>? name,
     Value<String?>? type,
@@ -5772,7 +5805,7 @@ class QuoteEventSnapshotsCompanion
     Value<int?>? guestCount,
     Value<int>? rowid,
   }) {
-    return QuoteEventSnapshotsCompanion(
+    return LegacyQuoteEventSnapshotsCompanion(
       quoteId: quoteId ?? this.quoteId,
       name: name ?? this.name,
       type: type ?? this.type,
@@ -5824,7 +5857,7 @@ class QuoteEventSnapshotsCompanion
 
   @override
   String toString() {
-    return (StringBuffer('QuoteEventSnapshotsCompanion(')
+    return (StringBuffer('LegacyQuoteEventSnapshotsCompanion(')
           ..write('quoteId: $quoteId, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
@@ -5840,12 +5873,16 @@ class QuoteEventSnapshotsCompanion
   }
 }
 
-class $QuoteCompanySnapshotsTable extends QuoteCompanySnapshots
-    with TableInfo<$QuoteCompanySnapshotsTable, QuoteCompanySnapshotRow> {
+class $LegacyQuoteCompanySnapshotsTable extends LegacyQuoteCompanySnapshots
+    with
+        TableInfo<
+          $LegacyQuoteCompanySnapshotsTable,
+          LegacyQuoteCompanySnapshotRow
+        > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteCompanySnapshotsTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteCompanySnapshotsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _quoteIdMeta = const VerificationMeta(
     'quoteId',
   );
@@ -6183,7 +6220,7 @@ class $QuoteCompanySnapshotsTable extends QuoteCompanySnapshots
   static const String $name = 'quote_company_snapshots';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteCompanySnapshotRow> instance, {
+    Insertable<LegacyQuoteCompanySnapshotRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -6421,12 +6458,12 @@ class $QuoteCompanySnapshotsTable extends QuoteCompanySnapshots
   @override
   Set<GeneratedColumn> get $primaryKey => {quoteId};
   @override
-  QuoteCompanySnapshotRow map(
+  LegacyQuoteCompanySnapshotRow map(
     Map<String, dynamic> data, {
     String? tablePrefix,
   }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteCompanySnapshotRow(
+    return LegacyQuoteCompanySnapshotRow(
       quoteId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}quote_id'],
@@ -6539,13 +6576,13 @@ class $QuoteCompanySnapshotsTable extends QuoteCompanySnapshots
   }
 
   @override
-  $QuoteCompanySnapshotsTable createAlias(String alias) {
-    return $QuoteCompanySnapshotsTable(attachedDatabase, alias);
+  $LegacyQuoteCompanySnapshotsTable createAlias(String alias) {
+    return $LegacyQuoteCompanySnapshotsTable(attachedDatabase, alias);
   }
 }
 
-class QuoteCompanySnapshotRow extends DataClass
-    implements Insertable<QuoteCompanySnapshotRow> {
+class LegacyQuoteCompanySnapshotRow extends DataClass
+    implements Insertable<LegacyQuoteCompanySnapshotRow> {
   final String quoteId;
   final String captureStatus;
   final int capturedAt;
@@ -6573,7 +6610,7 @@ class QuoteCompanySnapshotRow extends DataClass
   final String? payPixKey;
   final String? payBeneficiaryName;
   final String? payPaymentTerms;
-  const QuoteCompanySnapshotRow({
+  const LegacyQuoteCompanySnapshotRow({
     required this.quoteId,
     required this.captureStatus,
     required this.capturedAt,
@@ -6683,8 +6720,8 @@ class QuoteCompanySnapshotRow extends DataClass
     return map;
   }
 
-  QuoteCompanySnapshotsCompanion toCompanion(bool nullToAbsent) {
-    return QuoteCompanySnapshotsCompanion(
+  LegacyQuoteCompanySnapshotsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteCompanySnapshotsCompanion(
       quoteId: Value(quoteId),
       captureStatus: Value(captureStatus),
       capturedAt: Value(capturedAt),
@@ -6761,12 +6798,12 @@ class QuoteCompanySnapshotRow extends DataClass
     );
   }
 
-  factory QuoteCompanySnapshotRow.fromJson(
+  factory LegacyQuoteCompanySnapshotRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteCompanySnapshotRow(
+    return LegacyQuoteCompanySnapshotRow(
       quoteId: serializer.fromJson<String>(json['quoteId']),
       captureStatus: serializer.fromJson<String>(json['captureStatus']),
       capturedAt: serializer.fromJson<int>(json['capturedAt']),
@@ -6842,7 +6879,7 @@ class QuoteCompanySnapshotRow extends DataClass
     };
   }
 
-  QuoteCompanySnapshotRow copyWith({
+  LegacyQuoteCompanySnapshotRow copyWith({
     String? quoteId,
     String? captureStatus,
     int? capturedAt,
@@ -6870,7 +6907,7 @@ class QuoteCompanySnapshotRow extends DataClass
     Value<String?> payPixKey = const Value.absent(),
     Value<String?> payBeneficiaryName = const Value.absent(),
     Value<String?> payPaymentTerms = const Value.absent(),
-  }) => QuoteCompanySnapshotRow(
+  }) => LegacyQuoteCompanySnapshotRow(
     quoteId: quoteId ?? this.quoteId,
     captureStatus: captureStatus ?? this.captureStatus,
     capturedAt: capturedAt ?? this.capturedAt,
@@ -6927,10 +6964,10 @@ class QuoteCompanySnapshotRow extends DataClass
         ? payPaymentTerms.value
         : this.payPaymentTerms,
   );
-  QuoteCompanySnapshotRow copyWithCompanion(
-    QuoteCompanySnapshotsCompanion data,
+  LegacyQuoteCompanySnapshotRow copyWithCompanion(
+    LegacyQuoteCompanySnapshotsCompanion data,
   ) {
-    return QuoteCompanySnapshotRow(
+    return LegacyQuoteCompanySnapshotRow(
       quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
       captureStatus: data.captureStatus.present
           ? data.captureStatus.value
@@ -7007,7 +7044,7 @@ class QuoteCompanySnapshotRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteCompanySnapshotRow(')
+    return (StringBuffer('LegacyQuoteCompanySnapshotRow(')
           ..write('quoteId: $quoteId, ')
           ..write('captureStatus: $captureStatus, ')
           ..write('capturedAt: $capturedAt, ')
@@ -7072,7 +7109,7 @@ class QuoteCompanySnapshotRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteCompanySnapshotRow &&
+      (other is LegacyQuoteCompanySnapshotRow &&
           other.quoteId == this.quoteId &&
           other.captureStatus == this.captureStatus &&
           other.capturedAt == this.capturedAt &&
@@ -7102,8 +7139,8 @@ class QuoteCompanySnapshotRow extends DataClass
           other.payPaymentTerms == this.payPaymentTerms);
 }
 
-class QuoteCompanySnapshotsCompanion
-    extends UpdateCompanion<QuoteCompanySnapshotRow> {
+class LegacyQuoteCompanySnapshotsCompanion
+    extends UpdateCompanion<LegacyQuoteCompanySnapshotRow> {
   final Value<String> quoteId;
   final Value<String> captureStatus;
   final Value<int> capturedAt;
@@ -7132,7 +7169,7 @@ class QuoteCompanySnapshotsCompanion
   final Value<String?> payBeneficiaryName;
   final Value<String?> payPaymentTerms;
   final Value<int> rowid;
-  const QuoteCompanySnapshotsCompanion({
+  const LegacyQuoteCompanySnapshotsCompanion({
     this.quoteId = const Value.absent(),
     this.captureStatus = const Value.absent(),
     this.capturedAt = const Value.absent(),
@@ -7162,7 +7199,7 @@ class QuoteCompanySnapshotsCompanion
     this.payPaymentTerms = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuoteCompanySnapshotsCompanion.insert({
+  LegacyQuoteCompanySnapshotsCompanion.insert({
     required String quoteId,
     required String captureStatus,
     required int capturedAt,
@@ -7195,7 +7232,7 @@ class QuoteCompanySnapshotsCompanion
        captureStatus = Value(captureStatus),
        capturedAt = Value(capturedAt),
        identTradeName = Value(identTradeName);
-  static Insertable<QuoteCompanySnapshotRow> custom({
+  static Insertable<LegacyQuoteCompanySnapshotRow> custom({
     Expression<String>? quoteId,
     Expression<String>? captureStatus,
     Expression<int>? capturedAt,
@@ -7261,7 +7298,7 @@ class QuoteCompanySnapshotsCompanion
     });
   }
 
-  QuoteCompanySnapshotsCompanion copyWith({
+  LegacyQuoteCompanySnapshotsCompanion copyWith({
     Value<String>? quoteId,
     Value<String>? captureStatus,
     Value<int>? capturedAt,
@@ -7291,7 +7328,7 @@ class QuoteCompanySnapshotsCompanion
     Value<String?>? payPaymentTerms,
     Value<int>? rowid,
   }) {
-    return QuoteCompanySnapshotsCompanion(
+    return LegacyQuoteCompanySnapshotsCompanion(
       quoteId: quoteId ?? this.quoteId,
       captureStatus: captureStatus ?? this.captureStatus,
       capturedAt: capturedAt ?? this.capturedAt,
@@ -7421,7 +7458,7 @@ class QuoteCompanySnapshotsCompanion
 
   @override
   String toString() {
-    return (StringBuffer('QuoteCompanySnapshotsCompanion(')
+    return (StringBuffer('LegacyQuoteCompanySnapshotsCompanion(')
           ..write('quoteId: $quoteId, ')
           ..write('captureStatus: $captureStatus, ')
           ..write('capturedAt: $capturedAt, ')
@@ -7455,12 +7492,12 @@ class QuoteCompanySnapshotsCompanion
   }
 }
 
-class $QuoteLineItemsTable extends QuoteLineItems
-    with TableInfo<$QuoteLineItemsTable, QuoteLineItemRow> {
+class $LegacyQuoteLineItemsTable extends LegacyQuoteLineItems
+    with TableInfo<$LegacyQuoteLineItemsTable, LegacyQuoteLineItemRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteLineItemsTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteLineItemsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -7588,7 +7625,7 @@ class $QuoteLineItemsTable extends QuoteLineItems
   static const String $name = 'quote_line_items';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteLineItemRow> instance, {
+    Insertable<LegacyQuoteLineItemRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -7684,9 +7721,9 @@ class $QuoteLineItemsTable extends QuoteLineItems
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  QuoteLineItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyQuoteLineItemRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteLineItemRow(
+    return LegacyQuoteLineItemRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -7731,13 +7768,13 @@ class $QuoteLineItemsTable extends QuoteLineItems
   }
 
   @override
-  $QuoteLineItemsTable createAlias(String alias) {
-    return $QuoteLineItemsTable(attachedDatabase, alias);
+  $LegacyQuoteLineItemsTable createAlias(String alias) {
+    return $LegacyQuoteLineItemsTable(attachedDatabase, alias);
   }
 }
 
-class QuoteLineItemRow extends DataClass
-    implements Insertable<QuoteLineItemRow> {
+class LegacyQuoteLineItemRow extends DataClass
+    implements Insertable<LegacyQuoteLineItemRow> {
   final String id;
   final String quoteId;
   final int sortOrder;
@@ -7748,7 +7785,7 @@ class QuoteLineItemRow extends DataClass
   final double quantity;
   final int unitPriceCents;
   final int lineTotalCents;
-  const QuoteLineItemRow({
+  const LegacyQuoteLineItemRow({
     required this.id,
     required this.quoteId,
     required this.sortOrder,
@@ -7780,8 +7817,8 @@ class QuoteLineItemRow extends DataClass
     return map;
   }
 
-  QuoteLineItemsCompanion toCompanion(bool nullToAbsent) {
-    return QuoteLineItemsCompanion(
+  LegacyQuoteLineItemsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteLineItemsCompanion(
       id: Value(id),
       quoteId: Value(quoteId),
       sortOrder: Value(sortOrder),
@@ -7799,12 +7836,12 @@ class QuoteLineItemRow extends DataClass
     );
   }
 
-  factory QuoteLineItemRow.fromJson(
+  factory LegacyQuoteLineItemRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteLineItemRow(
+    return LegacyQuoteLineItemRow(
       id: serializer.fromJson<String>(json['id']),
       quoteId: serializer.fromJson<String>(json['quoteId']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
@@ -7834,7 +7871,7 @@ class QuoteLineItemRow extends DataClass
     };
   }
 
-  QuoteLineItemRow copyWith({
+  LegacyQuoteLineItemRow copyWith({
     String? id,
     String? quoteId,
     int? sortOrder,
@@ -7845,7 +7882,7 @@ class QuoteLineItemRow extends DataClass
     double? quantity,
     int? unitPriceCents,
     int? lineTotalCents,
-  }) => QuoteLineItemRow(
+  }) => LegacyQuoteLineItemRow(
     id: id ?? this.id,
     quoteId: quoteId ?? this.quoteId,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -7859,8 +7896,8 @@ class QuoteLineItemRow extends DataClass
     unitPriceCents: unitPriceCents ?? this.unitPriceCents,
     lineTotalCents: lineTotalCents ?? this.lineTotalCents,
   );
-  QuoteLineItemRow copyWithCompanion(QuoteLineItemsCompanion data) {
-    return QuoteLineItemRow(
+  LegacyQuoteLineItemRow copyWithCompanion(LegacyQuoteLineItemsCompanion data) {
+    return LegacyQuoteLineItemRow(
       id: data.id.present ? data.id.value : this.id,
       quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
@@ -7884,7 +7921,7 @@ class QuoteLineItemRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteLineItemRow(')
+    return (StringBuffer('LegacyQuoteLineItemRow(')
           ..write('id: $id, ')
           ..write('quoteId: $quoteId, ')
           ..write('sortOrder: $sortOrder, ')
@@ -7915,7 +7952,7 @@ class QuoteLineItemRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteLineItemRow &&
+      (other is LegacyQuoteLineItemRow &&
           other.id == this.id &&
           other.quoteId == this.quoteId &&
           other.sortOrder == this.sortOrder &&
@@ -7928,7 +7965,8 @@ class QuoteLineItemRow extends DataClass
           other.lineTotalCents == this.lineTotalCents);
 }
 
-class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
+class LegacyQuoteLineItemsCompanion
+    extends UpdateCompanion<LegacyQuoteLineItemRow> {
   final Value<String> id;
   final Value<String> quoteId;
   final Value<int> sortOrder;
@@ -7940,7 +7978,7 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
   final Value<int> unitPriceCents;
   final Value<int> lineTotalCents;
   final Value<int> rowid;
-  const QuoteLineItemsCompanion({
+  const LegacyQuoteLineItemsCompanion({
     this.id = const Value.absent(),
     this.quoteId = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -7953,7 +7991,7 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
     this.lineTotalCents = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuoteLineItemsCompanion.insert({
+  LegacyQuoteLineItemsCompanion.insert({
     required String id,
     required String quoteId,
     required int sortOrder,
@@ -7973,7 +8011,7 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
        quantity = Value(quantity),
        unitPriceCents = Value(unitPriceCents),
        lineTotalCents = Value(lineTotalCents);
-  static Insertable<QuoteLineItemRow> custom({
+  static Insertable<LegacyQuoteLineItemRow> custom({
     Expression<String>? id,
     Expression<String>? quoteId,
     Expression<int>? sortOrder,
@@ -8001,7 +8039,7 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
     });
   }
 
-  QuoteLineItemsCompanion copyWith({
+  LegacyQuoteLineItemsCompanion copyWith({
     Value<String>? id,
     Value<String>? quoteId,
     Value<int>? sortOrder,
@@ -8014,7 +8052,7 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
     Value<int>? lineTotalCents,
     Value<int>? rowid,
   }) {
-    return QuoteLineItemsCompanion(
+    return LegacyQuoteLineItemsCompanion(
       id: id ?? this.id,
       quoteId: quoteId ?? this.quoteId,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -8070,7 +8108,7 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
 
   @override
   String toString() {
-    return (StringBuffer('QuoteLineItemsCompanion(')
+    return (StringBuffer('LegacyQuoteLineItemsCompanion(')
           ..write('id: $id, ')
           ..write('quoteId: $quoteId, ')
           ..write('sortOrder: $sortOrder, ')
@@ -8087,16 +8125,17 @@ class QuoteLineItemsCompanion extends UpdateCompanion<QuoteLineItemRow> {
   }
 }
 
-class $QuoteLinePackageComponentsTable extends QuoteLinePackageComponents
+class $LegacyQuoteLinePackageComponentsTable
+    extends LegacyQuoteLinePackageComponents
     with
         TableInfo<
-          $QuoteLinePackageComponentsTable,
-          QuoteLinePackageComponentRow
+          $LegacyQuoteLinePackageComponentsTable,
+          LegacyQuoteLinePackageComponentRow
         > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteLinePackageComponentsTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteLinePackageComponentsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -8212,7 +8251,7 @@ class $QuoteLinePackageComponentsTable extends QuoteLinePackageComponents
   static const String $name = 'quote_line_package_components';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteLinePackageComponentRow> instance, {
+    Insertable<LegacyQuoteLinePackageComponentRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -8302,12 +8341,12 @@ class $QuoteLinePackageComponentsTable extends QuoteLinePackageComponents
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  QuoteLinePackageComponentRow map(
+  LegacyQuoteLinePackageComponentRow map(
     Map<String, dynamic> data, {
     String? tablePrefix,
   }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteLinePackageComponentRow(
+    return LegacyQuoteLinePackageComponentRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -8348,13 +8387,13 @@ class $QuoteLinePackageComponentsTable extends QuoteLinePackageComponents
   }
 
   @override
-  $QuoteLinePackageComponentsTable createAlias(String alias) {
-    return $QuoteLinePackageComponentsTable(attachedDatabase, alias);
+  $LegacyQuoteLinePackageComponentsTable createAlias(String alias) {
+    return $LegacyQuoteLinePackageComponentsTable(attachedDatabase, alias);
   }
 }
 
-class QuoteLinePackageComponentRow extends DataClass
-    implements Insertable<QuoteLinePackageComponentRow> {
+class LegacyQuoteLinePackageComponentRow extends DataClass
+    implements Insertable<LegacyQuoteLinePackageComponentRow> {
   final String id;
   final String lineItemId;
   final int sortOrder;
@@ -8364,7 +8403,7 @@ class QuoteLinePackageComponentRow extends DataClass
   final String typeLabel;
   final String categoryLabel;
   final double quantityPerPackage;
-  const QuoteLinePackageComponentRow({
+  const LegacyQuoteLinePackageComponentRow({
     required this.id,
     required this.lineItemId,
     required this.sortOrder,
@@ -8392,8 +8431,8 @@ class QuoteLinePackageComponentRow extends DataClass
     return map;
   }
 
-  QuoteLinePackageComponentsCompanion toCompanion(bool nullToAbsent) {
-    return QuoteLinePackageComponentsCompanion(
+  LegacyQuoteLinePackageComponentsCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteLinePackageComponentsCompanion(
       id: Value(id),
       lineItemId: Value(lineItemId),
       sortOrder: Value(sortOrder),
@@ -8408,12 +8447,12 @@ class QuoteLinePackageComponentRow extends DataClass
     );
   }
 
-  factory QuoteLinePackageComponentRow.fromJson(
+  factory LegacyQuoteLinePackageComponentRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteLinePackageComponentRow(
+    return LegacyQuoteLinePackageComponentRow(
       id: serializer.fromJson<String>(json['id']),
       lineItemId: serializer.fromJson<String>(json['lineItemId']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
@@ -8443,7 +8482,7 @@ class QuoteLinePackageComponentRow extends DataClass
     };
   }
 
-  QuoteLinePackageComponentRow copyWith({
+  LegacyQuoteLinePackageComponentRow copyWith({
     String? id,
     String? lineItemId,
     int? sortOrder,
@@ -8453,7 +8492,7 @@ class QuoteLinePackageComponentRow extends DataClass
     String? typeLabel,
     String? categoryLabel,
     double? quantityPerPackage,
-  }) => QuoteLinePackageComponentRow(
+  }) => LegacyQuoteLinePackageComponentRow(
     id: id ?? this.id,
     lineItemId: lineItemId ?? this.lineItemId,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -8466,10 +8505,10 @@ class QuoteLinePackageComponentRow extends DataClass
     categoryLabel: categoryLabel ?? this.categoryLabel,
     quantityPerPackage: quantityPerPackage ?? this.quantityPerPackage,
   );
-  QuoteLinePackageComponentRow copyWithCompanion(
-    QuoteLinePackageComponentsCompanion data,
+  LegacyQuoteLinePackageComponentRow copyWithCompanion(
+    LegacyQuoteLinePackageComponentsCompanion data,
   ) {
-    return QuoteLinePackageComponentRow(
+    return LegacyQuoteLinePackageComponentRow(
       id: data.id.present ? data.id.value : this.id,
       lineItemId: data.lineItemId.present
           ? data.lineItemId.value
@@ -8492,7 +8531,7 @@ class QuoteLinePackageComponentRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteLinePackageComponentRow(')
+    return (StringBuffer('LegacyQuoteLinePackageComponentRow(')
           ..write('id: $id, ')
           ..write('lineItemId: $lineItemId, ')
           ..write('sortOrder: $sortOrder, ')
@@ -8521,7 +8560,7 @@ class QuoteLinePackageComponentRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteLinePackageComponentRow &&
+      (other is LegacyQuoteLinePackageComponentRow &&
           other.id == this.id &&
           other.lineItemId == this.lineItemId &&
           other.sortOrder == this.sortOrder &&
@@ -8533,8 +8572,8 @@ class QuoteLinePackageComponentRow extends DataClass
           other.quantityPerPackage == this.quantityPerPackage);
 }
 
-class QuoteLinePackageComponentsCompanion
-    extends UpdateCompanion<QuoteLinePackageComponentRow> {
+class LegacyQuoteLinePackageComponentsCompanion
+    extends UpdateCompanion<LegacyQuoteLinePackageComponentRow> {
   final Value<String> id;
   final Value<String> lineItemId;
   final Value<int> sortOrder;
@@ -8545,7 +8584,7 @@ class QuoteLinePackageComponentsCompanion
   final Value<String> categoryLabel;
   final Value<double> quantityPerPackage;
   final Value<int> rowid;
-  const QuoteLinePackageComponentsCompanion({
+  const LegacyQuoteLinePackageComponentsCompanion({
     this.id = const Value.absent(),
     this.lineItemId = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -8557,7 +8596,7 @@ class QuoteLinePackageComponentsCompanion
     this.quantityPerPackage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuoteLinePackageComponentsCompanion.insert({
+  LegacyQuoteLinePackageComponentsCompanion.insert({
     required String id,
     required String lineItemId,
     required int sortOrder,
@@ -8576,7 +8615,7 @@ class QuoteLinePackageComponentsCompanion
        typeLabel = Value(typeLabel),
        categoryLabel = Value(categoryLabel),
        quantityPerPackage = Value(quantityPerPackage);
-  static Insertable<QuoteLinePackageComponentRow> custom({
+  static Insertable<LegacyQuoteLinePackageComponentRow> custom({
     Expression<String>? id,
     Expression<String>? lineItemId,
     Expression<int>? sortOrder,
@@ -8603,7 +8642,7 @@ class QuoteLinePackageComponentsCompanion
     });
   }
 
-  QuoteLinePackageComponentsCompanion copyWith({
+  LegacyQuoteLinePackageComponentsCompanion copyWith({
     Value<String>? id,
     Value<String>? lineItemId,
     Value<int>? sortOrder,
@@ -8615,7 +8654,7 @@ class QuoteLinePackageComponentsCompanion
     Value<double>? quantityPerPackage,
     Value<int>? rowid,
   }) {
-    return QuoteLinePackageComponentsCompanion(
+    return LegacyQuoteLinePackageComponentsCompanion(
       id: id ?? this.id,
       lineItemId: lineItemId ?? this.lineItemId,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -8667,7 +8706,7 @@ class QuoteLinePackageComponentsCompanion
 
   @override
   String toString() {
-    return (StringBuffer('QuoteLinePackageComponentsCompanion(')
+    return (StringBuffer('LegacyQuoteLinePackageComponentsCompanion(')
           ..write('id: $id, ')
           ..write('lineItemId: $lineItemId, ')
           ..write('sortOrder: $sortOrder, ')
@@ -8683,12 +8722,13 @@ class QuoteLinePackageComponentsCompanion
   }
 }
 
-class $QuoteStatusHistoryTable extends QuoteStatusHistory
-    with TableInfo<$QuoteStatusHistoryTable, QuoteStatusHistoryRow> {
+class $LegacyQuoteStatusHistoryTable extends LegacyQuoteStatusHistory
+    with
+        TableInfo<$LegacyQuoteStatusHistoryTable, LegacyQuoteStatusHistoryRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteStatusHistoryTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteStatusHistoryTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -8772,7 +8812,7 @@ class $QuoteStatusHistoryTable extends QuoteStatusHistory
   static const String $name = 'quote_status_history';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteStatusHistoryRow> instance, {
+    Insertable<LegacyQuoteStatusHistoryRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -8829,9 +8869,12 @@ class $QuoteStatusHistoryTable extends QuoteStatusHistory
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  QuoteStatusHistoryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyQuoteStatusHistoryRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteStatusHistoryRow(
+    return LegacyQuoteStatusHistoryRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -8860,20 +8903,20 @@ class $QuoteStatusHistoryTable extends QuoteStatusHistory
   }
 
   @override
-  $QuoteStatusHistoryTable createAlias(String alias) {
-    return $QuoteStatusHistoryTable(attachedDatabase, alias);
+  $LegacyQuoteStatusHistoryTable createAlias(String alias) {
+    return $LegacyQuoteStatusHistoryTable(attachedDatabase, alias);
   }
 }
 
-class QuoteStatusHistoryRow extends DataClass
-    implements Insertable<QuoteStatusHistoryRow> {
+class LegacyQuoteStatusHistoryRow extends DataClass
+    implements Insertable<LegacyQuoteStatusHistoryRow> {
   final String id;
   final String quoteId;
   final int sortOrder;
   final String? previousStatus;
   final String newStatus;
   final int changedAt;
-  const QuoteStatusHistoryRow({
+  const LegacyQuoteStatusHistoryRow({
     required this.id,
     required this.quoteId,
     required this.sortOrder,
@@ -8895,8 +8938,8 @@ class QuoteStatusHistoryRow extends DataClass
     return map;
   }
 
-  QuoteStatusHistoryCompanion toCompanion(bool nullToAbsent) {
-    return QuoteStatusHistoryCompanion(
+  LegacyQuoteStatusHistoryCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteStatusHistoryCompanion(
       id: Value(id),
       quoteId: Value(quoteId),
       sortOrder: Value(sortOrder),
@@ -8908,12 +8951,12 @@ class QuoteStatusHistoryRow extends DataClass
     );
   }
 
-  factory QuoteStatusHistoryRow.fromJson(
+  factory LegacyQuoteStatusHistoryRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteStatusHistoryRow(
+    return LegacyQuoteStatusHistoryRow(
       id: serializer.fromJson<String>(json['id']),
       quoteId: serializer.fromJson<String>(json['quoteId']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
@@ -8935,14 +8978,14 @@ class QuoteStatusHistoryRow extends DataClass
     };
   }
 
-  QuoteStatusHistoryRow copyWith({
+  LegacyQuoteStatusHistoryRow copyWith({
     String? id,
     String? quoteId,
     int? sortOrder,
     Value<String?> previousStatus = const Value.absent(),
     String? newStatus,
     int? changedAt,
-  }) => QuoteStatusHistoryRow(
+  }) => LegacyQuoteStatusHistoryRow(
     id: id ?? this.id,
     quoteId: quoteId ?? this.quoteId,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -8952,8 +8995,10 @@ class QuoteStatusHistoryRow extends DataClass
     newStatus: newStatus ?? this.newStatus,
     changedAt: changedAt ?? this.changedAt,
   );
-  QuoteStatusHistoryRow copyWithCompanion(QuoteStatusHistoryCompanion data) {
-    return QuoteStatusHistoryRow(
+  LegacyQuoteStatusHistoryRow copyWithCompanion(
+    LegacyQuoteStatusHistoryCompanion data,
+  ) {
+    return LegacyQuoteStatusHistoryRow(
       id: data.id.present ? data.id.value : this.id,
       quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
@@ -8967,7 +9012,7 @@ class QuoteStatusHistoryRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteStatusHistoryRow(')
+    return (StringBuffer('LegacyQuoteStatusHistoryRow(')
           ..write('id: $id, ')
           ..write('quoteId: $quoteId, ')
           ..write('sortOrder: $sortOrder, ')
@@ -8984,7 +9029,7 @@ class QuoteStatusHistoryRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteStatusHistoryRow &&
+      (other is LegacyQuoteStatusHistoryRow &&
           other.id == this.id &&
           other.quoteId == this.quoteId &&
           other.sortOrder == this.sortOrder &&
@@ -8993,8 +9038,8 @@ class QuoteStatusHistoryRow extends DataClass
           other.changedAt == this.changedAt);
 }
 
-class QuoteStatusHistoryCompanion
-    extends UpdateCompanion<QuoteStatusHistoryRow> {
+class LegacyQuoteStatusHistoryCompanion
+    extends UpdateCompanion<LegacyQuoteStatusHistoryRow> {
   final Value<String> id;
   final Value<String> quoteId;
   final Value<int> sortOrder;
@@ -9002,7 +9047,7 @@ class QuoteStatusHistoryCompanion
   final Value<String> newStatus;
   final Value<int> changedAt;
   final Value<int> rowid;
-  const QuoteStatusHistoryCompanion({
+  const LegacyQuoteStatusHistoryCompanion({
     this.id = const Value.absent(),
     this.quoteId = const Value.absent(),
     this.sortOrder = const Value.absent(),
@@ -9011,7 +9056,7 @@ class QuoteStatusHistoryCompanion
     this.changedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  QuoteStatusHistoryCompanion.insert({
+  LegacyQuoteStatusHistoryCompanion.insert({
     required String id,
     required String quoteId,
     required int sortOrder,
@@ -9024,7 +9069,7 @@ class QuoteStatusHistoryCompanion
        sortOrder = Value(sortOrder),
        newStatus = Value(newStatus),
        changedAt = Value(changedAt);
-  static Insertable<QuoteStatusHistoryRow> custom({
+  static Insertable<LegacyQuoteStatusHistoryRow> custom({
     Expression<String>? id,
     Expression<String>? quoteId,
     Expression<int>? sortOrder,
@@ -9044,7 +9089,7 @@ class QuoteStatusHistoryCompanion
     });
   }
 
-  QuoteStatusHistoryCompanion copyWith({
+  LegacyQuoteStatusHistoryCompanion copyWith({
     Value<String>? id,
     Value<String>? quoteId,
     Value<int>? sortOrder,
@@ -9053,7 +9098,7 @@ class QuoteStatusHistoryCompanion
     Value<int>? changedAt,
     Value<int>? rowid,
   }) {
-    return QuoteStatusHistoryCompanion(
+    return LegacyQuoteStatusHistoryCompanion(
       id: id ?? this.id,
       quoteId: quoteId ?? this.quoteId,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -9093,7 +9138,7 @@ class QuoteStatusHistoryCompanion
 
   @override
   String toString() {
-    return (StringBuffer('QuoteStatusHistoryCompanion(')
+    return (StringBuffer('LegacyQuoteStatusHistoryCompanion(')
           ..write('id: $id, ')
           ..write('quoteId: $quoteId, ')
           ..write('sortOrder: $sortOrder, ')
@@ -9106,12 +9151,16 @@ class QuoteStatusHistoryCompanion
   }
 }
 
-class $QuoteNumberSequencesTable extends QuoteNumberSequences
-    with TableInfo<$QuoteNumberSequencesTable, QuoteNumberSequenceRow> {
+class $LegacyQuoteNumberSequencesTable extends LegacyQuoteNumberSequences
+    with
+        TableInfo<
+          $LegacyQuoteNumberSequencesTable,
+          LegacyQuoteNumberSequenceRow
+        > {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $QuoteNumberSequencesTable(this.attachedDatabase, [this._alias]);
+  $LegacyQuoteNumberSequencesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _yearMeta = const VerificationMeta('year');
   @override
   late final GeneratedColumn<int> year = GeneratedColumn<int>(
@@ -9141,7 +9190,7 @@ class $QuoteNumberSequencesTable extends QuoteNumberSequences
   static const String $name = 'quote_number_sequences';
   @override
   VerificationContext validateIntegrity(
-    Insertable<QuoteNumberSequenceRow> instance, {
+    Insertable<LegacyQuoteNumberSequenceRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -9169,9 +9218,12 @@ class $QuoteNumberSequencesTable extends QuoteNumberSequences
   @override
   Set<GeneratedColumn> get $primaryKey => {year};
   @override
-  QuoteNumberSequenceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyQuoteNumberSequenceRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return QuoteNumberSequenceRow(
+    return LegacyQuoteNumberSequenceRow(
       year: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}year'],
@@ -9184,16 +9236,16 @@ class $QuoteNumberSequencesTable extends QuoteNumberSequences
   }
 
   @override
-  $QuoteNumberSequencesTable createAlias(String alias) {
-    return $QuoteNumberSequencesTable(attachedDatabase, alias);
+  $LegacyQuoteNumberSequencesTable createAlias(String alias) {
+    return $LegacyQuoteNumberSequencesTable(attachedDatabase, alias);
   }
 }
 
-class QuoteNumberSequenceRow extends DataClass
-    implements Insertable<QuoteNumberSequenceRow> {
+class LegacyQuoteNumberSequenceRow extends DataClass
+    implements Insertable<LegacyQuoteNumberSequenceRow> {
   final int year;
   final int lastSequence;
-  const QuoteNumberSequenceRow({
+  const LegacyQuoteNumberSequenceRow({
     required this.year,
     required this.lastSequence,
   });
@@ -9205,19 +9257,19 @@ class QuoteNumberSequenceRow extends DataClass
     return map;
   }
 
-  QuoteNumberSequencesCompanion toCompanion(bool nullToAbsent) {
-    return QuoteNumberSequencesCompanion(
+  LegacyQuoteNumberSequencesCompanion toCompanion(bool nullToAbsent) {
+    return LegacyQuoteNumberSequencesCompanion(
       year: Value(year),
       lastSequence: Value(lastSequence),
     );
   }
 
-  factory QuoteNumberSequenceRow.fromJson(
+  factory LegacyQuoteNumberSequenceRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return QuoteNumberSequenceRow(
+    return LegacyQuoteNumberSequenceRow(
       year: serializer.fromJson<int>(json['year']),
       lastSequence: serializer.fromJson<int>(json['lastSequence']),
     );
@@ -9231,13 +9283,15 @@ class QuoteNumberSequenceRow extends DataClass
     };
   }
 
-  QuoteNumberSequenceRow copyWith({int? year, int? lastSequence}) =>
-      QuoteNumberSequenceRow(
+  LegacyQuoteNumberSequenceRow copyWith({int? year, int? lastSequence}) =>
+      LegacyQuoteNumberSequenceRow(
         year: year ?? this.year,
         lastSequence: lastSequence ?? this.lastSequence,
       );
-  QuoteNumberSequenceRow copyWithCompanion(QuoteNumberSequencesCompanion data) {
-    return QuoteNumberSequenceRow(
+  LegacyQuoteNumberSequenceRow copyWithCompanion(
+    LegacyQuoteNumberSequencesCompanion data,
+  ) {
+    return LegacyQuoteNumberSequenceRow(
       year: data.year.present ? data.year.value : this.year,
       lastSequence: data.lastSequence.present
           ? data.lastSequence.value
@@ -9247,7 +9301,7 @@ class QuoteNumberSequenceRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('QuoteNumberSequenceRow(')
+    return (StringBuffer('LegacyQuoteNumberSequenceRow(')
           ..write('year: $year, ')
           ..write('lastSequence: $lastSequence')
           ..write(')'))
@@ -9259,24 +9313,24 @@ class QuoteNumberSequenceRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is QuoteNumberSequenceRow &&
+      (other is LegacyQuoteNumberSequenceRow &&
           other.year == this.year &&
           other.lastSequence == this.lastSequence);
 }
 
-class QuoteNumberSequencesCompanion
-    extends UpdateCompanion<QuoteNumberSequenceRow> {
+class LegacyQuoteNumberSequencesCompanion
+    extends UpdateCompanion<LegacyQuoteNumberSequenceRow> {
   final Value<int> year;
   final Value<int> lastSequence;
-  const QuoteNumberSequencesCompanion({
+  const LegacyQuoteNumberSequencesCompanion({
     this.year = const Value.absent(),
     this.lastSequence = const Value.absent(),
   });
-  QuoteNumberSequencesCompanion.insert({
+  LegacyQuoteNumberSequencesCompanion.insert({
     this.year = const Value.absent(),
     required int lastSequence,
   }) : lastSequence = Value(lastSequence);
-  static Insertable<QuoteNumberSequenceRow> custom({
+  static Insertable<LegacyQuoteNumberSequenceRow> custom({
     Expression<int>? year,
     Expression<int>? lastSequence,
   }) {
@@ -9286,11 +9340,11 @@ class QuoteNumberSequencesCompanion
     });
   }
 
-  QuoteNumberSequencesCompanion copyWith({
+  LegacyQuoteNumberSequencesCompanion copyWith({
     Value<int>? year,
     Value<int>? lastSequence,
   }) {
-    return QuoteNumberSequencesCompanion(
+    return LegacyQuoteNumberSequencesCompanion(
       year: year ?? this.year,
       lastSequence: lastSequence ?? this.lastSequence,
     );
@@ -9310,7 +9364,7 @@ class QuoteNumberSequencesCompanion
 
   @override
   String toString() {
-    return (StringBuffer('QuoteNumberSequencesCompanion(')
+    return (StringBuffer('LegacyQuoteNumberSequencesCompanion(')
           ..write('year: $year, ')
           ..write('lastSequence: $lastSequence')
           ..write(')'))
@@ -9318,12 +9372,12 @@ class QuoteNumberSequencesCompanion
   }
 }
 
-class $AgendaBlocksTable extends AgendaBlocks
-    with TableInfo<$AgendaBlocksTable, AgendaBlockRow> {
+class $LegacyAgendaBlocksTable extends LegacyAgendaBlocks
+    with TableInfo<$LegacyAgendaBlocksTable, LegacyAgendaBlockRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $AgendaBlocksTable(this.attachedDatabase, [this._alias]);
+  $LegacyAgendaBlocksTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -9408,7 +9462,7 @@ class $AgendaBlocksTable extends AgendaBlocks
   static const String $name = 'agenda_blocks';
   @override
   VerificationContext validateIntegrity(
-    Insertable<AgendaBlockRow> instance, {
+    Insertable<LegacyAgendaBlockRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -9470,9 +9524,9 @@ class $AgendaBlocksTable extends AgendaBlocks
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  AgendaBlockRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyAgendaBlockRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AgendaBlockRow(
+    return LegacyAgendaBlockRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -9505,12 +9559,13 @@ class $AgendaBlocksTable extends AgendaBlocks
   }
 
   @override
-  $AgendaBlocksTable createAlias(String alias) {
-    return $AgendaBlocksTable(attachedDatabase, alias);
+  $LegacyAgendaBlocksTable createAlias(String alias) {
+    return $LegacyAgendaBlocksTable(attachedDatabase, alias);
   }
 }
 
-class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
+class LegacyAgendaBlockRow extends DataClass
+    implements Insertable<LegacyAgendaBlockRow> {
   final String id;
   final String title;
   final String? notes;
@@ -9518,7 +9573,7 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
   final int end;
   final int createdAt;
   final int updatedAt;
-  const AgendaBlockRow({
+  const LegacyAgendaBlockRow({
     required this.id,
     required this.title,
     this.notes,
@@ -9542,8 +9597,8 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
     return map;
   }
 
-  AgendaBlocksCompanion toCompanion(bool nullToAbsent) {
-    return AgendaBlocksCompanion(
+  LegacyAgendaBlocksCompanion toCompanion(bool nullToAbsent) {
+    return LegacyAgendaBlocksCompanion(
       id: Value(id),
       title: Value(title),
       notes: notes == null && nullToAbsent
@@ -9556,12 +9611,12 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
     );
   }
 
-  factory AgendaBlockRow.fromJson(
+  factory LegacyAgendaBlockRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AgendaBlockRow(
+    return LegacyAgendaBlockRow(
       id: serializer.fromJson<String>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       notes: serializer.fromJson<String?>(json['notes']),
@@ -9585,7 +9640,7 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
     };
   }
 
-  AgendaBlockRow copyWith({
+  LegacyAgendaBlockRow copyWith({
     String? id,
     String? title,
     Value<String?> notes = const Value.absent(),
@@ -9593,7 +9648,7 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
     int? end,
     int? createdAt,
     int? updatedAt,
-  }) => AgendaBlockRow(
+  }) => LegacyAgendaBlockRow(
     id: id ?? this.id,
     title: title ?? this.title,
     notes: notes.present ? notes.value : this.notes,
@@ -9602,8 +9657,8 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  AgendaBlockRow copyWithCompanion(AgendaBlocksCompanion data) {
-    return AgendaBlockRow(
+  LegacyAgendaBlockRow copyWithCompanion(LegacyAgendaBlocksCompanion data) {
+    return LegacyAgendaBlockRow(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
       notes: data.notes.present ? data.notes.value : this.notes,
@@ -9616,7 +9671,7 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
 
   @override
   String toString() {
-    return (StringBuffer('AgendaBlockRow(')
+    return (StringBuffer('LegacyAgendaBlockRow(')
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('notes: $notes, ')
@@ -9634,7 +9689,7 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is AgendaBlockRow &&
+      (other is LegacyAgendaBlockRow &&
           other.id == this.id &&
           other.title == this.title &&
           other.notes == this.notes &&
@@ -9644,7 +9699,8 @@ class AgendaBlockRow extends DataClass implements Insertable<AgendaBlockRow> {
           other.updatedAt == this.updatedAt);
 }
 
-class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
+class LegacyAgendaBlocksCompanion
+    extends UpdateCompanion<LegacyAgendaBlockRow> {
   final Value<String> id;
   final Value<String> title;
   final Value<String?> notes;
@@ -9653,7 +9709,7 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
-  const AgendaBlocksCompanion({
+  const LegacyAgendaBlocksCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.notes = const Value.absent(),
@@ -9663,7 +9719,7 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  AgendaBlocksCompanion.insert({
+  LegacyAgendaBlocksCompanion.insert({
     required String id,
     required String title,
     this.notes = const Value.absent(),
@@ -9678,7 +9734,7 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
        end = Value(end),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<AgendaBlockRow> custom({
+  static Insertable<LegacyAgendaBlockRow> custom({
     Expression<String>? id,
     Expression<String>? title,
     Expression<String>? notes,
@@ -9700,7 +9756,7 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
     });
   }
 
-  AgendaBlocksCompanion copyWith({
+  LegacyAgendaBlocksCompanion copyWith({
     Value<String>? id,
     Value<String>? title,
     Value<String?>? notes,
@@ -9710,7 +9766,7 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
     Value<int>? updatedAt,
     Value<int>? rowid,
   }) {
-    return AgendaBlocksCompanion(
+    return LegacyAgendaBlocksCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       notes: notes ?? this.notes,
@@ -9754,7 +9810,7 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
 
   @override
   String toString() {
-    return (StringBuffer('AgendaBlocksCompanion(')
+    return (StringBuffer('LegacyAgendaBlocksCompanion(')
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('notes: $notes, ')
@@ -9768,12 +9824,13 @@ class AgendaBlocksCompanion extends UpdateCompanion<AgendaBlockRow> {
   }
 }
 
-class $FinancialCategoriesTable extends FinancialCategories
-    with TableInfo<$FinancialCategoriesTable, FinancialCategoryRow> {
+class $LegacyFinancialCategoriesTable extends LegacyFinancialCategories
+    with
+        TableInfo<$LegacyFinancialCategoriesTable, LegacyFinancialCategoryRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FinancialCategoriesTable(this.attachedDatabase, [this._alias]);
+  $LegacyFinancialCategoriesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -9833,7 +9890,7 @@ class $FinancialCategoriesTable extends FinancialCategories
   static const String $name = 'financial_categories';
   @override
   VerificationContext validateIntegrity(
-    Insertable<FinancialCategoryRow> instance, {
+    Insertable<LegacyFinancialCategoryRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -9881,9 +9938,12 @@ class $FinancialCategoriesTable extends FinancialCategories
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  FinancialCategoryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyFinancialCategoryRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return FinancialCategoryRow(
+    return LegacyFinancialCategoryRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -9908,19 +9968,19 @@ class $FinancialCategoriesTable extends FinancialCategories
   }
 
   @override
-  $FinancialCategoriesTable createAlias(String alias) {
-    return $FinancialCategoriesTable(attachedDatabase, alias);
+  $LegacyFinancialCategoriesTable createAlias(String alias) {
+    return $LegacyFinancialCategoriesTable(attachedDatabase, alias);
   }
 }
 
-class FinancialCategoryRow extends DataClass
-    implements Insertable<FinancialCategoryRow> {
+class LegacyFinancialCategoryRow extends DataClass
+    implements Insertable<LegacyFinancialCategoryRow> {
   final String id;
   final String name;
   final String kind;
   final bool active;
   final int createdAt;
-  const FinancialCategoryRow({
+  const LegacyFinancialCategoryRow({
     required this.id,
     required this.name,
     required this.kind,
@@ -9938,8 +9998,8 @@ class FinancialCategoryRow extends DataClass
     return map;
   }
 
-  FinancialCategoriesCompanion toCompanion(bool nullToAbsent) {
-    return FinancialCategoriesCompanion(
+  LegacyFinancialCategoriesCompanion toCompanion(bool nullToAbsent) {
+    return LegacyFinancialCategoriesCompanion(
       id: Value(id),
       name: Value(name),
       kind: Value(kind),
@@ -9948,12 +10008,12 @@ class FinancialCategoryRow extends DataClass
     );
   }
 
-  factory FinancialCategoryRow.fromJson(
+  factory LegacyFinancialCategoryRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return FinancialCategoryRow(
+    return LegacyFinancialCategoryRow(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       kind: serializer.fromJson<String>(json['kind']),
@@ -9973,21 +10033,23 @@ class FinancialCategoryRow extends DataClass
     };
   }
 
-  FinancialCategoryRow copyWith({
+  LegacyFinancialCategoryRow copyWith({
     String? id,
     String? name,
     String? kind,
     bool? active,
     int? createdAt,
-  }) => FinancialCategoryRow(
+  }) => LegacyFinancialCategoryRow(
     id: id ?? this.id,
     name: name ?? this.name,
     kind: kind ?? this.kind,
     active: active ?? this.active,
     createdAt: createdAt ?? this.createdAt,
   );
-  FinancialCategoryRow copyWithCompanion(FinancialCategoriesCompanion data) {
-    return FinancialCategoryRow(
+  LegacyFinancialCategoryRow copyWithCompanion(
+    LegacyFinancialCategoriesCompanion data,
+  ) {
+    return LegacyFinancialCategoryRow(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       kind: data.kind.present ? data.kind.value : this.kind,
@@ -9998,7 +10060,7 @@ class FinancialCategoryRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('FinancialCategoryRow(')
+    return (StringBuffer('LegacyFinancialCategoryRow(')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('kind: $kind, ')
@@ -10013,7 +10075,7 @@ class FinancialCategoryRow extends DataClass
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is FinancialCategoryRow &&
+      (other is LegacyFinancialCategoryRow &&
           other.id == this.id &&
           other.name == this.name &&
           other.kind == this.kind &&
@@ -10021,15 +10083,15 @@ class FinancialCategoryRow extends DataClass
           other.createdAt == this.createdAt);
 }
 
-class FinancialCategoriesCompanion
-    extends UpdateCompanion<FinancialCategoryRow> {
+class LegacyFinancialCategoriesCompanion
+    extends UpdateCompanion<LegacyFinancialCategoryRow> {
   final Value<String> id;
   final Value<String> name;
   final Value<String> kind;
   final Value<bool> active;
   final Value<int> createdAt;
   final Value<int> rowid;
-  const FinancialCategoriesCompanion({
+  const LegacyFinancialCategoriesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
     this.kind = const Value.absent(),
@@ -10037,7 +10099,7 @@ class FinancialCategoriesCompanion
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  FinancialCategoriesCompanion.insert({
+  LegacyFinancialCategoriesCompanion.insert({
     required String id,
     required String name,
     required String kind,
@@ -10049,7 +10111,7 @@ class FinancialCategoriesCompanion
        kind = Value(kind),
        active = Value(active),
        createdAt = Value(createdAt);
-  static Insertable<FinancialCategoryRow> custom({
+  static Insertable<LegacyFinancialCategoryRow> custom({
     Expression<String>? id,
     Expression<String>? name,
     Expression<String>? kind,
@@ -10067,7 +10129,7 @@ class FinancialCategoriesCompanion
     });
   }
 
-  FinancialCategoriesCompanion copyWith({
+  LegacyFinancialCategoriesCompanion copyWith({
     Value<String>? id,
     Value<String>? name,
     Value<String>? kind,
@@ -10075,7 +10137,7 @@ class FinancialCategoriesCompanion
     Value<int>? createdAt,
     Value<int>? rowid,
   }) {
-    return FinancialCategoriesCompanion(
+    return LegacyFinancialCategoriesCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
       kind: kind ?? this.kind,
@@ -10111,7 +10173,7 @@ class FinancialCategoriesCompanion
 
   @override
   String toString() {
-    return (StringBuffer('FinancialCategoriesCompanion(')
+    return (StringBuffer('LegacyFinancialCategoriesCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('kind: $kind, ')
@@ -10123,12 +10185,12 @@ class FinancialCategoriesCompanion
   }
 }
 
-class $FinancialEntriesTable extends FinancialEntries
-    with TableInfo<$FinancialEntriesTable, FinancialEntryRow> {
+class $LegacyFinancialEntriesTable extends LegacyFinancialEntries
+    with TableInfo<$LegacyFinancialEntriesTable, LegacyFinancialEntryRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $FinancialEntriesTable(this.attachedDatabase, [this._alias]);
+  $LegacyFinancialEntriesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -10219,20 +10281,6 @@ class $FinancialEntriesTable extends FinancialEntries
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _quoteIdMeta = const VerificationMeta(
-    'quoteId',
-  );
-  @override
-  late final GeneratedColumn<String> quoteId = GeneratedColumn<String>(
-    'quote_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES quotes (id) ON DELETE SET NULL',
-    ),
-  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -10266,7 +10314,6 @@ class $FinancialEntriesTable extends FinancialEntries
     status,
     paidAt,
     notes,
-    quoteId,
     createdAt,
     updatedAt,
   ];
@@ -10277,7 +10324,7 @@ class $FinancialEntriesTable extends FinancialEntries
   static const String $name = 'financial_entries';
   @override
   VerificationContext validateIntegrity(
-    Insertable<FinancialEntryRow> instance, {
+    Insertable<LegacyFinancialEntryRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -10353,12 +10400,6 @@ class $FinancialEntriesTable extends FinancialEntries
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
-    if (data.containsKey('quote_id')) {
-      context.handle(
-        _quoteIdMeta,
-        quoteId.isAcceptableOrUnknown(data['quote_id']!, _quoteIdMeta),
-      );
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -10381,9 +10422,12 @@ class $FinancialEntriesTable extends FinancialEntries
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  FinancialEntryRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LegacyFinancialEntryRow map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return FinancialEntryRow(
+    return LegacyFinancialEntryRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -10420,10 +10464,6 @@ class $FinancialEntriesTable extends FinancialEntries
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
-      quoteId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}quote_id'],
-      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
@@ -10436,34 +10476,25 @@ class $FinancialEntriesTable extends FinancialEntries
   }
 
   @override
-  $FinancialEntriesTable createAlias(String alias) {
-    return $FinancialEntriesTable(attachedDatabase, alias);
+  $LegacyFinancialEntriesTable createAlias(String alias) {
+    return $LegacyFinancialEntriesTable(attachedDatabase, alias);
   }
 }
 
-class FinancialEntryRow extends DataClass
-    implements Insertable<FinancialEntryRow> {
+class LegacyFinancialEntryRow extends DataClass
+    implements Insertable<LegacyFinancialEntryRow> {
   final String id;
   final String kind;
   final String description;
   final int amountCents;
-
-  /// Civil date (competência), stored as an ISO `YYYY-MM-DD` string via
-  /// `CivilDateConverter` — this field has no time-of-day meaning.
   final String date;
   final String categoryId;
   final String status;
   final int? paidAt;
   final String? notes;
-
-  /// Optional link to the event/quote this entry belongs to (TASK-027
-  /// CP-D). Nullable — most entries (general company overhead, etc.) have
-  /// no associated event. Uses `Quotes.id` as the single source of truth
-  /// for events; no event data is duplicated here.
-  final String? quoteId;
   final int createdAt;
   final int updatedAt;
-  const FinancialEntryRow({
+  const LegacyFinancialEntryRow({
     required this.id,
     required this.kind,
     required this.description,
@@ -10473,7 +10504,6 @@ class FinancialEntryRow extends DataClass
     required this.status,
     this.paidAt,
     this.notes,
-    this.quoteId,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -10493,16 +10523,13 @@ class FinancialEntryRow extends DataClass
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
-    if (!nullToAbsent || quoteId != null) {
-      map['quote_id'] = Variable<String>(quoteId);
-    }
     map['created_at'] = Variable<int>(createdAt);
     map['updated_at'] = Variable<int>(updatedAt);
     return map;
   }
 
-  FinancialEntriesCompanion toCompanion(bool nullToAbsent) {
-    return FinancialEntriesCompanion(
+  LegacyFinancialEntriesCompanion toCompanion(bool nullToAbsent) {
+    return LegacyFinancialEntriesCompanion(
       id: Value(id),
       kind: Value(kind),
       description: Value(description),
@@ -10516,20 +10543,17 @@ class FinancialEntryRow extends DataClass
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
-      quoteId: quoteId == null && nullToAbsent
-          ? const Value.absent()
-          : Value(quoteId),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
   }
 
-  factory FinancialEntryRow.fromJson(
+  factory LegacyFinancialEntryRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return FinancialEntryRow(
+    return LegacyFinancialEntryRow(
       id: serializer.fromJson<String>(json['id']),
       kind: serializer.fromJson<String>(json['kind']),
       description: serializer.fromJson<String>(json['description']),
@@ -10539,7 +10563,6 @@ class FinancialEntryRow extends DataClass
       status: serializer.fromJson<String>(json['status']),
       paidAt: serializer.fromJson<int?>(json['paidAt']),
       notes: serializer.fromJson<String?>(json['notes']),
-      quoteId: serializer.fromJson<String?>(json['quoteId']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
       updatedAt: serializer.fromJson<int>(json['updatedAt']),
     );
@@ -10557,13 +10580,12 @@ class FinancialEntryRow extends DataClass
       'status': serializer.toJson<String>(status),
       'paidAt': serializer.toJson<int?>(paidAt),
       'notes': serializer.toJson<String?>(notes),
-      'quoteId': serializer.toJson<String?>(quoteId),
       'createdAt': serializer.toJson<int>(createdAt),
       'updatedAt': serializer.toJson<int>(updatedAt),
     };
   }
 
-  FinancialEntryRow copyWith({
+  LegacyFinancialEntryRow copyWith({
     String? id,
     String? kind,
     String? description,
@@ -10573,10 +10595,9 @@ class FinancialEntryRow extends DataClass
     String? status,
     Value<int?> paidAt = const Value.absent(),
     Value<String?> notes = const Value.absent(),
-    Value<String?> quoteId = const Value.absent(),
     int? createdAt,
     int? updatedAt,
-  }) => FinancialEntryRow(
+  }) => LegacyFinancialEntryRow(
     id: id ?? this.id,
     kind: kind ?? this.kind,
     description: description ?? this.description,
@@ -10586,12 +10607,13 @@ class FinancialEntryRow extends DataClass
     status: status ?? this.status,
     paidAt: paidAt.present ? paidAt.value : this.paidAt,
     notes: notes.present ? notes.value : this.notes,
-    quoteId: quoteId.present ? quoteId.value : this.quoteId,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
-  FinancialEntryRow copyWithCompanion(FinancialEntriesCompanion data) {
-    return FinancialEntryRow(
+  LegacyFinancialEntryRow copyWithCompanion(
+    LegacyFinancialEntriesCompanion data,
+  ) {
+    return LegacyFinancialEntryRow(
       id: data.id.present ? data.id.value : this.id,
       kind: data.kind.present ? data.kind.value : this.kind,
       description: data.description.present
@@ -10607,7 +10629,6 @@ class FinancialEntryRow extends DataClass
       status: data.status.present ? data.status.value : this.status,
       paidAt: data.paidAt.present ? data.paidAt.value : this.paidAt,
       notes: data.notes.present ? data.notes.value : this.notes,
-      quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -10615,7 +10636,7 @@ class FinancialEntryRow extends DataClass
 
   @override
   String toString() {
-    return (StringBuffer('FinancialEntryRow(')
+    return (StringBuffer('LegacyFinancialEntryRow(')
           ..write('id: $id, ')
           ..write('kind: $kind, ')
           ..write('description: $description, ')
@@ -10625,7 +10646,6 @@ class FinancialEntryRow extends DataClass
           ..write('status: $status, ')
           ..write('paidAt: $paidAt, ')
           ..write('notes: $notes, ')
-          ..write('quoteId: $quoteId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -10643,14 +10663,13 @@ class FinancialEntryRow extends DataClass
     status,
     paidAt,
     notes,
-    quoteId,
     createdAt,
     updatedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is FinancialEntryRow &&
+      (other is LegacyFinancialEntryRow &&
           other.id == this.id &&
           other.kind == this.kind &&
           other.description == this.description &&
@@ -10660,12 +10679,12 @@ class FinancialEntryRow extends DataClass
           other.status == this.status &&
           other.paidAt == this.paidAt &&
           other.notes == this.notes &&
-          other.quoteId == this.quoteId &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
-class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
+class LegacyFinancialEntriesCompanion
+    extends UpdateCompanion<LegacyFinancialEntryRow> {
   final Value<String> id;
   final Value<String> kind;
   final Value<String> description;
@@ -10675,11 +10694,10 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
   final Value<String> status;
   final Value<int?> paidAt;
   final Value<String?> notes;
-  final Value<String?> quoteId;
   final Value<int> createdAt;
   final Value<int> updatedAt;
   final Value<int> rowid;
-  const FinancialEntriesCompanion({
+  const LegacyFinancialEntriesCompanion({
     this.id = const Value.absent(),
     this.kind = const Value.absent(),
     this.description = const Value.absent(),
@@ -10689,12 +10707,11 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
     this.status = const Value.absent(),
     this.paidAt = const Value.absent(),
     this.notes = const Value.absent(),
-    this.quoteId = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  FinancialEntriesCompanion.insert({
+  LegacyFinancialEntriesCompanion.insert({
     required String id,
     required String kind,
     required String description,
@@ -10704,7 +10721,6 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
     required String status,
     this.paidAt = const Value.absent(),
     this.notes = const Value.absent(),
-    this.quoteId = const Value.absent(),
     required int createdAt,
     required int updatedAt,
     this.rowid = const Value.absent(),
@@ -10717,7 +10733,7 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
        status = Value(status),
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
-  static Insertable<FinancialEntryRow> custom({
+  static Insertable<LegacyFinancialEntryRow> custom({
     Expression<String>? id,
     Expression<String>? kind,
     Expression<String>? description,
@@ -10727,7 +10743,6 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
     Expression<String>? status,
     Expression<int>? paidAt,
     Expression<String>? notes,
-    Expression<String>? quoteId,
     Expression<int>? createdAt,
     Expression<int>? updatedAt,
     Expression<int>? rowid,
@@ -10742,14 +10757,13 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
       if (status != null) 'status': status,
       if (paidAt != null) 'paid_at': paidAt,
       if (notes != null) 'notes': notes,
-      if (quoteId != null) 'quote_id': quoteId,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  FinancialEntriesCompanion copyWith({
+  LegacyFinancialEntriesCompanion copyWith({
     Value<String>? id,
     Value<String>? kind,
     Value<String>? description,
@@ -10759,12 +10773,11 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
     Value<String>? status,
     Value<int?>? paidAt,
     Value<String?>? notes,
-    Value<String?>? quoteId,
     Value<int>? createdAt,
     Value<int>? updatedAt,
     Value<int>? rowid,
   }) {
-    return FinancialEntriesCompanion(
+    return LegacyFinancialEntriesCompanion(
       id: id ?? this.id,
       kind: kind ?? this.kind,
       description: description ?? this.description,
@@ -10774,7 +10787,6 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
       status: status ?? this.status,
       paidAt: paidAt ?? this.paidAt,
       notes: notes ?? this.notes,
-      quoteId: quoteId ?? this.quoteId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -10811,9 +10823,6 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
-    if (quoteId.present) {
-      map['quote_id'] = Variable<String>(quoteId.value);
-    }
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
@@ -10828,7 +10837,7 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
 
   @override
   String toString() {
-    return (StringBuffer('FinancialEntriesCompanion(')
+    return (StringBuffer('LegacyFinancialEntriesCompanion(')
           ..write('id: $id, ')
           ..write('kind: $kind, ')
           ..write('description: $description, ')
@@ -10838,7 +10847,6 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
           ..write('status: $status, ')
           ..write('paidAt: $paidAt, ')
           ..write('notes: $notes, ')
-          ..write('quoteId: $quoteId, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -10847,36 +10855,39 @@ class FinancialEntriesCompanion extends UpdateCompanion<FinancialEntryRow> {
   }
 }
 
-abstract class _$AppDatabase extends GeneratedDatabase {
-  _$AppDatabase(QueryExecutor e) : super(e);
-  $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $ClientsTable clients = $ClientsTable(this);
-  late final $CatalogItemsTable catalogItems = $CatalogItemsTable(this);
-  late final $CatalogPackageComponentsTable catalogPackageComponents =
-      $CatalogPackageComponentsTable(this);
-  late final $CompanyProfilesTable companyProfiles = $CompanyProfilesTable(
+abstract class _$LegacyAppDatabaseV3 extends GeneratedDatabase {
+  _$LegacyAppDatabaseV3(QueryExecutor e) : super(e);
+  $LegacyAppDatabaseV3Manager get managers => $LegacyAppDatabaseV3Manager(this);
+  late final $LegacyClientsTable legacyClients = $LegacyClientsTable(this);
+  late final $LegacyCatalogItemsTable legacyCatalogItems =
+      $LegacyCatalogItemsTable(this);
+  late final $LegacyCatalogPackageComponentsTable
+  legacyCatalogPackageComponents = $LegacyCatalogPackageComponentsTable(this);
+  late final $LegacyCompanyProfilesTable legacyCompanyProfiles =
+      $LegacyCompanyProfilesTable(this);
+  late final $LegacyQuotesTable legacyQuotes = $LegacyQuotesTable(this);
+  late final $LegacyQuoteClientSnapshotsTable legacyQuoteClientSnapshots =
+      $LegacyQuoteClientSnapshotsTable(this);
+  late final $LegacyQuoteEventSnapshotsTable legacyQuoteEventSnapshots =
+      $LegacyQuoteEventSnapshotsTable(this);
+  late final $LegacyQuoteCompanySnapshotsTable legacyQuoteCompanySnapshots =
+      $LegacyQuoteCompanySnapshotsTable(this);
+  late final $LegacyQuoteLineItemsTable legacyQuoteLineItems =
+      $LegacyQuoteLineItemsTable(this);
+  late final $LegacyQuoteLinePackageComponentsTable
+  legacyQuoteLinePackageComponents = $LegacyQuoteLinePackageComponentsTable(
     this,
   );
-  late final $QuotesTable quotes = $QuotesTable(this);
-  late final $QuoteClientSnapshotsTable quoteClientSnapshots =
-      $QuoteClientSnapshotsTable(this);
-  late final $QuoteEventSnapshotsTable quoteEventSnapshots =
-      $QuoteEventSnapshotsTable(this);
-  late final $QuoteCompanySnapshotsTable quoteCompanySnapshots =
-      $QuoteCompanySnapshotsTable(this);
-  late final $QuoteLineItemsTable quoteLineItems = $QuoteLineItemsTable(this);
-  late final $QuoteLinePackageComponentsTable quoteLinePackageComponents =
-      $QuoteLinePackageComponentsTable(this);
-  late final $QuoteStatusHistoryTable quoteStatusHistory =
-      $QuoteStatusHistoryTable(this);
-  late final $QuoteNumberSequencesTable quoteNumberSequences =
-      $QuoteNumberSequencesTable(this);
-  late final $AgendaBlocksTable agendaBlocks = $AgendaBlocksTable(this);
-  late final $FinancialCategoriesTable financialCategories =
-      $FinancialCategoriesTable(this);
-  late final $FinancialEntriesTable financialEntries = $FinancialEntriesTable(
-    this,
-  );
+  late final $LegacyQuoteStatusHistoryTable legacyQuoteStatusHistory =
+      $LegacyQuoteStatusHistoryTable(this);
+  late final $LegacyQuoteNumberSequencesTable legacyQuoteNumberSequences =
+      $LegacyQuoteNumberSequencesTable(this);
+  late final $LegacyAgendaBlocksTable legacyAgendaBlocks =
+      $LegacyAgendaBlocksTable(this);
+  late final $LegacyFinancialCategoriesTable legacyFinancialCategories =
+      $LegacyFinancialCategoriesTable(this);
+  late final $LegacyFinancialEntriesTable legacyFinancialEntries =
+      $LegacyFinancialEntriesTable(this);
   late final Index idxClientsCreatedAt = Index(
     'idx_clients_created_at',
     'CREATE INDEX idx_clients_created_at ON clients (created_at)',
@@ -10941,44 +10952,26 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_financial_entries_kind',
     'CREATE INDEX idx_financial_entries_kind ON financial_entries (kind)',
   );
-  late final Index idxFinancialEntriesQuoteId = Index(
-    'idx_financial_entries_quote_id',
-    'CREATE INDEX idx_financial_entries_quote_id ON financial_entries (quote_id)',
-  );
-  late final ClientsDao clientsDao = ClientsDao(this as AppDatabase);
-  late final CompanyProfilesDao companyProfilesDao = CompanyProfilesDao(
-    this as AppDatabase,
-  );
-  late final CatalogDao catalogDao = CatalogDao(this as AppDatabase);
-  late final QuotesDao quotesDao = QuotesDao(this as AppDatabase);
-  late final AgendaBlocksDao agendaBlocksDao = AgendaBlocksDao(
-    this as AppDatabase,
-  );
-  late final FinancialCategoriesDao financialCategoriesDao =
-      FinancialCategoriesDao(this as AppDatabase);
-  late final FinancialEntriesDao financialEntriesDao = FinancialEntriesDao(
-    this as AppDatabase,
-  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities => [
-    clients,
-    catalogItems,
-    catalogPackageComponents,
-    companyProfiles,
-    quotes,
-    quoteClientSnapshots,
-    quoteEventSnapshots,
-    quoteCompanySnapshots,
-    quoteLineItems,
-    quoteLinePackageComponents,
-    quoteStatusHistory,
-    quoteNumberSequences,
-    agendaBlocks,
-    financialCategories,
-    financialEntries,
+    legacyClients,
+    legacyCatalogItems,
+    legacyCatalogPackageComponents,
+    legacyCompanyProfiles,
+    legacyQuotes,
+    legacyQuoteClientSnapshots,
+    legacyQuoteEventSnapshots,
+    legacyQuoteCompanySnapshots,
+    legacyQuoteLineItems,
+    legacyQuoteLinePackageComponents,
+    legacyQuoteStatusHistory,
+    legacyQuoteNumberSequences,
+    legacyAgendaBlocks,
+    legacyFinancialCategories,
+    legacyFinancialEntries,
     idxClientsCreatedAt,
     idxCatalogItemsActive,
     idxCatalogItemsType,
@@ -10995,7 +10988,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxFinancialCategoriesKind,
     idxFinancialEntriesDate,
     idxFinancialEntriesKind,
-    idxFinancialEntriesQuoteId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -11052,18 +11044,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       ),
       result: [TableUpdate('quote_status_history', kind: UpdateKind.delete)],
     ),
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'quotes',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('financial_entries', kind: UpdateKind.update)],
-    ),
   ]);
 }
 
-typedef $$ClientsTableCreateCompanionBuilder =
-    ClientsCompanion Function({
+typedef $$LegacyClientsTableCreateCompanionBuilder =
+    LegacyClientsCompanion Function({
       required String id,
       required int createdAt,
       required String type,
@@ -11085,8 +11070,8 @@ typedef $$ClientsTableCreateCompanionBuilder =
       Value<String?> state,
       Value<int> rowid,
     });
-typedef $$ClientsTableUpdateCompanionBuilder =
-    ClientsCompanion Function({
+typedef $$LegacyClientsTableUpdateCompanionBuilder =
+    LegacyClientsCompanion Function({
       Value<String> id,
       Value<int> createdAt,
       Value<String> type,
@@ -11109,9 +11094,9 @@ typedef $$ClientsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$ClientsTableFilterComposer
-    extends Composer<_$AppDatabase, $ClientsTable> {
-  $$ClientsTableFilterComposer({
+class $$LegacyClientsTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyClientsTable> {
+  $$LegacyClientsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11214,9 +11199,9 @@ class $$ClientsTableFilterComposer
   );
 }
 
-class $$ClientsTableOrderingComposer
-    extends Composer<_$AppDatabase, $ClientsTable> {
-  $$ClientsTableOrderingComposer({
+class $$LegacyClientsTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyClientsTable> {
+  $$LegacyClientsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11319,9 +11304,9 @@ class $$ClientsTableOrderingComposer
   );
 }
 
-class $$ClientsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ClientsTable> {
-  $$ClientsTableAnnotationComposer({
+class $$LegacyClientsTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyClientsTable> {
+  $$LegacyClientsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11400,32 +11385,41 @@ class $$ClientsTableAnnotationComposer
       $composableBuilder(column: $table.state, builder: (column) => column);
 }
 
-class $$ClientsTableTableManager
+class $$LegacyClientsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $ClientsTable,
-          ClientRow,
-          $$ClientsTableFilterComposer,
-          $$ClientsTableOrderingComposer,
-          $$ClientsTableAnnotationComposer,
-          $$ClientsTableCreateCompanionBuilder,
-          $$ClientsTableUpdateCompanionBuilder,
-          (ClientRow, BaseReferences<_$AppDatabase, $ClientsTable, ClientRow>),
-          ClientRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyClientsTable,
+          LegacyClientRow,
+          $$LegacyClientsTableFilterComposer,
+          $$LegacyClientsTableOrderingComposer,
+          $$LegacyClientsTableAnnotationComposer,
+          $$LegacyClientsTableCreateCompanionBuilder,
+          $$LegacyClientsTableUpdateCompanionBuilder,
+          (
+            LegacyClientRow,
+            BaseReferences<
+              _$LegacyAppDatabaseV3,
+              $LegacyClientsTable,
+              LegacyClientRow
+            >,
+          ),
+          LegacyClientRow,
           PrefetchHooks Function()
         > {
-  $$ClientsTableTableManager(_$AppDatabase db, $ClientsTable table)
-    : super(
+  $$LegacyClientsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyClientsTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$ClientsTableFilterComposer($db: db, $table: table),
+              $$LegacyClientsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$ClientsTableOrderingComposer($db: db, $table: table),
+              $$LegacyClientsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$ClientsTableAnnotationComposer($db: db, $table: table),
+              $$LegacyClientsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -11448,7 +11442,7 @@ class $$ClientsTableTableManager
                 Value<String?> city = const Value.absent(),
                 Value<String?> state = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => ClientsCompanion(
+              }) => LegacyClientsCompanion(
                 id: id,
                 createdAt: createdAt,
                 type: type,
@@ -11492,7 +11486,7 @@ class $$ClientsTableTableManager
                 Value<String?> city = const Value.absent(),
                 Value<String?> state = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => ClientsCompanion.insert(
+              }) => LegacyClientsCompanion.insert(
                 id: id,
                 createdAt: createdAt,
                 type: type,
@@ -11522,22 +11516,29 @@ class $$ClientsTableTableManager
       );
 }
 
-typedef $$ClientsTableProcessedTableManager =
+typedef $$LegacyClientsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $ClientsTable,
-      ClientRow,
-      $$ClientsTableFilterComposer,
-      $$ClientsTableOrderingComposer,
-      $$ClientsTableAnnotationComposer,
-      $$ClientsTableCreateCompanionBuilder,
-      $$ClientsTableUpdateCompanionBuilder,
-      (ClientRow, BaseReferences<_$AppDatabase, $ClientsTable, ClientRow>),
-      ClientRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyClientsTable,
+      LegacyClientRow,
+      $$LegacyClientsTableFilterComposer,
+      $$LegacyClientsTableOrderingComposer,
+      $$LegacyClientsTableAnnotationComposer,
+      $$LegacyClientsTableCreateCompanionBuilder,
+      $$LegacyClientsTableUpdateCompanionBuilder,
+      (
+        LegacyClientRow,
+        BaseReferences<
+          _$LegacyAppDatabaseV3,
+          $LegacyClientsTable,
+          LegacyClientRow
+        >,
+      ),
+      LegacyClientRow,
       PrefetchHooks Function()
     >;
-typedef $$CatalogItemsTableCreateCompanionBuilder =
-    CatalogItemsCompanion Function({
+typedef $$LegacyCatalogItemsTableCreateCompanionBuilder =
+    LegacyCatalogItemsCompanion Function({
       required String id,
       required int createdAt,
       required String type,
@@ -11550,8 +11551,8 @@ typedef $$CatalogItemsTableCreateCompanionBuilder =
       Value<String?> imageReference,
       Value<int> rowid,
     });
-typedef $$CatalogItemsTableUpdateCompanionBuilder =
-    CatalogItemsCompanion Function({
+typedef $$LegacyCatalogItemsTableUpdateCompanionBuilder =
+    LegacyCatalogItemsCompanion Function({
       Value<String> id,
       Value<int> createdAt,
       Value<String> type,
@@ -11565,23 +11566,34 @@ typedef $$CatalogItemsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$CatalogItemsTableReferences
-    extends BaseReferences<_$AppDatabase, $CatalogItemsTable, CatalogItemRow> {
-  $$CatalogItemsTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static MultiTypedResultKey<
-    $CatalogPackageComponentsTable,
-    List<CatalogPackageComponentRow>
-  >
-  _package_componentsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.catalogPackageComponents,
-    aliasName: 'catalog_items__id__catalog_package_components__package_id',
+final class $$LegacyCatalogItemsTableReferences
+    extends
+        BaseReferences<
+          _$LegacyAppDatabaseV3,
+          $LegacyCatalogItemsTable,
+          LegacyCatalogItemRow
+        > {
+  $$LegacyCatalogItemsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
   );
 
-  $$CatalogPackageComponentsTableProcessedTableManager get package_components {
-    final manager = $$CatalogPackageComponentsTableTableManager(
+  static MultiTypedResultKey<
+    $LegacyCatalogPackageComponentsTable,
+    List<LegacyCatalogPackageComponentRow>
+  >
+  _package_componentsTable(_$LegacyAppDatabaseV3 db) =>
+      MultiTypedResultKey.fromTable(
+        db.legacyCatalogPackageComponents,
+        aliasName: 'catalog_items__id__catalog_package_components__package_id',
+      );
+
+  $$LegacyCatalogPackageComponentsTableProcessedTableManager
+  get package_components {
+    final manager = $$LegacyCatalogPackageComponentsTableTableManager(
       $_db,
-      $_db.catalogPackageComponents,
+      $_db.legacyCatalogPackageComponents,
     ).filter((f) => f.packageId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_package_componentsTable($_db));
@@ -11591,20 +11603,22 @@ final class $$CatalogItemsTableReferences
   }
 
   static MultiTypedResultKey<
-    $CatalogPackageComponentsTable,
-    List<CatalogPackageComponentRow>
+    $LegacyCatalogPackageComponentsTable,
+    List<LegacyCatalogPackageComponentRow>
   >
-  _component_usagesTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.catalogPackageComponents,
-    aliasName:
-        'catalog_items__id__catalog_package_components__component_item_id',
-  );
+  _component_usagesTable(_$LegacyAppDatabaseV3 db) =>
+      MultiTypedResultKey.fromTable(
+        db.legacyCatalogPackageComponents,
+        aliasName:
+            'catalog_items__id__catalog_package_components__component_item_id',
+      );
 
-  $$CatalogPackageComponentsTableProcessedTableManager get component_usages {
+  $$LegacyCatalogPackageComponentsTableProcessedTableManager
+  get component_usages {
     final manager =
-        $$CatalogPackageComponentsTableTableManager(
+        $$LegacyCatalogPackageComponentsTableTableManager(
           $_db,
-          $_db.catalogPackageComponents,
+          $_db.legacyCatalogPackageComponents,
         ).filter(
           (f) => f.componentItemId.id.sqlEquals($_itemColumn<String>('id')!),
         );
@@ -11616,9 +11630,9 @@ final class $$CatalogItemsTableReferences
   }
 }
 
-class $$CatalogItemsTableFilterComposer
-    extends Composer<_$AppDatabase, $CatalogItemsTable> {
-  $$CatalogItemsTableFilterComposer({
+class $$LegacyCatalogItemsTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyCatalogItemsTable> {
+  $$LegacyCatalogItemsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11676,23 +11690,25 @@ class $$CatalogItemsTableFilterComposer
   );
 
   Expression<bool> package_components(
-    Expression<bool> Function($$CatalogPackageComponentsTableFilterComposer f)
+    Expression<bool> Function(
+      $$LegacyCatalogPackageComponentsTableFilterComposer f,
+    )
     f,
   ) {
-    final $$CatalogPackageComponentsTableFilterComposer composer =
+    final $$LegacyCatalogPackageComponentsTableFilterComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.catalogPackageComponents,
+          referencedTable: $db.legacyCatalogPackageComponents,
           getReferencedColumn: (t) => t.packageId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$CatalogPackageComponentsTableFilterComposer(
+              }) => $$LegacyCatalogPackageComponentsTableFilterComposer(
                 $db: $db,
-                $table: $db.catalogPackageComponents,
+                $table: $db.legacyCatalogPackageComponents,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -11703,23 +11719,25 @@ class $$CatalogItemsTableFilterComposer
   }
 
   Expression<bool> component_usages(
-    Expression<bool> Function($$CatalogPackageComponentsTableFilterComposer f)
+    Expression<bool> Function(
+      $$LegacyCatalogPackageComponentsTableFilterComposer f,
+    )
     f,
   ) {
-    final $$CatalogPackageComponentsTableFilterComposer composer =
+    final $$LegacyCatalogPackageComponentsTableFilterComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.catalogPackageComponents,
+          referencedTable: $db.legacyCatalogPackageComponents,
           getReferencedColumn: (t) => t.componentItemId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$CatalogPackageComponentsTableFilterComposer(
+              }) => $$LegacyCatalogPackageComponentsTableFilterComposer(
                 $db: $db,
-                $table: $db.catalogPackageComponents,
+                $table: $db.legacyCatalogPackageComponents,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -11730,9 +11748,9 @@ class $$CatalogItemsTableFilterComposer
   }
 }
 
-class $$CatalogItemsTableOrderingComposer
-    extends Composer<_$AppDatabase, $CatalogItemsTable> {
-  $$CatalogItemsTableOrderingComposer({
+class $$LegacyCatalogItemsTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyCatalogItemsTable> {
+  $$LegacyCatalogItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11790,9 +11808,9 @@ class $$CatalogItemsTableOrderingComposer
   );
 }
 
-class $$CatalogItemsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CatalogItemsTable> {
-  $$CatalogItemsTableAnnotationComposer({
+class $$LegacyCatalogItemsTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyCatalogItemsTable> {
+  $$LegacyCatalogItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -11836,23 +11854,25 @@ class $$CatalogItemsTableAnnotationComposer
   );
 
   Expression<T> package_components<T extends Object>(
-    Expression<T> Function($$CatalogPackageComponentsTableAnnotationComposer a)
+    Expression<T> Function(
+      $$LegacyCatalogPackageComponentsTableAnnotationComposer a,
+    )
     f,
   ) {
-    final $$CatalogPackageComponentsTableAnnotationComposer composer =
+    final $$LegacyCatalogPackageComponentsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.catalogPackageComponents,
+          referencedTable: $db.legacyCatalogPackageComponents,
           getReferencedColumn: (t) => t.packageId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$CatalogPackageComponentsTableAnnotationComposer(
+              }) => $$LegacyCatalogPackageComponentsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.catalogPackageComponents,
+                $table: $db.legacyCatalogPackageComponents,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -11863,23 +11883,25 @@ class $$CatalogItemsTableAnnotationComposer
   }
 
   Expression<T> component_usages<T extends Object>(
-    Expression<T> Function($$CatalogPackageComponentsTableAnnotationComposer a)
+    Expression<T> Function(
+      $$LegacyCatalogPackageComponentsTableAnnotationComposer a,
+    )
     f,
   ) {
-    final $$CatalogPackageComponentsTableAnnotationComposer composer =
+    final $$LegacyCatalogPackageComponentsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.catalogPackageComponents,
+          referencedTable: $db.legacyCatalogPackageComponents,
           getReferencedColumn: (t) => t.componentItemId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$CatalogPackageComponentsTableAnnotationComposer(
+              }) => $$LegacyCatalogPackageComponentsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.catalogPackageComponents,
+                $table: $db.legacyCatalogPackageComponents,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -11890,35 +11912,40 @@ class $$CatalogItemsTableAnnotationComposer
   }
 }
 
-class $$CatalogItemsTableTableManager
+class $$LegacyCatalogItemsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $CatalogItemsTable,
-          CatalogItemRow,
-          $$CatalogItemsTableFilterComposer,
-          $$CatalogItemsTableOrderingComposer,
-          $$CatalogItemsTableAnnotationComposer,
-          $$CatalogItemsTableCreateCompanionBuilder,
-          $$CatalogItemsTableUpdateCompanionBuilder,
-          (CatalogItemRow, $$CatalogItemsTableReferences),
-          CatalogItemRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyCatalogItemsTable,
+          LegacyCatalogItemRow,
+          $$LegacyCatalogItemsTableFilterComposer,
+          $$LegacyCatalogItemsTableOrderingComposer,
+          $$LegacyCatalogItemsTableAnnotationComposer,
+          $$LegacyCatalogItemsTableCreateCompanionBuilder,
+          $$LegacyCatalogItemsTableUpdateCompanionBuilder,
+          (LegacyCatalogItemRow, $$LegacyCatalogItemsTableReferences),
+          LegacyCatalogItemRow,
           PrefetchHooks Function({
             bool package_components,
             bool component_usages,
           })
         > {
-  $$CatalogItemsTableTableManager(_$AppDatabase db, $CatalogItemsTable table)
-    : super(
+  $$LegacyCatalogItemsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyCatalogItemsTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$CatalogItemsTableFilterComposer($db: db, $table: table),
+              $$LegacyCatalogItemsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$CatalogItemsTableOrderingComposer($db: db, $table: table),
+              $$LegacyCatalogItemsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$CatalogItemsTableAnnotationComposer($db: db, $table: table),
+              $$LegacyCatalogItemsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -11932,7 +11959,7 @@ class $$CatalogItemsTableTableManager
                 Value<bool> active = const Value.absent(),
                 Value<String?> imageReference = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => CatalogItemsCompanion(
+              }) => LegacyCatalogItemsCompanion(
                 id: id,
                 createdAt: createdAt,
                 type: type,
@@ -11958,7 +11985,7 @@ class $$CatalogItemsTableTableManager
                 required bool active,
                 Value<String?> imageReference = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => CatalogItemsCompanion.insert(
+              }) => LegacyCatalogItemsCompanion.insert(
                 id: id,
                 createdAt: createdAt,
                 type: type,
@@ -11975,7 +12002,7 @@ class $$CatalogItemsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$CatalogItemsTableReferences(db, table, e),
+                  $$LegacyCatalogItemsTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -11984,23 +12011,23 @@ class $$CatalogItemsTableTableManager
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
-                    if (package_components) db.catalogPackageComponents,
-                    if (component_usages) db.catalogPackageComponents,
+                    if (package_components) db.legacyCatalogPackageComponents,
+                    if (component_usages) db.legacyCatalogPackageComponents,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (package_components)
                         await $_getPrefetchedData<
-                          CatalogItemRow,
-                          $CatalogItemsTable,
-                          CatalogPackageComponentRow
+                          LegacyCatalogItemRow,
+                          $LegacyCatalogItemsTable,
+                          LegacyCatalogPackageComponentRow
                         >(
                           currentTable: table,
-                          referencedTable: $$CatalogItemsTableReferences
+                          referencedTable: $$LegacyCatalogItemsTableReferences
                               ._package_componentsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$CatalogItemsTableReferences(
+                              $$LegacyCatalogItemsTableReferences(
                                 db,
                                 table,
                                 p0,
@@ -12013,15 +12040,15 @@ class $$CatalogItemsTableTableManager
                         ),
                       if (component_usages)
                         await $_getPrefetchedData<
-                          CatalogItemRow,
-                          $CatalogItemsTable,
-                          CatalogPackageComponentRow
+                          LegacyCatalogItemRow,
+                          $LegacyCatalogItemsTable,
+                          LegacyCatalogPackageComponentRow
                         >(
                           currentTable: table,
-                          referencedTable: $$CatalogItemsTableReferences
+                          referencedTable: $$LegacyCatalogItemsTableReferences
                               ._component_usagesTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$CatalogItemsTableReferences(
+                              $$LegacyCatalogItemsTableReferences(
                                 db,
                                 table,
                                 p0,
@@ -12040,22 +12067,22 @@ class $$CatalogItemsTableTableManager
       );
 }
 
-typedef $$CatalogItemsTableProcessedTableManager =
+typedef $$LegacyCatalogItemsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $CatalogItemsTable,
-      CatalogItemRow,
-      $$CatalogItemsTableFilterComposer,
-      $$CatalogItemsTableOrderingComposer,
-      $$CatalogItemsTableAnnotationComposer,
-      $$CatalogItemsTableCreateCompanionBuilder,
-      $$CatalogItemsTableUpdateCompanionBuilder,
-      (CatalogItemRow, $$CatalogItemsTableReferences),
-      CatalogItemRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyCatalogItemsTable,
+      LegacyCatalogItemRow,
+      $$LegacyCatalogItemsTableFilterComposer,
+      $$LegacyCatalogItemsTableOrderingComposer,
+      $$LegacyCatalogItemsTableAnnotationComposer,
+      $$LegacyCatalogItemsTableCreateCompanionBuilder,
+      $$LegacyCatalogItemsTableUpdateCompanionBuilder,
+      (LegacyCatalogItemRow, $$LegacyCatalogItemsTableReferences),
+      LegacyCatalogItemRow,
       PrefetchHooks Function({bool package_components, bool component_usages})
     >;
-typedef $$CatalogPackageComponentsTableCreateCompanionBuilder =
-    CatalogPackageComponentsCompanion Function({
+typedef $$LegacyCatalogPackageComponentsTableCreateCompanionBuilder =
+    LegacyCatalogPackageComponentsCompanion Function({
       required String packageId,
       required String componentItemId,
       required String nameSnapshot,
@@ -12065,8 +12092,8 @@ typedef $$CatalogPackageComponentsTableCreateCompanionBuilder =
       required double quantityPerPackage,
       Value<int> rowid,
     });
-typedef $$CatalogPackageComponentsTableUpdateCompanionBuilder =
-    CatalogPackageComponentsCompanion Function({
+typedef $$LegacyCatalogPackageComponentsTableUpdateCompanionBuilder =
+    LegacyCatalogPackageComponentsCompanion Function({
       Value<String> packageId,
       Value<String> componentItemId,
       Value<String> nameSnapshot,
@@ -12077,28 +12104,30 @@ typedef $$CatalogPackageComponentsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$CatalogPackageComponentsTableReferences
+final class $$LegacyCatalogPackageComponentsTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $CatalogPackageComponentsTable,
-          CatalogPackageComponentRow
+          _$LegacyAppDatabaseV3,
+          $LegacyCatalogPackageComponentsTable,
+          LegacyCatalogPackageComponentRow
         > {
-  $$CatalogPackageComponentsTableReferences(
+  $$LegacyCatalogPackageComponentsTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $CatalogItemsTable _packageIdTable(_$AppDatabase db) => db.catalogItems
-      .createAlias('catalog_package_components__package_id__catalog_items__id');
+  static $LegacyCatalogItemsTable _packageIdTable(_$LegacyAppDatabaseV3 db) =>
+      db.legacyCatalogItems.createAlias(
+        'catalog_package_components__package_id__catalog_items__id',
+      );
 
-  $$CatalogItemsTableProcessedTableManager get packageId {
+  $$LegacyCatalogItemsTableProcessedTableManager get packageId {
     final $_column = $_itemColumn<String>('package_id')!;
 
-    final manager = $$CatalogItemsTableTableManager(
+    final manager = $$LegacyCatalogItemsTableTableManager(
       $_db,
-      $_db.catalogItems,
+      $_db.legacyCatalogItems,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_packageIdTable($_db));
     if (item == null) return manager;
@@ -12107,17 +12136,18 @@ final class $$CatalogPackageComponentsTableReferences
     );
   }
 
-  static $CatalogItemsTable _componentItemIdTable(_$AppDatabase db) =>
-      db.catalogItems.createAlias(
-        'catalog_package_components__component_item_id__catalog_items__id',
-      );
+  static $LegacyCatalogItemsTable _componentItemIdTable(
+    _$LegacyAppDatabaseV3 db,
+  ) => db.legacyCatalogItems.createAlias(
+    'catalog_package_components__component_item_id__catalog_items__id',
+  );
 
-  $$CatalogItemsTableProcessedTableManager get componentItemId {
+  $$LegacyCatalogItemsTableProcessedTableManager get componentItemId {
     final $_column = $_itemColumn<String>('component_item_id')!;
 
-    final manager = $$CatalogItemsTableTableManager(
+    final manager = $$LegacyCatalogItemsTableTableManager(
       $_db,
-      $_db.catalogItems,
+      $_db.legacyCatalogItems,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_componentItemIdTable($_db));
     if (item == null) return manager;
@@ -12127,9 +12157,10 @@ final class $$CatalogPackageComponentsTableReferences
   }
 }
 
-class $$CatalogPackageComponentsTableFilterComposer
-    extends Composer<_$AppDatabase, $CatalogPackageComponentsTable> {
-  $$CatalogPackageComponentsTableFilterComposer({
+class $$LegacyCatalogPackageComponentsTableFilterComposer
+    extends
+        Composer<_$LegacyAppDatabaseV3, $LegacyCatalogPackageComponentsTable> {
+  $$LegacyCatalogPackageComponentsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12161,20 +12192,20 @@ class $$CatalogPackageComponentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$CatalogItemsTableFilterComposer get packageId {
-    final $$CatalogItemsTableFilterComposer composer = $composerBuilder(
+  $$LegacyCatalogItemsTableFilterComposer get packageId {
+    final $$LegacyCatalogItemsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.packageId,
-      referencedTable: $db.catalogItems,
+      referencedTable: $db.legacyCatalogItems,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$CatalogItemsTableFilterComposer(
+          }) => $$LegacyCatalogItemsTableFilterComposer(
             $db: $db,
-            $table: $db.catalogItems,
+            $table: $db.legacyCatalogItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12184,20 +12215,20 @@ class $$CatalogPackageComponentsTableFilterComposer
     return composer;
   }
 
-  $$CatalogItemsTableFilterComposer get componentItemId {
-    final $$CatalogItemsTableFilterComposer composer = $composerBuilder(
+  $$LegacyCatalogItemsTableFilterComposer get componentItemId {
+    final $$LegacyCatalogItemsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.componentItemId,
-      referencedTable: $db.catalogItems,
+      referencedTable: $db.legacyCatalogItems,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$CatalogItemsTableFilterComposer(
+          }) => $$LegacyCatalogItemsTableFilterComposer(
             $db: $db,
-            $table: $db.catalogItems,
+            $table: $db.legacyCatalogItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12208,9 +12239,10 @@ class $$CatalogPackageComponentsTableFilterComposer
   }
 }
 
-class $$CatalogPackageComponentsTableOrderingComposer
-    extends Composer<_$AppDatabase, $CatalogPackageComponentsTable> {
-  $$CatalogPackageComponentsTableOrderingComposer({
+class $$LegacyCatalogPackageComponentsTableOrderingComposer
+    extends
+        Composer<_$LegacyAppDatabaseV3, $LegacyCatalogPackageComponentsTable> {
+  $$LegacyCatalogPackageComponentsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12242,20 +12274,20 @@ class $$CatalogPackageComponentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$CatalogItemsTableOrderingComposer get packageId {
-    final $$CatalogItemsTableOrderingComposer composer = $composerBuilder(
+  $$LegacyCatalogItemsTableOrderingComposer get packageId {
+    final $$LegacyCatalogItemsTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.packageId,
-      referencedTable: $db.catalogItems,
+      referencedTable: $db.legacyCatalogItems,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$CatalogItemsTableOrderingComposer(
+          }) => $$LegacyCatalogItemsTableOrderingComposer(
             $db: $db,
-            $table: $db.catalogItems,
+            $table: $db.legacyCatalogItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12265,20 +12297,20 @@ class $$CatalogPackageComponentsTableOrderingComposer
     return composer;
   }
 
-  $$CatalogItemsTableOrderingComposer get componentItemId {
-    final $$CatalogItemsTableOrderingComposer composer = $composerBuilder(
+  $$LegacyCatalogItemsTableOrderingComposer get componentItemId {
+    final $$LegacyCatalogItemsTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.componentItemId,
-      referencedTable: $db.catalogItems,
+      referencedTable: $db.legacyCatalogItems,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$CatalogItemsTableOrderingComposer(
+          }) => $$LegacyCatalogItemsTableOrderingComposer(
             $db: $db,
-            $table: $db.catalogItems,
+            $table: $db.legacyCatalogItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -12289,9 +12321,10 @@ class $$CatalogPackageComponentsTableOrderingComposer
   }
 }
 
-class $$CatalogPackageComponentsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CatalogPackageComponentsTable> {
-  $$CatalogPackageComponentsTableAnnotationComposer({
+class $$LegacyCatalogPackageComponentsTableAnnotationComposer
+    extends
+        Composer<_$LegacyAppDatabaseV3, $LegacyCatalogPackageComponentsTable> {
+  $$LegacyCatalogPackageComponentsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12323,90 +12356,92 @@ class $$CatalogPackageComponentsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$CatalogItemsTableAnnotationComposer get packageId {
-    final $$CatalogItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.packageId,
-      referencedTable: $db.catalogItems,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CatalogItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.catalogItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  $$LegacyCatalogItemsTableAnnotationComposer get packageId {
+    final $$LegacyCatalogItemsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.packageId,
+          referencedTable: $db.legacyCatalogItems,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyCatalogItemsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.legacyCatalogItems,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 
-  $$CatalogItemsTableAnnotationComposer get componentItemId {
-    final $$CatalogItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.componentItemId,
-      referencedTable: $db.catalogItems,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$CatalogItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.catalogItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  $$LegacyCatalogItemsTableAnnotationComposer get componentItemId {
+    final $$LegacyCatalogItemsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.componentItemId,
+          referencedTable: $db.legacyCatalogItems,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyCatalogItemsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.legacyCatalogItems,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 }
 
-class $$CatalogPackageComponentsTableTableManager
+class $$LegacyCatalogPackageComponentsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $CatalogPackageComponentsTable,
-          CatalogPackageComponentRow,
-          $$CatalogPackageComponentsTableFilterComposer,
-          $$CatalogPackageComponentsTableOrderingComposer,
-          $$CatalogPackageComponentsTableAnnotationComposer,
-          $$CatalogPackageComponentsTableCreateCompanionBuilder,
-          $$CatalogPackageComponentsTableUpdateCompanionBuilder,
+          _$LegacyAppDatabaseV3,
+          $LegacyCatalogPackageComponentsTable,
+          LegacyCatalogPackageComponentRow,
+          $$LegacyCatalogPackageComponentsTableFilterComposer,
+          $$LegacyCatalogPackageComponentsTableOrderingComposer,
+          $$LegacyCatalogPackageComponentsTableAnnotationComposer,
+          $$LegacyCatalogPackageComponentsTableCreateCompanionBuilder,
+          $$LegacyCatalogPackageComponentsTableUpdateCompanionBuilder,
           (
-            CatalogPackageComponentRow,
-            $$CatalogPackageComponentsTableReferences,
+            LegacyCatalogPackageComponentRow,
+            $$LegacyCatalogPackageComponentsTableReferences,
           ),
-          CatalogPackageComponentRow,
+          LegacyCatalogPackageComponentRow,
           PrefetchHooks Function({bool packageId, bool componentItemId})
         > {
-  $$CatalogPackageComponentsTableTableManager(
-    _$AppDatabase db,
-    $CatalogPackageComponentsTable table,
+  $$LegacyCatalogPackageComponentsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyCatalogPackageComponentsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$CatalogPackageComponentsTableFilterComposer(
+              $$LegacyCatalogPackageComponentsTableFilterComposer(
                 $db: db,
                 $table: table,
               ),
           createOrderingComposer: () =>
-              $$CatalogPackageComponentsTableOrderingComposer(
+              $$LegacyCatalogPackageComponentsTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$CatalogPackageComponentsTableAnnotationComposer(
+              $$LegacyCatalogPackageComponentsTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -12420,7 +12455,7 @@ class $$CatalogPackageComponentsTableTableManager
                 Value<String> categorySnapshot = const Value.absent(),
                 Value<double> quantityPerPackage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => CatalogPackageComponentsCompanion(
+              }) => LegacyCatalogPackageComponentsCompanion(
                 packageId: packageId,
                 componentItemId: componentItemId,
                 nameSnapshot: nameSnapshot,
@@ -12440,7 +12475,7 @@ class $$CatalogPackageComponentsTableTableManager
                 required String categorySnapshot,
                 required double quantityPerPackage,
                 Value<int> rowid = const Value.absent(),
-              }) => CatalogPackageComponentsCompanion.insert(
+              }) => LegacyCatalogPackageComponentsCompanion.insert(
                 packageId: packageId,
                 componentItemId: componentItemId,
                 nameSnapshot: nameSnapshot,
@@ -12454,7 +12489,7 @@ class $$CatalogPackageComponentsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$CatalogPackageComponentsTableReferences(db, table, e),
+                  $$LegacyCatalogPackageComponentsTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -12484,10 +12519,10 @@ class $$CatalogPackageComponentsTableTableManager
                                 currentTable: table,
                                 currentColumn: table.packageId,
                                 referencedTable:
-                                    $$CatalogPackageComponentsTableReferences
+                                    $$LegacyCatalogPackageComponentsTableReferences
                                         ._packageIdTable(db),
                                 referencedColumn:
-                                    $$CatalogPackageComponentsTableReferences
+                                    $$LegacyCatalogPackageComponentsTableReferences
                                         ._packageIdTable(db)
                                         .id,
                               )
@@ -12499,10 +12534,10 @@ class $$CatalogPackageComponentsTableTableManager
                                 currentTable: table,
                                 currentColumn: table.componentItemId,
                                 referencedTable:
-                                    $$CatalogPackageComponentsTableReferences
+                                    $$LegacyCatalogPackageComponentsTableReferences
                                         ._componentItemIdTable(db),
                                 referencedColumn:
-                                    $$CatalogPackageComponentsTableReferences
+                                    $$LegacyCatalogPackageComponentsTableReferences
                                         ._componentItemIdTable(db)
                                         .id,
                               )
@@ -12520,22 +12555,25 @@ class $$CatalogPackageComponentsTableTableManager
       );
 }
 
-typedef $$CatalogPackageComponentsTableProcessedTableManager =
+typedef $$LegacyCatalogPackageComponentsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $CatalogPackageComponentsTable,
-      CatalogPackageComponentRow,
-      $$CatalogPackageComponentsTableFilterComposer,
-      $$CatalogPackageComponentsTableOrderingComposer,
-      $$CatalogPackageComponentsTableAnnotationComposer,
-      $$CatalogPackageComponentsTableCreateCompanionBuilder,
-      $$CatalogPackageComponentsTableUpdateCompanionBuilder,
-      (CatalogPackageComponentRow, $$CatalogPackageComponentsTableReferences),
-      CatalogPackageComponentRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyCatalogPackageComponentsTable,
+      LegacyCatalogPackageComponentRow,
+      $$LegacyCatalogPackageComponentsTableFilterComposer,
+      $$LegacyCatalogPackageComponentsTableOrderingComposer,
+      $$LegacyCatalogPackageComponentsTableAnnotationComposer,
+      $$LegacyCatalogPackageComponentsTableCreateCompanionBuilder,
+      $$LegacyCatalogPackageComponentsTableUpdateCompanionBuilder,
+      (
+        LegacyCatalogPackageComponentRow,
+        $$LegacyCatalogPackageComponentsTableReferences,
+      ),
+      LegacyCatalogPackageComponentRow,
       PrefetchHooks Function({bool packageId, bool componentItemId})
     >;
-typedef $$CompanyProfilesTableCreateCompanionBuilder =
-    CompanyProfilesCompanion Function({
+typedef $$LegacyCompanyProfilesTableCreateCompanionBuilder =
+    LegacyCompanyProfilesCompanion Function({
       required String id,
       required String tradeName,
       Value<String?> legalName,
@@ -12567,8 +12605,8 @@ typedef $$CompanyProfilesTableCreateCompanionBuilder =
       required int updatedAt,
       Value<int> rowid,
     });
-typedef $$CompanyProfilesTableUpdateCompanionBuilder =
-    CompanyProfilesCompanion Function({
+typedef $$LegacyCompanyProfilesTableUpdateCompanionBuilder =
+    LegacyCompanyProfilesCompanion Function({
       Value<String> id,
       Value<String> tradeName,
       Value<String?> legalName,
@@ -12601,9 +12639,9 @@ typedef $$CompanyProfilesTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$CompanyProfilesTableFilterComposer
-    extends Composer<_$AppDatabase, $CompanyProfilesTable> {
-  $$CompanyProfilesTableFilterComposer({
+class $$LegacyCompanyProfilesTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyCompanyProfilesTable> {
+  $$LegacyCompanyProfilesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12756,9 +12794,9 @@ class $$CompanyProfilesTableFilterComposer
   );
 }
 
-class $$CompanyProfilesTableOrderingComposer
-    extends Composer<_$AppDatabase, $CompanyProfilesTable> {
-  $$CompanyProfilesTableOrderingComposer({
+class $$LegacyCompanyProfilesTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyCompanyProfilesTable> {
+  $$LegacyCompanyProfilesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -12911,9 +12949,9 @@ class $$CompanyProfilesTableOrderingComposer
   );
 }
 
-class $$CompanyProfilesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $CompanyProfilesTable> {
-  $$CompanyProfilesTableAnnotationComposer({
+class $$LegacyCompanyProfilesTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyCompanyProfilesTable> {
+  $$LegacyCompanyProfilesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -13038,41 +13076,50 @@ class $$CompanyProfilesTableAnnotationComposer
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
-class $$CompanyProfilesTableTableManager
+class $$LegacyCompanyProfilesTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $CompanyProfilesTable,
-          CompanyProfileRow,
-          $$CompanyProfilesTableFilterComposer,
-          $$CompanyProfilesTableOrderingComposer,
-          $$CompanyProfilesTableAnnotationComposer,
-          $$CompanyProfilesTableCreateCompanionBuilder,
-          $$CompanyProfilesTableUpdateCompanionBuilder,
+          _$LegacyAppDatabaseV3,
+          $LegacyCompanyProfilesTable,
+          LegacyCompanyProfileRow,
+          $$LegacyCompanyProfilesTableFilterComposer,
+          $$LegacyCompanyProfilesTableOrderingComposer,
+          $$LegacyCompanyProfilesTableAnnotationComposer,
+          $$LegacyCompanyProfilesTableCreateCompanionBuilder,
+          $$LegacyCompanyProfilesTableUpdateCompanionBuilder,
           (
-            CompanyProfileRow,
+            LegacyCompanyProfileRow,
             BaseReferences<
-              _$AppDatabase,
-              $CompanyProfilesTable,
-              CompanyProfileRow
+              _$LegacyAppDatabaseV3,
+              $LegacyCompanyProfilesTable,
+              LegacyCompanyProfileRow
             >,
           ),
-          CompanyProfileRow,
+          LegacyCompanyProfileRow,
           PrefetchHooks Function()
         > {
-  $$CompanyProfilesTableTableManager(
-    _$AppDatabase db,
-    $CompanyProfilesTable table,
+  $$LegacyCompanyProfilesTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyCompanyProfilesTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$CompanyProfilesTableFilterComposer($db: db, $table: table),
+              $$LegacyCompanyProfilesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$CompanyProfilesTableOrderingComposer($db: db, $table: table),
+              $$LegacyCompanyProfilesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
           createComputedFieldComposer: () =>
-              $$CompanyProfilesTableAnnotationComposer($db: db, $table: table),
+              $$LegacyCompanyProfilesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -13105,7 +13152,7 @@ class $$CompanyProfilesTableTableManager
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => CompanyProfilesCompanion(
+              }) => LegacyCompanyProfilesCompanion(
                 id: id,
                 tradeName: tradeName,
                 legalName: legalName,
@@ -13169,7 +13216,7 @@ class $$CompanyProfilesTableTableManager
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
-              }) => CompanyProfilesCompanion.insert(
+              }) => LegacyCompanyProfilesCompanion.insert(
                 id: id,
                 tradeName: tradeName,
                 legalName: legalName,
@@ -13209,25 +13256,29 @@ class $$CompanyProfilesTableTableManager
       );
 }
 
-typedef $$CompanyProfilesTableProcessedTableManager =
+typedef $$LegacyCompanyProfilesTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $CompanyProfilesTable,
-      CompanyProfileRow,
-      $$CompanyProfilesTableFilterComposer,
-      $$CompanyProfilesTableOrderingComposer,
-      $$CompanyProfilesTableAnnotationComposer,
-      $$CompanyProfilesTableCreateCompanionBuilder,
-      $$CompanyProfilesTableUpdateCompanionBuilder,
+      _$LegacyAppDatabaseV3,
+      $LegacyCompanyProfilesTable,
+      LegacyCompanyProfileRow,
+      $$LegacyCompanyProfilesTableFilterComposer,
+      $$LegacyCompanyProfilesTableOrderingComposer,
+      $$LegacyCompanyProfilesTableAnnotationComposer,
+      $$LegacyCompanyProfilesTableCreateCompanionBuilder,
+      $$LegacyCompanyProfilesTableUpdateCompanionBuilder,
       (
-        CompanyProfileRow,
-        BaseReferences<_$AppDatabase, $CompanyProfilesTable, CompanyProfileRow>,
+        LegacyCompanyProfileRow,
+        BaseReferences<
+          _$LegacyAppDatabaseV3,
+          $LegacyCompanyProfilesTable,
+          LegacyCompanyProfileRow
+        >,
       ),
-      CompanyProfileRow,
+      LegacyCompanyProfileRow,
       PrefetchHooks Function()
     >;
-typedef $$QuotesTableCreateCompanionBuilder =
-    QuotesCompanion Function({
+typedef $$LegacyQuotesTableCreateCompanionBuilder =
+    LegacyQuotesCompanion Function({
       required String id,
       required String number,
       required String status,
@@ -13243,8 +13294,8 @@ typedef $$QuotesTableCreateCompanionBuilder =
       Value<int?> approvedAt,
       Value<int> rowid,
     });
-typedef $$QuotesTableUpdateCompanionBuilder =
-    QuotesCompanion Function({
+typedef $$LegacyQuotesTableUpdateCompanionBuilder =
+    LegacyQuotesCompanion Function({
       Value<String> id,
       Value<String> number,
       Value<String> status,
@@ -13261,29 +13312,34 @@ typedef $$QuotesTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuotesTableReferences
-    extends BaseReferences<_$AppDatabase, $QuotesTable, QuoteRow> {
-  $$QuotesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$LegacyQuotesTableReferences
+    extends
+        BaseReferences<
+          _$LegacyAppDatabaseV3,
+          $LegacyQuotesTable,
+          LegacyQuoteRow
+        > {
+  $$LegacyQuotesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static MultiTypedResultKey<
-    $QuoteClientSnapshotsTable,
-    List<QuoteClientSnapshotRow>
+    $LegacyQuoteClientSnapshotsTable,
+    List<LegacyQuoteClientSnapshotRow>
   >
-  _quoteClientSnapshotsRefsTable(_$AppDatabase db) =>
+  _legacyQuoteClientSnapshotsRefsTable(_$LegacyAppDatabaseV3 db) =>
       MultiTypedResultKey.fromTable(
-        db.quoteClientSnapshots,
+        db.legacyQuoteClientSnapshots,
         aliasName: 'quotes__id__quote_client_snapshots__quote_id',
       );
 
-  $$QuoteClientSnapshotsTableProcessedTableManager
-  get quoteClientSnapshotsRefs {
-    final manager = $$QuoteClientSnapshotsTableTableManager(
+  $$LegacyQuoteClientSnapshotsTableProcessedTableManager
+  get legacyQuoteClientSnapshotsRefs {
+    final manager = $$LegacyQuoteClientSnapshotsTableTableManager(
       $_db,
-      $_db.quoteClientSnapshots,
+      $_db.legacyQuoteClientSnapshots,
     ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _quoteClientSnapshotsRefsTable($_db),
+      _legacyQuoteClientSnapshotsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -13291,23 +13347,24 @@ final class $$QuotesTableReferences
   }
 
   static MultiTypedResultKey<
-    $QuoteEventSnapshotsTable,
-    List<QuoteEventSnapshotRow>
+    $LegacyQuoteEventSnapshotsTable,
+    List<LegacyQuoteEventSnapshotRow>
   >
-  _quoteEventSnapshotsRefsTable(_$AppDatabase db) =>
+  _legacyQuoteEventSnapshotsRefsTable(_$LegacyAppDatabaseV3 db) =>
       MultiTypedResultKey.fromTable(
-        db.quoteEventSnapshots,
+        db.legacyQuoteEventSnapshots,
         aliasName: 'quotes__id__quote_event_snapshots__quote_id',
       );
 
-  $$QuoteEventSnapshotsTableProcessedTableManager get quoteEventSnapshotsRefs {
-    final manager = $$QuoteEventSnapshotsTableTableManager(
+  $$LegacyQuoteEventSnapshotsTableProcessedTableManager
+  get legacyQuoteEventSnapshotsRefs {
+    final manager = $$LegacyQuoteEventSnapshotsTableTableManager(
       $_db,
-      $_db.quoteEventSnapshots,
+      $_db.legacyQuoteEventSnapshots,
     ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _quoteEventSnapshotsRefsTable($_db),
+      _legacyQuoteEventSnapshotsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -13315,86 +13372,74 @@ final class $$QuotesTableReferences
   }
 
   static MultiTypedResultKey<
-    $QuoteCompanySnapshotsTable,
-    List<QuoteCompanySnapshotRow>
+    $LegacyQuoteCompanySnapshotsTable,
+    List<LegacyQuoteCompanySnapshotRow>
   >
-  _quoteCompanySnapshotsRefsTable(_$AppDatabase db) =>
+  _legacyQuoteCompanySnapshotsRefsTable(_$LegacyAppDatabaseV3 db) =>
       MultiTypedResultKey.fromTable(
-        db.quoteCompanySnapshots,
+        db.legacyQuoteCompanySnapshots,
         aliasName: 'quotes__id__quote_company_snapshots__quote_id',
       );
 
-  $$QuoteCompanySnapshotsTableProcessedTableManager
-  get quoteCompanySnapshotsRefs {
-    final manager = $$QuoteCompanySnapshotsTableTableManager(
+  $$LegacyQuoteCompanySnapshotsTableProcessedTableManager
+  get legacyQuoteCompanySnapshotsRefs {
+    final manager = $$LegacyQuoteCompanySnapshotsTableTableManager(
       $_db,
-      $_db.quoteCompanySnapshots,
+      $_db.legacyQuoteCompanySnapshots,
     ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _quoteCompanySnapshotsRefsTable($_db),
+      _legacyQuoteCompanySnapshotsRefsTable($_db),
     );
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$QuoteLineItemsTable, List<QuoteLineItemRow>>
-  _quoteLineItemsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.quoteLineItems,
-    aliasName: 'quotes__id__quote_line_items__quote_id',
-  );
-
-  $$QuoteLineItemsTableProcessedTableManager get quoteLineItemsRefs {
-    final manager = $$QuoteLineItemsTableTableManager(
-      $_db,
-      $_db.quoteLineItems,
-    ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_quoteLineItemsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
   static MultiTypedResultKey<
-    $QuoteStatusHistoryTable,
-    List<QuoteStatusHistoryRow>
+    $LegacyQuoteLineItemsTable,
+    List<LegacyQuoteLineItemRow>
   >
-  _quoteStatusHistoryRefsTable(_$AppDatabase db) =>
+  _legacyQuoteLineItemsRefsTable(_$LegacyAppDatabaseV3 db) =>
       MultiTypedResultKey.fromTable(
-        db.quoteStatusHistory,
-        aliasName: 'quotes__id__quote_status_history__quote_id',
+        db.legacyQuoteLineItems,
+        aliasName: 'quotes__id__quote_line_items__quote_id',
       );
 
-  $$QuoteStatusHistoryTableProcessedTableManager get quoteStatusHistoryRefs {
-    final manager = $$QuoteStatusHistoryTableTableManager(
+  $$LegacyQuoteLineItemsTableProcessedTableManager
+  get legacyQuoteLineItemsRefs {
+    final manager = $$LegacyQuoteLineItemsTableTableManager(
       $_db,
-      $_db.quoteStatusHistory,
+      $_db.legacyQuoteLineItems,
     ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _quoteStatusHistoryRefsTable($_db),
+      _legacyQuoteLineItemsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
-  static MultiTypedResultKey<$FinancialEntriesTable, List<FinancialEntryRow>>
-  _financialEntriesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.financialEntries,
-    aliasName: 'quotes__id__financial_entries__quote_id',
-  );
+  static MultiTypedResultKey<
+    $LegacyQuoteStatusHistoryTable,
+    List<LegacyQuoteStatusHistoryRow>
+  >
+  _legacyQuoteStatusHistoryRefsTable(_$LegacyAppDatabaseV3 db) =>
+      MultiTypedResultKey.fromTable(
+        db.legacyQuoteStatusHistory,
+        aliasName: 'quotes__id__quote_status_history__quote_id',
+      );
 
-  $$FinancialEntriesTableProcessedTableManager get financialEntriesRefs {
-    final manager = $$FinancialEntriesTableTableManager(
+  $$LegacyQuoteStatusHistoryTableProcessedTableManager
+  get legacyQuoteStatusHistoryRefs {
+    final manager = $$LegacyQuoteStatusHistoryTableTableManager(
       $_db,
-      $_db.financialEntries,
+      $_db.legacyQuoteStatusHistory,
     ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _financialEntriesRefsTable($_db),
+      _legacyQuoteStatusHistoryRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -13402,9 +13447,9 @@ final class $$QuotesTableReferences
   }
 }
 
-class $$QuotesTableFilterComposer
-    extends Composer<_$AppDatabase, $QuotesTable> {
-  $$QuotesTableFilterComposer({
+class $$LegacyQuotesTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuotesTable> {
+  $$LegacyQuotesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -13476,73 +13521,24 @@ class $$QuotesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> quoteClientSnapshotsRefs(
-    Expression<bool> Function($$QuoteClientSnapshotsTableFilterComposer f) f,
+  Expression<bool> legacyQuoteClientSnapshotsRefs(
+    Expression<bool> Function($$LegacyQuoteClientSnapshotsTableFilterComposer f)
+    f,
   ) {
-    final $$QuoteClientSnapshotsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.quoteClientSnapshots,
-      getReferencedColumn: (t) => t.quoteId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteClientSnapshotsTableFilterComposer(
-            $db: $db,
-            $table: $db.quoteClientSnapshots,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> quoteEventSnapshotsRefs(
-    Expression<bool> Function($$QuoteEventSnapshotsTableFilterComposer f) f,
-  ) {
-    final $$QuoteEventSnapshotsTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.quoteEventSnapshots,
-      getReferencedColumn: (t) => t.quoteId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteEventSnapshotsTableFilterComposer(
-            $db: $db,
-            $table: $db.quoteEventSnapshots,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> quoteCompanySnapshotsRefs(
-    Expression<bool> Function($$QuoteCompanySnapshotsTableFilterComposer f) f,
-  ) {
-    final $$QuoteCompanySnapshotsTableFilterComposer composer =
+    final $$LegacyQuoteClientSnapshotsTableFilterComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteCompanySnapshots,
+          referencedTable: $db.legacyQuoteClientSnapshots,
           getReferencedColumn: (t) => t.quoteId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteCompanySnapshotsTableFilterComposer(
+              }) => $$LegacyQuoteClientSnapshotsTableFilterComposer(
                 $db: $db,
-                $table: $db.quoteCompanySnapshots,
+                $table: $db.legacyQuoteClientSnapshots,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -13552,22 +13548,78 @@ class $$QuotesTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> quoteLineItemsRefs(
-    Expression<bool> Function($$QuoteLineItemsTableFilterComposer f) f,
+  Expression<bool> legacyQuoteEventSnapshotsRefs(
+    Expression<bool> Function($$LegacyQuoteEventSnapshotsTableFilterComposer f)
+    f,
   ) {
-    final $$QuoteLineItemsTableFilterComposer composer = $composerBuilder(
+    final $$LegacyQuoteEventSnapshotsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.legacyQuoteEventSnapshots,
+          getReferencedColumn: (t) => t.quoteId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LegacyQuoteEventSnapshotsTableFilterComposer(
+                $db: $db,
+                $table: $db.legacyQuoteEventSnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> legacyQuoteCompanySnapshotsRefs(
+    Expression<bool> Function(
+      $$LegacyQuoteCompanySnapshotsTableFilterComposer f,
+    )
+    f,
+  ) {
+    final $$LegacyQuoteCompanySnapshotsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.legacyQuoteCompanySnapshots,
+          getReferencedColumn: (t) => t.quoteId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$LegacyQuoteCompanySnapshotsTableFilterComposer(
+                $db: $db,
+                $table: $db.legacyQuoteCompanySnapshots,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
+  Expression<bool> legacyQuoteLineItemsRefs(
+    Expression<bool> Function($$LegacyQuoteLineItemsTableFilterComposer f) f,
+  ) {
+    final $$LegacyQuoteLineItemsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.quoteLineItems,
+      referencedTable: $db.legacyQuoteLineItems,
       getReferencedColumn: (t) => t.quoteId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteLineItemsTableFilterComposer(
+          }) => $$LegacyQuoteLineItemsTableFilterComposer(
             $db: $db,
-            $table: $db.quoteLineItems,
+            $table: $db.legacyQuoteLineItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -13577,60 +13629,37 @@ class $$QuotesTableFilterComposer
     return f(composer);
   }
 
-  Expression<bool> quoteStatusHistoryRefs(
-    Expression<bool> Function($$QuoteStatusHistoryTableFilterComposer f) f,
+  Expression<bool> legacyQuoteStatusHistoryRefs(
+    Expression<bool> Function($$LegacyQuoteStatusHistoryTableFilterComposer f)
+    f,
   ) {
-    final $$QuoteStatusHistoryTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.quoteStatusHistory,
-      getReferencedColumn: (t) => t.quoteId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteStatusHistoryTableFilterComposer(
-            $db: $db,
-            $table: $db.quoteStatusHistory,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$LegacyQuoteStatusHistoryTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.legacyQuoteStatusHistory,
+          getReferencedColumn: (t) => t.quoteId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> financialEntriesRefs(
-    Expression<bool> Function($$FinancialEntriesTableFilterComposer f) f,
-  ) {
-    final $$FinancialEntriesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.financialEntries,
-      getReferencedColumn: (t) => t.quoteId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FinancialEntriesTableFilterComposer(
-            $db: $db,
-            $table: $db.financialEntries,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyQuoteStatusHistoryTableFilterComposer(
+                $db: $db,
+                $table: $db.legacyQuoteStatusHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
 
-class $$QuotesTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuotesTable> {
-  $$QuotesTableOrderingComposer({
+class $$LegacyQuotesTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuotesTable> {
+  $$LegacyQuotesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -13703,9 +13732,9 @@ class $$QuotesTableOrderingComposer
   );
 }
 
-class $$QuotesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuotesTable> {
-  $$QuotesTableAnnotationComposer({
+class $$LegacyQuotesTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuotesTable> {
+  $$LegacyQuotesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -13765,23 +13794,26 @@ class $$QuotesTableAnnotationComposer
     builder: (column) => column,
   );
 
-  Expression<T> quoteClientSnapshotsRefs<T extends Object>(
-    Expression<T> Function($$QuoteClientSnapshotsTableAnnotationComposer a) f,
+  Expression<T> legacyQuoteClientSnapshotsRefs<T extends Object>(
+    Expression<T> Function(
+      $$LegacyQuoteClientSnapshotsTableAnnotationComposer a,
+    )
+    f,
   ) {
-    final $$QuoteClientSnapshotsTableAnnotationComposer composer =
+    final $$LegacyQuoteClientSnapshotsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteClientSnapshots,
+          referencedTable: $db.legacyQuoteClientSnapshots,
           getReferencedColumn: (t) => t.quoteId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteClientSnapshotsTableAnnotationComposer(
+              }) => $$LegacyQuoteClientSnapshotsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.quoteClientSnapshots,
+                $table: $db.legacyQuoteClientSnapshots,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -13791,23 +13823,24 @@ class $$QuotesTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> quoteEventSnapshotsRefs<T extends Object>(
-    Expression<T> Function($$QuoteEventSnapshotsTableAnnotationComposer a) f,
+  Expression<T> legacyQuoteEventSnapshotsRefs<T extends Object>(
+    Expression<T> Function($$LegacyQuoteEventSnapshotsTableAnnotationComposer a)
+    f,
   ) {
-    final $$QuoteEventSnapshotsTableAnnotationComposer composer =
+    final $$LegacyQuoteEventSnapshotsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteEventSnapshots,
+          referencedTable: $db.legacyQuoteEventSnapshots,
           getReferencedColumn: (t) => t.quoteId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteEventSnapshotsTableAnnotationComposer(
+              }) => $$LegacyQuoteEventSnapshotsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.quoteEventSnapshots,
+                $table: $db.legacyQuoteEventSnapshots,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -13817,23 +13850,26 @@ class $$QuotesTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> quoteCompanySnapshotsRefs<T extends Object>(
-    Expression<T> Function($$QuoteCompanySnapshotsTableAnnotationComposer a) f,
+  Expression<T> legacyQuoteCompanySnapshotsRefs<T extends Object>(
+    Expression<T> Function(
+      $$LegacyQuoteCompanySnapshotsTableAnnotationComposer a,
+    )
+    f,
   ) {
-    final $$QuoteCompanySnapshotsTableAnnotationComposer composer =
+    final $$LegacyQuoteCompanySnapshotsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteCompanySnapshots,
+          referencedTable: $db.legacyQuoteCompanySnapshots,
           getReferencedColumn: (t) => t.quoteId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteCompanySnapshotsTableAnnotationComposer(
+              }) => $$LegacyQuoteCompanySnapshotsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.quoteCompanySnapshots,
+                $table: $db.legacyQuoteCompanySnapshots,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -13843,48 +13879,23 @@ class $$QuotesTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> quoteLineItemsRefs<T extends Object>(
-    Expression<T> Function($$QuoteLineItemsTableAnnotationComposer a) f,
+  Expression<T> legacyQuoteLineItemsRefs<T extends Object>(
+    Expression<T> Function($$LegacyQuoteLineItemsTableAnnotationComposer a) f,
   ) {
-    final $$QuoteLineItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.quoteLineItems,
-      getReferencedColumn: (t) => t.quoteId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteLineItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.quoteLineItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> quoteStatusHistoryRefs<T extends Object>(
-    Expression<T> Function($$QuoteStatusHistoryTableAnnotationComposer a) f,
-  ) {
-    final $$QuoteStatusHistoryTableAnnotationComposer composer =
+    final $$LegacyQuoteLineItemsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteStatusHistory,
+          referencedTable: $db.legacyQuoteLineItems,
           getReferencedColumn: (t) => t.quoteId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteStatusHistoryTableAnnotationComposer(
+              }) => $$LegacyQuoteLineItemsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.quoteStatusHistory,
+                $table: $db.legacyQuoteLineItems,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -13894,65 +13905,68 @@ class $$QuotesTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> financialEntriesRefs<T extends Object>(
-    Expression<T> Function($$FinancialEntriesTableAnnotationComposer a) f,
+  Expression<T> legacyQuoteStatusHistoryRefs<T extends Object>(
+    Expression<T> Function($$LegacyQuoteStatusHistoryTableAnnotationComposer a)
+    f,
   ) {
-    final $$FinancialEntriesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.financialEntries,
-      getReferencedColumn: (t) => t.quoteId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FinancialEntriesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.financialEntries,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$LegacyQuoteStatusHistoryTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.legacyQuoteStatusHistory,
+          getReferencedColumn: (t) => t.quoteId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyQuoteStatusHistoryTableAnnotationComposer(
+                $db: $db,
+                $table: $db.legacyQuoteStatusHistory,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
 
-class $$QuotesTableTableManager
+class $$LegacyQuotesTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuotesTable,
-          QuoteRow,
-          $$QuotesTableFilterComposer,
-          $$QuotesTableOrderingComposer,
-          $$QuotesTableAnnotationComposer,
-          $$QuotesTableCreateCompanionBuilder,
-          $$QuotesTableUpdateCompanionBuilder,
-          (QuoteRow, $$QuotesTableReferences),
-          QuoteRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuotesTable,
+          LegacyQuoteRow,
+          $$LegacyQuotesTableFilterComposer,
+          $$LegacyQuotesTableOrderingComposer,
+          $$LegacyQuotesTableAnnotationComposer,
+          $$LegacyQuotesTableCreateCompanionBuilder,
+          $$LegacyQuotesTableUpdateCompanionBuilder,
+          (LegacyQuoteRow, $$LegacyQuotesTableReferences),
+          LegacyQuoteRow,
           PrefetchHooks Function({
-            bool quoteClientSnapshotsRefs,
-            bool quoteEventSnapshotsRefs,
-            bool quoteCompanySnapshotsRefs,
-            bool quoteLineItemsRefs,
-            bool quoteStatusHistoryRefs,
-            bool financialEntriesRefs,
+            bool legacyQuoteClientSnapshotsRefs,
+            bool legacyQuoteEventSnapshotsRefs,
+            bool legacyQuoteCompanySnapshotsRefs,
+            bool legacyQuoteLineItemsRefs,
+            bool legacyQuoteStatusHistoryRefs,
           })
         > {
-  $$QuotesTableTableManager(_$AppDatabase db, $QuotesTable table)
-    : super(
+  $$LegacyQuotesTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuotesTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuotesTableFilterComposer($db: db, $table: table),
+              $$LegacyQuotesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$QuotesTableOrderingComposer($db: db, $table: table),
+              $$LegacyQuotesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$QuotesTableAnnotationComposer($db: db, $table: table),
+              $$LegacyQuotesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -13969,7 +13983,7 @@ class $$QuotesTableTableManager
                 Value<int> updatedAt = const Value.absent(),
                 Value<int?> approvedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuotesCompanion(
+              }) => LegacyQuotesCompanion(
                 id: id,
                 number: number,
                 status: status,
@@ -14001,7 +14015,7 @@ class $$QuotesTableTableManager
                 required int updatedAt,
                 Value<int?> approvedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuotesCompanion.insert(
+              }) => LegacyQuotesCompanion.insert(
                 id: id,
                 number: number,
                 status: status,
@@ -14019,152 +14033,135 @@ class $$QuotesTableTableManager
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) =>
-                    (e.readTable(table), $$QuotesTableReferences(db, table, e)),
+                (e) => (
+                  e.readTable(table),
+                  $$LegacyQuotesTableReferences(db, table, e),
+                ),
               )
               .toList(),
           prefetchHooksCallback:
               ({
-                quoteClientSnapshotsRefs = false,
-                quoteEventSnapshotsRefs = false,
-                quoteCompanySnapshotsRefs = false,
-                quoteLineItemsRefs = false,
-                quoteStatusHistoryRefs = false,
-                financialEntriesRefs = false,
+                legacyQuoteClientSnapshotsRefs = false,
+                legacyQuoteEventSnapshotsRefs = false,
+                legacyQuoteCompanySnapshotsRefs = false,
+                legacyQuoteLineItemsRefs = false,
+                legacyQuoteStatusHistoryRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
-                    if (quoteClientSnapshotsRefs) db.quoteClientSnapshots,
-                    if (quoteEventSnapshotsRefs) db.quoteEventSnapshots,
-                    if (quoteCompanySnapshotsRefs) db.quoteCompanySnapshots,
-                    if (quoteLineItemsRefs) db.quoteLineItems,
-                    if (quoteStatusHistoryRefs) db.quoteStatusHistory,
-                    if (financialEntriesRefs) db.financialEntries,
+                    if (legacyQuoteClientSnapshotsRefs)
+                      db.legacyQuoteClientSnapshots,
+                    if (legacyQuoteEventSnapshotsRefs)
+                      db.legacyQuoteEventSnapshots,
+                    if (legacyQuoteCompanySnapshotsRefs)
+                      db.legacyQuoteCompanySnapshots,
+                    if (legacyQuoteLineItemsRefs) db.legacyQuoteLineItems,
+                    if (legacyQuoteStatusHistoryRefs)
+                      db.legacyQuoteStatusHistory,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
                     return [
-                      if (quoteClientSnapshotsRefs)
+                      if (legacyQuoteClientSnapshotsRefs)
                         await $_getPrefetchedData<
-                          QuoteRow,
-                          $QuotesTable,
-                          QuoteClientSnapshotRow
+                          LegacyQuoteRow,
+                          $LegacyQuotesTable,
+                          LegacyQuoteClientSnapshotRow
                         >(
                           currentTable: table,
-                          referencedTable: $$QuotesTableReferences
-                              ._quoteClientSnapshotsRefsTable(db),
+                          referencedTable: $$LegacyQuotesTableReferences
+                              ._legacyQuoteClientSnapshotsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$QuotesTableReferences(
+                              $$LegacyQuotesTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).quoteClientSnapshotsRefs,
+                              ).legacyQuoteClientSnapshotsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.quoteId == item.id,
                               ),
                           typedResults: items,
                         ),
-                      if (quoteEventSnapshotsRefs)
+                      if (legacyQuoteEventSnapshotsRefs)
                         await $_getPrefetchedData<
-                          QuoteRow,
-                          $QuotesTable,
-                          QuoteEventSnapshotRow
+                          LegacyQuoteRow,
+                          $LegacyQuotesTable,
+                          LegacyQuoteEventSnapshotRow
                         >(
                           currentTable: table,
-                          referencedTable: $$QuotesTableReferences
-                              ._quoteEventSnapshotsRefsTable(db),
+                          referencedTable: $$LegacyQuotesTableReferences
+                              ._legacyQuoteEventSnapshotsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$QuotesTableReferences(
+                              $$LegacyQuotesTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).quoteEventSnapshotsRefs,
+                              ).legacyQuoteEventSnapshotsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.quoteId == item.id,
                               ),
                           typedResults: items,
                         ),
-                      if (quoteCompanySnapshotsRefs)
+                      if (legacyQuoteCompanySnapshotsRefs)
                         await $_getPrefetchedData<
-                          QuoteRow,
-                          $QuotesTable,
-                          QuoteCompanySnapshotRow
+                          LegacyQuoteRow,
+                          $LegacyQuotesTable,
+                          LegacyQuoteCompanySnapshotRow
                         >(
                           currentTable: table,
-                          referencedTable: $$QuotesTableReferences
-                              ._quoteCompanySnapshotsRefsTable(db),
+                          referencedTable: $$LegacyQuotesTableReferences
+                              ._legacyQuoteCompanySnapshotsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$QuotesTableReferences(
+                              $$LegacyQuotesTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).quoteCompanySnapshotsRefs,
+                              ).legacyQuoteCompanySnapshotsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.quoteId == item.id,
                               ),
                           typedResults: items,
                         ),
-                      if (quoteLineItemsRefs)
+                      if (legacyQuoteLineItemsRefs)
                         await $_getPrefetchedData<
-                          QuoteRow,
-                          $QuotesTable,
-                          QuoteLineItemRow
+                          LegacyQuoteRow,
+                          $LegacyQuotesTable,
+                          LegacyQuoteLineItemRow
                         >(
                           currentTable: table,
-                          referencedTable: $$QuotesTableReferences
-                              ._quoteLineItemsRefsTable(db),
+                          referencedTable: $$LegacyQuotesTableReferences
+                              ._legacyQuoteLineItemsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$QuotesTableReferences(
+                              $$LegacyQuotesTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).quoteLineItemsRefs,
+                              ).legacyQuoteLineItemsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.quoteId == item.id,
                               ),
                           typedResults: items,
                         ),
-                      if (quoteStatusHistoryRefs)
+                      if (legacyQuoteStatusHistoryRefs)
                         await $_getPrefetchedData<
-                          QuoteRow,
-                          $QuotesTable,
-                          QuoteStatusHistoryRow
+                          LegacyQuoteRow,
+                          $LegacyQuotesTable,
+                          LegacyQuoteStatusHistoryRow
                         >(
                           currentTable: table,
-                          referencedTable: $$QuotesTableReferences
-                              ._quoteStatusHistoryRefsTable(db),
+                          referencedTable: $$LegacyQuotesTableReferences
+                              ._legacyQuoteStatusHistoryRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$QuotesTableReferences(
+                              $$LegacyQuotesTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).quoteStatusHistoryRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.quoteId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (financialEntriesRefs)
-                        await $_getPrefetchedData<
-                          QuoteRow,
-                          $QuotesTable,
-                          FinancialEntryRow
-                        >(
-                          currentTable: table,
-                          referencedTable: $$QuotesTableReferences
-                              ._financialEntriesRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$QuotesTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).financialEntriesRefs,
+                              ).legacyQuoteStatusHistoryRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.quoteId == item.id,
@@ -14179,29 +14176,28 @@ class $$QuotesTableTableManager
       );
 }
 
-typedef $$QuotesTableProcessedTableManager =
+typedef $$LegacyQuotesTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuotesTable,
-      QuoteRow,
-      $$QuotesTableFilterComposer,
-      $$QuotesTableOrderingComposer,
-      $$QuotesTableAnnotationComposer,
-      $$QuotesTableCreateCompanionBuilder,
-      $$QuotesTableUpdateCompanionBuilder,
-      (QuoteRow, $$QuotesTableReferences),
-      QuoteRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuotesTable,
+      LegacyQuoteRow,
+      $$LegacyQuotesTableFilterComposer,
+      $$LegacyQuotesTableOrderingComposer,
+      $$LegacyQuotesTableAnnotationComposer,
+      $$LegacyQuotesTableCreateCompanionBuilder,
+      $$LegacyQuotesTableUpdateCompanionBuilder,
+      (LegacyQuoteRow, $$LegacyQuotesTableReferences),
+      LegacyQuoteRow,
       PrefetchHooks Function({
-        bool quoteClientSnapshotsRefs,
-        bool quoteEventSnapshotsRefs,
-        bool quoteCompanySnapshotsRefs,
-        bool quoteLineItemsRefs,
-        bool quoteStatusHistoryRefs,
-        bool financialEntriesRefs,
+        bool legacyQuoteClientSnapshotsRefs,
+        bool legacyQuoteEventSnapshotsRefs,
+        bool legacyQuoteCompanySnapshotsRefs,
+        bool legacyQuoteLineItemsRefs,
+        bool legacyQuoteStatusHistoryRefs,
       })
     >;
-typedef $$QuoteClientSnapshotsTableCreateCompanionBuilder =
-    QuoteClientSnapshotsCompanion Function({
+typedef $$LegacyQuoteClientSnapshotsTableCreateCompanionBuilder =
+    LegacyQuoteClientSnapshotsCompanion Function({
       required String quoteId,
       Value<String?> sourceClientId,
       required String type,
@@ -14214,8 +14210,8 @@ typedef $$QuoteClientSnapshotsTableCreateCompanionBuilder =
       Value<String?> addressSummary,
       Value<int> rowid,
     });
-typedef $$QuoteClientSnapshotsTableUpdateCompanionBuilder =
-    QuoteClientSnapshotsCompanion Function({
+typedef $$LegacyQuoteClientSnapshotsTableUpdateCompanionBuilder =
+    LegacyQuoteClientSnapshotsCompanion Function({
       Value<String> quoteId,
       Value<String?> sourceClientId,
       Value<String> type,
@@ -14229,28 +14225,29 @@ typedef $$QuoteClientSnapshotsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuoteClientSnapshotsTableReferences
+final class $$LegacyQuoteClientSnapshotsTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $QuoteClientSnapshotsTable,
-          QuoteClientSnapshotRow
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteClientSnapshotsTable,
+          LegacyQuoteClientSnapshotRow
         > {
-  $$QuoteClientSnapshotsTableReferences(
+  $$LegacyQuoteClientSnapshotsTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
-      db.quotes.createAlias('quote_client_snapshots__quote_id__quotes__id');
+  static $LegacyQuotesTable _quoteIdTable(_$LegacyAppDatabaseV3 db) => db
+      .legacyQuotes
+      .createAlias('quote_client_snapshots__quote_id__quotes__id');
 
-  $$QuotesTableProcessedTableManager get quoteId {
+  $$LegacyQuotesTableProcessedTableManager get quoteId {
     final $_column = $_itemColumn<String>('quote_id')!;
 
-    final manager = $$QuotesTableTableManager(
+    final manager = $$LegacyQuotesTableTableManager(
       $_db,
-      $_db.quotes,
+      $_db.legacyQuotes,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
     if (item == null) return manager;
@@ -14260,9 +14257,9 @@ final class $$QuoteClientSnapshotsTableReferences
   }
 }
 
-class $$QuoteClientSnapshotsTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteClientSnapshotsTable> {
-  $$QuoteClientSnapshotsTableFilterComposer({
+class $$LegacyQuoteClientSnapshotsTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteClientSnapshotsTable> {
+  $$LegacyQuoteClientSnapshotsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -14314,20 +14311,20 @@ class $$QuoteClientSnapshotsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$QuotesTableFilterComposer get quoteId {
-    final $$QuotesTableFilterComposer composer = $composerBuilder(
+  $$LegacyQuotesTableFilterComposer get quoteId {
+    final $$LegacyQuotesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableFilterComposer(
+          }) => $$LegacyQuotesTableFilterComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14338,9 +14335,9 @@ class $$QuoteClientSnapshotsTableFilterComposer
   }
 }
 
-class $$QuoteClientSnapshotsTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteClientSnapshotsTable> {
-  $$QuoteClientSnapshotsTableOrderingComposer({
+class $$LegacyQuoteClientSnapshotsTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteClientSnapshotsTable> {
+  $$LegacyQuoteClientSnapshotsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -14392,20 +14389,20 @@ class $$QuoteClientSnapshotsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$QuotesTableOrderingComposer get quoteId {
-    final $$QuotesTableOrderingComposer composer = $composerBuilder(
+  $$LegacyQuotesTableOrderingComposer get quoteId {
+    final $$LegacyQuotesTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableOrderingComposer(
+          }) => $$LegacyQuotesTableOrderingComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14416,9 +14413,9 @@ class $$QuoteClientSnapshotsTableOrderingComposer
   }
 }
 
-class $$QuoteClientSnapshotsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteClientSnapshotsTable> {
-  $$QuoteClientSnapshotsTableAnnotationComposer({
+class $$LegacyQuoteClientSnapshotsTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteClientSnapshotsTable> {
+  $$LegacyQuoteClientSnapshotsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -14464,20 +14461,20 @@ class $$QuoteClientSnapshotsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$QuotesTableAnnotationComposer get quoteId {
-    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
+  $$LegacyQuotesTableAnnotationComposer get quoteId {
+    final $$LegacyQuotesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableAnnotationComposer(
+          }) => $$LegacyQuotesTableAnnotationComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14488,37 +14485,43 @@ class $$QuoteClientSnapshotsTableAnnotationComposer
   }
 }
 
-class $$QuoteClientSnapshotsTableTableManager
+class $$LegacyQuoteClientSnapshotsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteClientSnapshotsTable,
-          QuoteClientSnapshotRow,
-          $$QuoteClientSnapshotsTableFilterComposer,
-          $$QuoteClientSnapshotsTableOrderingComposer,
-          $$QuoteClientSnapshotsTableAnnotationComposer,
-          $$QuoteClientSnapshotsTableCreateCompanionBuilder,
-          $$QuoteClientSnapshotsTableUpdateCompanionBuilder,
-          (QuoteClientSnapshotRow, $$QuoteClientSnapshotsTableReferences),
-          QuoteClientSnapshotRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteClientSnapshotsTable,
+          LegacyQuoteClientSnapshotRow,
+          $$LegacyQuoteClientSnapshotsTableFilterComposer,
+          $$LegacyQuoteClientSnapshotsTableOrderingComposer,
+          $$LegacyQuoteClientSnapshotsTableAnnotationComposer,
+          $$LegacyQuoteClientSnapshotsTableCreateCompanionBuilder,
+          $$LegacyQuoteClientSnapshotsTableUpdateCompanionBuilder,
+          (
+            LegacyQuoteClientSnapshotRow,
+            $$LegacyQuoteClientSnapshotsTableReferences,
+          ),
+          LegacyQuoteClientSnapshotRow,
           PrefetchHooks Function({bool quoteId})
         > {
-  $$QuoteClientSnapshotsTableTableManager(
-    _$AppDatabase db,
-    $QuoteClientSnapshotsTable table,
+  $$LegacyQuoteClientSnapshotsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteClientSnapshotsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteClientSnapshotsTableFilterComposer($db: db, $table: table),
+              $$LegacyQuoteClientSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$QuoteClientSnapshotsTableOrderingComposer(
+              $$LegacyQuoteClientSnapshotsTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$QuoteClientSnapshotsTableAnnotationComposer(
+              $$LegacyQuoteClientSnapshotsTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -14535,7 +14538,7 @@ class $$QuoteClientSnapshotsTableTableManager
                 Value<String?> email = const Value.absent(),
                 Value<String?> addressSummary = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteClientSnapshotsCompanion(
+              }) => LegacyQuoteClientSnapshotsCompanion(
                 quoteId: quoteId,
                 sourceClientId: sourceClientId,
                 type: type,
@@ -14561,7 +14564,7 @@ class $$QuoteClientSnapshotsTableTableManager
                 Value<String?> email = const Value.absent(),
                 Value<String?> addressSummary = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteClientSnapshotsCompanion.insert(
+              }) => LegacyQuoteClientSnapshotsCompanion.insert(
                 quoteId: quoteId,
                 sourceClientId: sourceClientId,
                 type: type,
@@ -14578,7 +14581,7 @@ class $$QuoteClientSnapshotsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$QuoteClientSnapshotsTableReferences(db, table, e),
+                  $$LegacyQuoteClientSnapshotsTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -14608,10 +14611,10 @@ class $$QuoteClientSnapshotsTableTableManager
                                 currentTable: table,
                                 currentColumn: table.quoteId,
                                 referencedTable:
-                                    $$QuoteClientSnapshotsTableReferences
+                                    $$LegacyQuoteClientSnapshotsTableReferences
                                         ._quoteIdTable(db),
                                 referencedColumn:
-                                    $$QuoteClientSnapshotsTableReferences
+                                    $$LegacyQuoteClientSnapshotsTableReferences
                                         ._quoteIdTable(db)
                                         .id,
                               )
@@ -14629,22 +14632,25 @@ class $$QuoteClientSnapshotsTableTableManager
       );
 }
 
-typedef $$QuoteClientSnapshotsTableProcessedTableManager =
+typedef $$LegacyQuoteClientSnapshotsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteClientSnapshotsTable,
-      QuoteClientSnapshotRow,
-      $$QuoteClientSnapshotsTableFilterComposer,
-      $$QuoteClientSnapshotsTableOrderingComposer,
-      $$QuoteClientSnapshotsTableAnnotationComposer,
-      $$QuoteClientSnapshotsTableCreateCompanionBuilder,
-      $$QuoteClientSnapshotsTableUpdateCompanionBuilder,
-      (QuoteClientSnapshotRow, $$QuoteClientSnapshotsTableReferences),
-      QuoteClientSnapshotRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteClientSnapshotsTable,
+      LegacyQuoteClientSnapshotRow,
+      $$LegacyQuoteClientSnapshotsTableFilterComposer,
+      $$LegacyQuoteClientSnapshotsTableOrderingComposer,
+      $$LegacyQuoteClientSnapshotsTableAnnotationComposer,
+      $$LegacyQuoteClientSnapshotsTableCreateCompanionBuilder,
+      $$LegacyQuoteClientSnapshotsTableUpdateCompanionBuilder,
+      (
+        LegacyQuoteClientSnapshotRow,
+        $$LegacyQuoteClientSnapshotsTableReferences,
+      ),
+      LegacyQuoteClientSnapshotRow,
       PrefetchHooks Function({bool quoteId})
     >;
-typedef $$QuoteEventSnapshotsTableCreateCompanionBuilder =
-    QuoteEventSnapshotsCompanion Function({
+typedef $$LegacyQuoteEventSnapshotsTableCreateCompanionBuilder =
+    LegacyQuoteEventSnapshotsCompanion Function({
       required String quoteId,
       Value<String?> name,
       Value<String?> type,
@@ -14656,8 +14662,8 @@ typedef $$QuoteEventSnapshotsTableCreateCompanionBuilder =
       Value<int?> guestCount,
       Value<int> rowid,
     });
-typedef $$QuoteEventSnapshotsTableUpdateCompanionBuilder =
-    QuoteEventSnapshotsCompanion Function({
+typedef $$LegacyQuoteEventSnapshotsTableUpdateCompanionBuilder =
+    LegacyQuoteEventSnapshotsCompanion Function({
       Value<String> quoteId,
       Value<String?> name,
       Value<String?> type,
@@ -14670,28 +14676,29 @@ typedef $$QuoteEventSnapshotsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuoteEventSnapshotsTableReferences
+final class $$LegacyQuoteEventSnapshotsTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $QuoteEventSnapshotsTable,
-          QuoteEventSnapshotRow
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteEventSnapshotsTable,
+          LegacyQuoteEventSnapshotRow
         > {
-  $$QuoteEventSnapshotsTableReferences(
+  $$LegacyQuoteEventSnapshotsTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
-      db.quotes.createAlias('quote_event_snapshots__quote_id__quotes__id');
+  static $LegacyQuotesTable _quoteIdTable(_$LegacyAppDatabaseV3 db) => db
+      .legacyQuotes
+      .createAlias('quote_event_snapshots__quote_id__quotes__id');
 
-  $$QuotesTableProcessedTableManager get quoteId {
+  $$LegacyQuotesTableProcessedTableManager get quoteId {
     final $_column = $_itemColumn<String>('quote_id')!;
 
-    final manager = $$QuotesTableTableManager(
+    final manager = $$LegacyQuotesTableTableManager(
       $_db,
-      $_db.quotes,
+      $_db.legacyQuotes,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
     if (item == null) return manager;
@@ -14701,9 +14708,9 @@ final class $$QuoteEventSnapshotsTableReferences
   }
 }
 
-class $$QuoteEventSnapshotsTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteEventSnapshotsTable> {
-  $$QuoteEventSnapshotsTableFilterComposer({
+class $$LegacyQuoteEventSnapshotsTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteEventSnapshotsTable> {
+  $$LegacyQuoteEventSnapshotsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -14750,20 +14757,20 @@ class $$QuoteEventSnapshotsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$QuotesTableFilterComposer get quoteId {
-    final $$QuotesTableFilterComposer composer = $composerBuilder(
+  $$LegacyQuotesTableFilterComposer get quoteId {
+    final $$LegacyQuotesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableFilterComposer(
+          }) => $$LegacyQuotesTableFilterComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14774,9 +14781,9 @@ class $$QuoteEventSnapshotsTableFilterComposer
   }
 }
 
-class $$QuoteEventSnapshotsTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteEventSnapshotsTable> {
-  $$QuoteEventSnapshotsTableOrderingComposer({
+class $$LegacyQuoteEventSnapshotsTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteEventSnapshotsTable> {
+  $$LegacyQuoteEventSnapshotsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -14823,20 +14830,20 @@ class $$QuoteEventSnapshotsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$QuotesTableOrderingComposer get quoteId {
-    final $$QuotesTableOrderingComposer composer = $composerBuilder(
+  $$LegacyQuotesTableOrderingComposer get quoteId {
+    final $$LegacyQuotesTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableOrderingComposer(
+          }) => $$LegacyQuotesTableOrderingComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14847,9 +14854,9 @@ class $$QuoteEventSnapshotsTableOrderingComposer
   }
 }
 
-class $$QuoteEventSnapshotsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteEventSnapshotsTable> {
-  $$QuoteEventSnapshotsTableAnnotationComposer({
+class $$LegacyQuoteEventSnapshotsTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteEventSnapshotsTable> {
+  $$LegacyQuoteEventSnapshotsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -14884,20 +14891,20 @@ class $$QuoteEventSnapshotsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$QuotesTableAnnotationComposer get quoteId {
-    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
+  $$LegacyQuotesTableAnnotationComposer get quoteId {
+    final $$LegacyQuotesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableAnnotationComposer(
+          }) => $$LegacyQuotesTableAnnotationComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -14908,37 +14915,43 @@ class $$QuoteEventSnapshotsTableAnnotationComposer
   }
 }
 
-class $$QuoteEventSnapshotsTableTableManager
+class $$LegacyQuoteEventSnapshotsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteEventSnapshotsTable,
-          QuoteEventSnapshotRow,
-          $$QuoteEventSnapshotsTableFilterComposer,
-          $$QuoteEventSnapshotsTableOrderingComposer,
-          $$QuoteEventSnapshotsTableAnnotationComposer,
-          $$QuoteEventSnapshotsTableCreateCompanionBuilder,
-          $$QuoteEventSnapshotsTableUpdateCompanionBuilder,
-          (QuoteEventSnapshotRow, $$QuoteEventSnapshotsTableReferences),
-          QuoteEventSnapshotRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteEventSnapshotsTable,
+          LegacyQuoteEventSnapshotRow,
+          $$LegacyQuoteEventSnapshotsTableFilterComposer,
+          $$LegacyQuoteEventSnapshotsTableOrderingComposer,
+          $$LegacyQuoteEventSnapshotsTableAnnotationComposer,
+          $$LegacyQuoteEventSnapshotsTableCreateCompanionBuilder,
+          $$LegacyQuoteEventSnapshotsTableUpdateCompanionBuilder,
+          (
+            LegacyQuoteEventSnapshotRow,
+            $$LegacyQuoteEventSnapshotsTableReferences,
+          ),
+          LegacyQuoteEventSnapshotRow,
           PrefetchHooks Function({bool quoteId})
         > {
-  $$QuoteEventSnapshotsTableTableManager(
-    _$AppDatabase db,
-    $QuoteEventSnapshotsTable table,
+  $$LegacyQuoteEventSnapshotsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteEventSnapshotsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteEventSnapshotsTableFilterComposer($db: db, $table: table),
+              $$LegacyQuoteEventSnapshotsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$QuoteEventSnapshotsTableOrderingComposer(
+              $$LegacyQuoteEventSnapshotsTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$QuoteEventSnapshotsTableAnnotationComposer(
+              $$LegacyQuoteEventSnapshotsTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -14954,7 +14967,7 @@ class $$QuoteEventSnapshotsTableTableManager
                 Value<String?> addressSummary = const Value.absent(),
                 Value<int?> guestCount = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteEventSnapshotsCompanion(
+              }) => LegacyQuoteEventSnapshotsCompanion(
                 quoteId: quoteId,
                 name: name,
                 type: type,
@@ -14978,7 +14991,7 @@ class $$QuoteEventSnapshotsTableTableManager
                 Value<String?> addressSummary = const Value.absent(),
                 Value<int?> guestCount = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteEventSnapshotsCompanion.insert(
+              }) => LegacyQuoteEventSnapshotsCompanion.insert(
                 quoteId: quoteId,
                 name: name,
                 type: type,
@@ -14994,7 +15007,7 @@ class $$QuoteEventSnapshotsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$QuoteEventSnapshotsTableReferences(db, table, e),
+                  $$LegacyQuoteEventSnapshotsTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -15024,10 +15037,10 @@ class $$QuoteEventSnapshotsTableTableManager
                                 currentTable: table,
                                 currentColumn: table.quoteId,
                                 referencedTable:
-                                    $$QuoteEventSnapshotsTableReferences
+                                    $$LegacyQuoteEventSnapshotsTableReferences
                                         ._quoteIdTable(db),
                                 referencedColumn:
-                                    $$QuoteEventSnapshotsTableReferences
+                                    $$LegacyQuoteEventSnapshotsTableReferences
                                         ._quoteIdTable(db)
                                         .id,
                               )
@@ -15045,22 +15058,22 @@ class $$QuoteEventSnapshotsTableTableManager
       );
 }
 
-typedef $$QuoteEventSnapshotsTableProcessedTableManager =
+typedef $$LegacyQuoteEventSnapshotsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteEventSnapshotsTable,
-      QuoteEventSnapshotRow,
-      $$QuoteEventSnapshotsTableFilterComposer,
-      $$QuoteEventSnapshotsTableOrderingComposer,
-      $$QuoteEventSnapshotsTableAnnotationComposer,
-      $$QuoteEventSnapshotsTableCreateCompanionBuilder,
-      $$QuoteEventSnapshotsTableUpdateCompanionBuilder,
-      (QuoteEventSnapshotRow, $$QuoteEventSnapshotsTableReferences),
-      QuoteEventSnapshotRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteEventSnapshotsTable,
+      LegacyQuoteEventSnapshotRow,
+      $$LegacyQuoteEventSnapshotsTableFilterComposer,
+      $$LegacyQuoteEventSnapshotsTableOrderingComposer,
+      $$LegacyQuoteEventSnapshotsTableAnnotationComposer,
+      $$LegacyQuoteEventSnapshotsTableCreateCompanionBuilder,
+      $$LegacyQuoteEventSnapshotsTableUpdateCompanionBuilder,
+      (LegacyQuoteEventSnapshotRow, $$LegacyQuoteEventSnapshotsTableReferences),
+      LegacyQuoteEventSnapshotRow,
       PrefetchHooks Function({bool quoteId})
     >;
-typedef $$QuoteCompanySnapshotsTableCreateCompanionBuilder =
-    QuoteCompanySnapshotsCompanion Function({
+typedef $$LegacyQuoteCompanySnapshotsTableCreateCompanionBuilder =
+    LegacyQuoteCompanySnapshotsCompanion Function({
       required String quoteId,
       required String captureStatus,
       required int capturedAt,
@@ -15090,8 +15103,8 @@ typedef $$QuoteCompanySnapshotsTableCreateCompanionBuilder =
       Value<String?> payPaymentTerms,
       Value<int> rowid,
     });
-typedef $$QuoteCompanySnapshotsTableUpdateCompanionBuilder =
-    QuoteCompanySnapshotsCompanion Function({
+typedef $$LegacyQuoteCompanySnapshotsTableUpdateCompanionBuilder =
+    LegacyQuoteCompanySnapshotsCompanion Function({
       Value<String> quoteId,
       Value<String> captureStatus,
       Value<int> capturedAt,
@@ -15122,28 +15135,29 @@ typedef $$QuoteCompanySnapshotsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuoteCompanySnapshotsTableReferences
+final class $$LegacyQuoteCompanySnapshotsTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $QuoteCompanySnapshotsTable,
-          QuoteCompanySnapshotRow
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteCompanySnapshotsTable,
+          LegacyQuoteCompanySnapshotRow
         > {
-  $$QuoteCompanySnapshotsTableReferences(
+  $$LegacyQuoteCompanySnapshotsTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
-      db.quotes.createAlias('quote_company_snapshots__quote_id__quotes__id');
+  static $LegacyQuotesTable _quoteIdTable(_$LegacyAppDatabaseV3 db) => db
+      .legacyQuotes
+      .createAlias('quote_company_snapshots__quote_id__quotes__id');
 
-  $$QuotesTableProcessedTableManager get quoteId {
+  $$LegacyQuotesTableProcessedTableManager get quoteId {
     final $_column = $_itemColumn<String>('quote_id')!;
 
-    final manager = $$QuotesTableTableManager(
+    final manager = $$LegacyQuotesTableTableManager(
       $_db,
-      $_db.quotes,
+      $_db.legacyQuotes,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
     if (item == null) return manager;
@@ -15153,9 +15167,9 @@ final class $$QuoteCompanySnapshotsTableReferences
   }
 }
 
-class $$QuoteCompanySnapshotsTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteCompanySnapshotsTable> {
-  $$QuoteCompanySnapshotsTableFilterComposer({
+class $$LegacyQuoteCompanySnapshotsTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteCompanySnapshotsTable> {
+  $$LegacyQuoteCompanySnapshotsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15292,20 +15306,20 @@ class $$QuoteCompanySnapshotsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$QuotesTableFilterComposer get quoteId {
-    final $$QuotesTableFilterComposer composer = $composerBuilder(
+  $$LegacyQuotesTableFilterComposer get quoteId {
+    final $$LegacyQuotesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableFilterComposer(
+          }) => $$LegacyQuotesTableFilterComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -15316,9 +15330,9 @@ class $$QuoteCompanySnapshotsTableFilterComposer
   }
 }
 
-class $$QuoteCompanySnapshotsTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteCompanySnapshotsTable> {
-  $$QuoteCompanySnapshotsTableOrderingComposer({
+class $$LegacyQuoteCompanySnapshotsTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteCompanySnapshotsTable> {
+  $$LegacyQuoteCompanySnapshotsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15455,20 +15469,20 @@ class $$QuoteCompanySnapshotsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$QuotesTableOrderingComposer get quoteId {
-    final $$QuotesTableOrderingComposer composer = $composerBuilder(
+  $$LegacyQuotesTableOrderingComposer get quoteId {
+    final $$LegacyQuotesTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableOrderingComposer(
+          }) => $$LegacyQuotesTableOrderingComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -15479,9 +15493,9 @@ class $$QuoteCompanySnapshotsTableOrderingComposer
   }
 }
 
-class $$QuoteCompanySnapshotsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteCompanySnapshotsTable> {
-  $$QuoteCompanySnapshotsTableAnnotationComposer({
+class $$LegacyQuoteCompanySnapshotsTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteCompanySnapshotsTable> {
+  $$LegacyQuoteCompanySnapshotsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15610,20 +15624,20 @@ class $$QuoteCompanySnapshotsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$QuotesTableAnnotationComposer get quoteId {
-    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
+  $$LegacyQuotesTableAnnotationComposer get quoteId {
+    final $$LegacyQuotesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableAnnotationComposer(
+          }) => $$LegacyQuotesTableAnnotationComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -15634,40 +15648,43 @@ class $$QuoteCompanySnapshotsTableAnnotationComposer
   }
 }
 
-class $$QuoteCompanySnapshotsTableTableManager
+class $$LegacyQuoteCompanySnapshotsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteCompanySnapshotsTable,
-          QuoteCompanySnapshotRow,
-          $$QuoteCompanySnapshotsTableFilterComposer,
-          $$QuoteCompanySnapshotsTableOrderingComposer,
-          $$QuoteCompanySnapshotsTableAnnotationComposer,
-          $$QuoteCompanySnapshotsTableCreateCompanionBuilder,
-          $$QuoteCompanySnapshotsTableUpdateCompanionBuilder,
-          (QuoteCompanySnapshotRow, $$QuoteCompanySnapshotsTableReferences),
-          QuoteCompanySnapshotRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteCompanySnapshotsTable,
+          LegacyQuoteCompanySnapshotRow,
+          $$LegacyQuoteCompanySnapshotsTableFilterComposer,
+          $$LegacyQuoteCompanySnapshotsTableOrderingComposer,
+          $$LegacyQuoteCompanySnapshotsTableAnnotationComposer,
+          $$LegacyQuoteCompanySnapshotsTableCreateCompanionBuilder,
+          $$LegacyQuoteCompanySnapshotsTableUpdateCompanionBuilder,
+          (
+            LegacyQuoteCompanySnapshotRow,
+            $$LegacyQuoteCompanySnapshotsTableReferences,
+          ),
+          LegacyQuoteCompanySnapshotRow,
           PrefetchHooks Function({bool quoteId})
         > {
-  $$QuoteCompanySnapshotsTableTableManager(
-    _$AppDatabase db,
-    $QuoteCompanySnapshotsTable table,
+  $$LegacyQuoteCompanySnapshotsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteCompanySnapshotsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteCompanySnapshotsTableFilterComposer(
+              $$LegacyQuoteCompanySnapshotsTableFilterComposer(
                 $db: db,
                 $table: table,
               ),
           createOrderingComposer: () =>
-              $$QuoteCompanySnapshotsTableOrderingComposer(
+              $$LegacyQuoteCompanySnapshotsTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$QuoteCompanySnapshotsTableAnnotationComposer(
+              $$LegacyQuoteCompanySnapshotsTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -15701,7 +15718,7 @@ class $$QuoteCompanySnapshotsTableTableManager
                 Value<String?> payBeneficiaryName = const Value.absent(),
                 Value<String?> payPaymentTerms = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteCompanySnapshotsCompanion(
+              }) => LegacyQuoteCompanySnapshotsCompanion(
                 quoteId: quoteId,
                 captureStatus: captureStatus,
                 capturedAt: capturedAt,
@@ -15761,7 +15778,7 @@ class $$QuoteCompanySnapshotsTableTableManager
                 Value<String?> payBeneficiaryName = const Value.absent(),
                 Value<String?> payPaymentTerms = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteCompanySnapshotsCompanion.insert(
+              }) => LegacyQuoteCompanySnapshotsCompanion.insert(
                 quoteId: quoteId,
                 captureStatus: captureStatus,
                 capturedAt: capturedAt,
@@ -15795,7 +15812,7 @@ class $$QuoteCompanySnapshotsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$QuoteCompanySnapshotsTableReferences(db, table, e),
+                  $$LegacyQuoteCompanySnapshotsTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -15825,10 +15842,10 @@ class $$QuoteCompanySnapshotsTableTableManager
                                 currentTable: table,
                                 currentColumn: table.quoteId,
                                 referencedTable:
-                                    $$QuoteCompanySnapshotsTableReferences
+                                    $$LegacyQuoteCompanySnapshotsTableReferences
                                         ._quoteIdTable(db),
                                 referencedColumn:
-                                    $$QuoteCompanySnapshotsTableReferences
+                                    $$LegacyQuoteCompanySnapshotsTableReferences
                                         ._quoteIdTable(db)
                                         .id,
                               )
@@ -15846,22 +15863,25 @@ class $$QuoteCompanySnapshotsTableTableManager
       );
 }
 
-typedef $$QuoteCompanySnapshotsTableProcessedTableManager =
+typedef $$LegacyQuoteCompanySnapshotsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteCompanySnapshotsTable,
-      QuoteCompanySnapshotRow,
-      $$QuoteCompanySnapshotsTableFilterComposer,
-      $$QuoteCompanySnapshotsTableOrderingComposer,
-      $$QuoteCompanySnapshotsTableAnnotationComposer,
-      $$QuoteCompanySnapshotsTableCreateCompanionBuilder,
-      $$QuoteCompanySnapshotsTableUpdateCompanionBuilder,
-      (QuoteCompanySnapshotRow, $$QuoteCompanySnapshotsTableReferences),
-      QuoteCompanySnapshotRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteCompanySnapshotsTable,
+      LegacyQuoteCompanySnapshotRow,
+      $$LegacyQuoteCompanySnapshotsTableFilterComposer,
+      $$LegacyQuoteCompanySnapshotsTableOrderingComposer,
+      $$LegacyQuoteCompanySnapshotsTableAnnotationComposer,
+      $$LegacyQuoteCompanySnapshotsTableCreateCompanionBuilder,
+      $$LegacyQuoteCompanySnapshotsTableUpdateCompanionBuilder,
+      (
+        LegacyQuoteCompanySnapshotRow,
+        $$LegacyQuoteCompanySnapshotsTableReferences,
+      ),
+      LegacyQuoteCompanySnapshotRow,
       PrefetchHooks Function({bool quoteId})
     >;
-typedef $$QuoteLineItemsTableCreateCompanionBuilder =
-    QuoteLineItemsCompanion Function({
+typedef $$LegacyQuoteLineItemsTableCreateCompanionBuilder =
+    LegacyQuoteLineItemsCompanion Function({
       required String id,
       required String quoteId,
       required int sortOrder,
@@ -15874,8 +15894,8 @@ typedef $$QuoteLineItemsTableCreateCompanionBuilder =
       required int lineTotalCents,
       Value<int> rowid,
     });
-typedef $$QuoteLineItemsTableUpdateCompanionBuilder =
-    QuoteLineItemsCompanion Function({
+typedef $$LegacyQuoteLineItemsTableUpdateCompanionBuilder =
+    LegacyQuoteLineItemsCompanion Function({
       Value<String> id,
       Value<String> quoteId,
       Value<int> sortOrder,
@@ -15889,24 +15909,28 @@ typedef $$QuoteLineItemsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuoteLineItemsTableReferences
+final class $$LegacyQuoteLineItemsTableReferences
     extends
-        BaseReferences<_$AppDatabase, $QuoteLineItemsTable, QuoteLineItemRow> {
-  $$QuoteLineItemsTableReferences(
+        BaseReferences<
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLineItemsTable,
+          LegacyQuoteLineItemRow
+        > {
+  $$LegacyQuoteLineItemsTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
-      db.quotes.createAlias('quote_line_items__quote_id__quotes__id');
+  static $LegacyQuotesTable _quoteIdTable(_$LegacyAppDatabaseV3 db) =>
+      db.legacyQuotes.createAlias('quote_line_items__quote_id__quotes__id');
 
-  $$QuotesTableProcessedTableManager get quoteId {
+  $$LegacyQuotesTableProcessedTableManager get quoteId {
     final $_column = $_itemColumn<String>('quote_id')!;
 
-    final manager = $$QuotesTableTableManager(
+    final manager = $$LegacyQuotesTableTableManager(
       $_db,
-      $_db.quotes,
+      $_db.legacyQuotes,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
     if (item == null) return manager;
@@ -15916,25 +15940,25 @@ final class $$QuoteLineItemsTableReferences
   }
 
   static MultiTypedResultKey<
-    $QuoteLinePackageComponentsTable,
-    List<QuoteLinePackageComponentRow>
+    $LegacyQuoteLinePackageComponentsTable,
+    List<LegacyQuoteLinePackageComponentRow>
   >
-  _quoteLinePackageComponentsRefsTable(_$AppDatabase db) =>
+  _legacyQuoteLinePackageComponentsRefsTable(_$LegacyAppDatabaseV3 db) =>
       MultiTypedResultKey.fromTable(
-        db.quoteLinePackageComponents,
+        db.legacyQuoteLinePackageComponents,
         aliasName:
             'quote_line_items__id__quote_line_package_components__line_item_id',
       );
 
-  $$QuoteLinePackageComponentsTableProcessedTableManager
-  get quoteLinePackageComponentsRefs {
-    final manager = $$QuoteLinePackageComponentsTableTableManager(
+  $$LegacyQuoteLinePackageComponentsTableProcessedTableManager
+  get legacyQuoteLinePackageComponentsRefs {
+    final manager = $$LegacyQuoteLinePackageComponentsTableTableManager(
       $_db,
-      $_db.quoteLinePackageComponents,
+      $_db.legacyQuoteLinePackageComponents,
     ).filter((f) => f.lineItemId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _quoteLinePackageComponentsRefsTable($_db),
+      _legacyQuoteLinePackageComponentsRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -15942,9 +15966,9 @@ final class $$QuoteLineItemsTableReferences
   }
 }
 
-class $$QuoteLineItemsTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteLineItemsTable> {
-  $$QuoteLineItemsTableFilterComposer({
+class $$LegacyQuoteLineItemsTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteLineItemsTable> {
+  $$LegacyQuoteLineItemsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15996,20 +16020,20 @@ class $$QuoteLineItemsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$QuotesTableFilterComposer get quoteId {
-    final $$QuotesTableFilterComposer composer = $composerBuilder(
+  $$LegacyQuotesTableFilterComposer get quoteId {
+    final $$LegacyQuotesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableFilterComposer(
+          }) => $$LegacyQuotesTableFilterComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16019,24 +16043,26 @@ class $$QuoteLineItemsTableFilterComposer
     return composer;
   }
 
-  Expression<bool> quoteLinePackageComponentsRefs(
-    Expression<bool> Function($$QuoteLinePackageComponentsTableFilterComposer f)
+  Expression<bool> legacyQuoteLinePackageComponentsRefs(
+    Expression<bool> Function(
+      $$LegacyQuoteLinePackageComponentsTableFilterComposer f,
+    )
     f,
   ) {
-    final $$QuoteLinePackageComponentsTableFilterComposer composer =
+    final $$LegacyQuoteLinePackageComponentsTableFilterComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteLinePackageComponents,
+          referencedTable: $db.legacyQuoteLinePackageComponents,
           getReferencedColumn: (t) => t.lineItemId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteLinePackageComponentsTableFilterComposer(
+              }) => $$LegacyQuoteLinePackageComponentsTableFilterComposer(
                 $db: $db,
-                $table: $db.quoteLinePackageComponents,
+                $table: $db.legacyQuoteLinePackageComponents,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -16047,9 +16073,9 @@ class $$QuoteLineItemsTableFilterComposer
   }
 }
 
-class $$QuoteLineItemsTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteLineItemsTable> {
-  $$QuoteLineItemsTableOrderingComposer({
+class $$LegacyQuoteLineItemsTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteLineItemsTable> {
+  $$LegacyQuoteLineItemsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16101,20 +16127,20 @@ class $$QuoteLineItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$QuotesTableOrderingComposer get quoteId {
-    final $$QuotesTableOrderingComposer composer = $composerBuilder(
+  $$LegacyQuotesTableOrderingComposer get quoteId {
+    final $$LegacyQuotesTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableOrderingComposer(
+          }) => $$LegacyQuotesTableOrderingComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16125,9 +16151,9 @@ class $$QuoteLineItemsTableOrderingComposer
   }
 }
 
-class $$QuoteLineItemsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteLineItemsTable> {
-  $$QuoteLineItemsTableAnnotationComposer({
+class $$LegacyQuoteLineItemsTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteLineItemsTable> {
+  $$LegacyQuoteLineItemsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16169,20 +16195,20 @@ class $$QuoteLineItemsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$QuotesTableAnnotationComposer get quoteId {
-    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
+  $$LegacyQuotesTableAnnotationComposer get quoteId {
+    final $$LegacyQuotesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableAnnotationComposer(
+          }) => $$LegacyQuotesTableAnnotationComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16192,26 +16218,26 @@ class $$QuoteLineItemsTableAnnotationComposer
     return composer;
   }
 
-  Expression<T> quoteLinePackageComponentsRefs<T extends Object>(
+  Expression<T> legacyQuoteLinePackageComponentsRefs<T extends Object>(
     Expression<T> Function(
-      $$QuoteLinePackageComponentsTableAnnotationComposer a,
+      $$LegacyQuoteLinePackageComponentsTableAnnotationComposer a,
     )
     f,
   ) {
-    final $$QuoteLinePackageComponentsTableAnnotationComposer composer =
+    final $$LegacyQuoteLinePackageComponentsTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.id,
-          referencedTable: $db.quoteLinePackageComponents,
+          referencedTable: $db.legacyQuoteLinePackageComponents,
           getReferencedColumn: (t) => t.lineItemId,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$QuoteLinePackageComponentsTableAnnotationComposer(
+              }) => $$LegacyQuoteLinePackageComponentsTableAnnotationComposer(
                 $db: $db,
-                $table: $db.quoteLinePackageComponents,
+                $table: $db.legacyQuoteLinePackageComponents,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -16222,37 +16248,43 @@ class $$QuoteLineItemsTableAnnotationComposer
   }
 }
 
-class $$QuoteLineItemsTableTableManager
+class $$LegacyQuoteLineItemsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteLineItemsTable,
-          QuoteLineItemRow,
-          $$QuoteLineItemsTableFilterComposer,
-          $$QuoteLineItemsTableOrderingComposer,
-          $$QuoteLineItemsTableAnnotationComposer,
-          $$QuoteLineItemsTableCreateCompanionBuilder,
-          $$QuoteLineItemsTableUpdateCompanionBuilder,
-          (QuoteLineItemRow, $$QuoteLineItemsTableReferences),
-          QuoteLineItemRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLineItemsTable,
+          LegacyQuoteLineItemRow,
+          $$LegacyQuoteLineItemsTableFilterComposer,
+          $$LegacyQuoteLineItemsTableOrderingComposer,
+          $$LegacyQuoteLineItemsTableAnnotationComposer,
+          $$LegacyQuoteLineItemsTableCreateCompanionBuilder,
+          $$LegacyQuoteLineItemsTableUpdateCompanionBuilder,
+          (LegacyQuoteLineItemRow, $$LegacyQuoteLineItemsTableReferences),
+          LegacyQuoteLineItemRow,
           PrefetchHooks Function({
             bool quoteId,
-            bool quoteLinePackageComponentsRefs,
+            bool legacyQuoteLinePackageComponentsRefs,
           })
         > {
-  $$QuoteLineItemsTableTableManager(
-    _$AppDatabase db,
-    $QuoteLineItemsTable table,
+  $$LegacyQuoteLineItemsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteLineItemsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteLineItemsTableFilterComposer($db: db, $table: table),
+              $$LegacyQuoteLineItemsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$QuoteLineItemsTableOrderingComposer($db: db, $table: table),
+              $$LegacyQuoteLineItemsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
           createComputedFieldComposer: () =>
-              $$QuoteLineItemsTableAnnotationComposer($db: db, $table: table),
+              $$LegacyQuoteLineItemsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -16266,7 +16298,7 @@ class $$QuoteLineItemsTableTableManager
                 Value<int> unitPriceCents = const Value.absent(),
                 Value<int> lineTotalCents = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteLineItemsCompanion(
+              }) => LegacyQuoteLineItemsCompanion(
                 id: id,
                 quoteId: quoteId,
                 sortOrder: sortOrder,
@@ -16292,7 +16324,7 @@ class $$QuoteLineItemsTableTableManager
                 required int unitPriceCents,
                 required int lineTotalCents,
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteLineItemsCompanion.insert(
+              }) => LegacyQuoteLineItemsCompanion.insert(
                 id: id,
                 quoteId: quoteId,
                 sortOrder: sortOrder,
@@ -16309,17 +16341,20 @@ class $$QuoteLineItemsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$QuoteLineItemsTableReferences(db, table, e),
+                  $$LegacyQuoteLineItemsTableReferences(db, table, e),
                 ),
               )
               .toList(),
           prefetchHooksCallback:
-              ({quoteId = false, quoteLinePackageComponentsRefs = false}) {
+              ({
+                quoteId = false,
+                legacyQuoteLinePackageComponentsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
-                    if (quoteLinePackageComponentsRefs)
-                      db.quoteLinePackageComponents,
+                    if (legacyQuoteLinePackageComponentsRefs)
+                      db.legacyQuoteLinePackageComponents,
                   ],
                   addJoins:
                       <
@@ -16343,10 +16378,10 @@ class $$QuoteLineItemsTableTableManager
                                     currentTable: table,
                                     currentColumn: table.quoteId,
                                     referencedTable:
-                                        $$QuoteLineItemsTableReferences
+                                        $$LegacyQuoteLineItemsTableReferences
                                             ._quoteIdTable(db),
                                     referencedColumn:
-                                        $$QuoteLineItemsTableReferences
+                                        $$LegacyQuoteLineItemsTableReferences
                                             ._quoteIdTable(db)
                                             .id,
                                   )
@@ -16357,21 +16392,21 @@ class $$QuoteLineItemsTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
-                      if (quoteLinePackageComponentsRefs)
+                      if (legacyQuoteLinePackageComponentsRefs)
                         await $_getPrefetchedData<
-                          QuoteLineItemRow,
-                          $QuoteLineItemsTable,
-                          QuoteLinePackageComponentRow
+                          LegacyQuoteLineItemRow,
+                          $LegacyQuoteLineItemsTable,
+                          LegacyQuoteLinePackageComponentRow
                         >(
                           currentTable: table,
-                          referencedTable: $$QuoteLineItemsTableReferences
-                              ._quoteLinePackageComponentsRefsTable(db),
+                          referencedTable: $$LegacyQuoteLineItemsTableReferences
+                              ._legacyQuoteLinePackageComponentsRefsTable(db),
                           managerFromTypedResult: (p0) =>
-                              $$QuoteLineItemsTableReferences(
+                              $$LegacyQuoteLineItemsTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).quoteLinePackageComponentsRefs,
+                              ).legacyQuoteLinePackageComponentsRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.lineItemId == item.id,
@@ -16386,25 +16421,25 @@ class $$QuoteLineItemsTableTableManager
       );
 }
 
-typedef $$QuoteLineItemsTableProcessedTableManager =
+typedef $$LegacyQuoteLineItemsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteLineItemsTable,
-      QuoteLineItemRow,
-      $$QuoteLineItemsTableFilterComposer,
-      $$QuoteLineItemsTableOrderingComposer,
-      $$QuoteLineItemsTableAnnotationComposer,
-      $$QuoteLineItemsTableCreateCompanionBuilder,
-      $$QuoteLineItemsTableUpdateCompanionBuilder,
-      (QuoteLineItemRow, $$QuoteLineItemsTableReferences),
-      QuoteLineItemRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteLineItemsTable,
+      LegacyQuoteLineItemRow,
+      $$LegacyQuoteLineItemsTableFilterComposer,
+      $$LegacyQuoteLineItemsTableOrderingComposer,
+      $$LegacyQuoteLineItemsTableAnnotationComposer,
+      $$LegacyQuoteLineItemsTableCreateCompanionBuilder,
+      $$LegacyQuoteLineItemsTableUpdateCompanionBuilder,
+      (LegacyQuoteLineItemRow, $$LegacyQuoteLineItemsTableReferences),
+      LegacyQuoteLineItemRow,
       PrefetchHooks Function({
         bool quoteId,
-        bool quoteLinePackageComponentsRefs,
+        bool legacyQuoteLinePackageComponentsRefs,
       })
     >;
-typedef $$QuoteLinePackageComponentsTableCreateCompanionBuilder =
-    QuoteLinePackageComponentsCompanion Function({
+typedef $$LegacyQuoteLinePackageComponentsTableCreateCompanionBuilder =
+    LegacyQuoteLinePackageComponentsCompanion Function({
       required String id,
       required String lineItemId,
       required int sortOrder,
@@ -16416,8 +16451,8 @@ typedef $$QuoteLinePackageComponentsTableCreateCompanionBuilder =
       required double quantityPerPackage,
       Value<int> rowid,
     });
-typedef $$QuoteLinePackageComponentsTableUpdateCompanionBuilder =
-    QuoteLinePackageComponentsCompanion Function({
+typedef $$LegacyQuoteLinePackageComponentsTableUpdateCompanionBuilder =
+    LegacyQuoteLinePackageComponentsCompanion Function({
       Value<String> id,
       Value<String> lineItemId,
       Value<int> sortOrder,
@@ -16430,30 +16465,31 @@ typedef $$QuoteLinePackageComponentsTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuoteLinePackageComponentsTableReferences
+final class $$LegacyQuoteLinePackageComponentsTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $QuoteLinePackageComponentsTable,
-          QuoteLinePackageComponentRow
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLinePackageComponentsTable,
+          LegacyQuoteLinePackageComponentRow
         > {
-  $$QuoteLinePackageComponentsTableReferences(
+  $$LegacyQuoteLinePackageComponentsTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $QuoteLineItemsTable _lineItemIdTable(_$AppDatabase db) =>
-      db.quoteLineItems.createAlias(
-        'quote_line_package_components__line_item_id__quote_line_items__id',
-      );
+  static $LegacyQuoteLineItemsTable _lineItemIdTable(
+    _$LegacyAppDatabaseV3 db,
+  ) => db.legacyQuoteLineItems.createAlias(
+    'quote_line_package_components__line_item_id__quote_line_items__id',
+  );
 
-  $$QuoteLineItemsTableProcessedTableManager get lineItemId {
+  $$LegacyQuoteLineItemsTableProcessedTableManager get lineItemId {
     final $_column = $_itemColumn<String>('line_item_id')!;
 
-    final manager = $$QuoteLineItemsTableTableManager(
+    final manager = $$LegacyQuoteLineItemsTableTableManager(
       $_db,
-      $_db.quoteLineItems,
+      $_db.legacyQuoteLineItems,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_lineItemIdTable($_db));
     if (item == null) return manager;
@@ -16463,9 +16499,13 @@ final class $$QuoteLinePackageComponentsTableReferences
   }
 }
 
-class $$QuoteLinePackageComponentsTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteLinePackageComponentsTable> {
-  $$QuoteLinePackageComponentsTableFilterComposer({
+class $$LegacyQuoteLinePackageComponentsTableFilterComposer
+    extends
+        Composer<
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLinePackageComponentsTable
+        > {
+  $$LegacyQuoteLinePackageComponentsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16512,20 +16552,20 @@ class $$QuoteLinePackageComponentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$QuoteLineItemsTableFilterComposer get lineItemId {
-    final $$QuoteLineItemsTableFilterComposer composer = $composerBuilder(
+  $$LegacyQuoteLineItemsTableFilterComposer get lineItemId {
+    final $$LegacyQuoteLineItemsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.lineItemId,
-      referencedTable: $db.quoteLineItems,
+      referencedTable: $db.legacyQuoteLineItems,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteLineItemsTableFilterComposer(
+          }) => $$LegacyQuoteLineItemsTableFilterComposer(
             $db: $db,
-            $table: $db.quoteLineItems,
+            $table: $db.legacyQuoteLineItems,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16536,9 +16576,13 @@ class $$QuoteLinePackageComponentsTableFilterComposer
   }
 }
 
-class $$QuoteLinePackageComponentsTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteLinePackageComponentsTable> {
-  $$QuoteLinePackageComponentsTableOrderingComposer({
+class $$LegacyQuoteLinePackageComponentsTableOrderingComposer
+    extends
+        Composer<
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLinePackageComponentsTable
+        > {
+  $$LegacyQuoteLinePackageComponentsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16585,33 +16629,38 @@ class $$QuoteLinePackageComponentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$QuoteLineItemsTableOrderingComposer get lineItemId {
-    final $$QuoteLineItemsTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.lineItemId,
-      referencedTable: $db.quoteLineItems,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteLineItemsTableOrderingComposer(
-            $db: $db,
-            $table: $db.quoteLineItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  $$LegacyQuoteLineItemsTableOrderingComposer get lineItemId {
+    final $$LegacyQuoteLineItemsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.lineItemId,
+          referencedTable: $db.legacyQuoteLineItems,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyQuoteLineItemsTableOrderingComposer(
+                $db: $db,
+                $table: $db.legacyQuoteLineItems,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 }
 
-class $$QuoteLinePackageComponentsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteLinePackageComponentsTable> {
-  $$QuoteLinePackageComponentsTableAnnotationComposer({
+class $$LegacyQuoteLinePackageComponentsTableAnnotationComposer
+    extends
+        Composer<
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLinePackageComponentsTable
+        > {
+  $$LegacyQuoteLinePackageComponentsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16648,67 +16697,68 @@ class $$QuoteLinePackageComponentsTableAnnotationComposer
     builder: (column) => column,
   );
 
-  $$QuoteLineItemsTableAnnotationComposer get lineItemId {
-    final $$QuoteLineItemsTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.lineItemId,
-      referencedTable: $db.quoteLineItems,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuoteLineItemsTableAnnotationComposer(
-            $db: $db,
-            $table: $db.quoteLineItems,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  $$LegacyQuoteLineItemsTableAnnotationComposer get lineItemId {
+    final $$LegacyQuoteLineItemsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.lineItemId,
+          referencedTable: $db.legacyQuoteLineItems,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyQuoteLineItemsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.legacyQuoteLineItems,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 }
 
-class $$QuoteLinePackageComponentsTableTableManager
+class $$LegacyQuoteLinePackageComponentsTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteLinePackageComponentsTable,
-          QuoteLinePackageComponentRow,
-          $$QuoteLinePackageComponentsTableFilterComposer,
-          $$QuoteLinePackageComponentsTableOrderingComposer,
-          $$QuoteLinePackageComponentsTableAnnotationComposer,
-          $$QuoteLinePackageComponentsTableCreateCompanionBuilder,
-          $$QuoteLinePackageComponentsTableUpdateCompanionBuilder,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteLinePackageComponentsTable,
+          LegacyQuoteLinePackageComponentRow,
+          $$LegacyQuoteLinePackageComponentsTableFilterComposer,
+          $$LegacyQuoteLinePackageComponentsTableOrderingComposer,
+          $$LegacyQuoteLinePackageComponentsTableAnnotationComposer,
+          $$LegacyQuoteLinePackageComponentsTableCreateCompanionBuilder,
+          $$LegacyQuoteLinePackageComponentsTableUpdateCompanionBuilder,
           (
-            QuoteLinePackageComponentRow,
-            $$QuoteLinePackageComponentsTableReferences,
+            LegacyQuoteLinePackageComponentRow,
+            $$LegacyQuoteLinePackageComponentsTableReferences,
           ),
-          QuoteLinePackageComponentRow,
+          LegacyQuoteLinePackageComponentRow,
           PrefetchHooks Function({bool lineItemId})
         > {
-  $$QuoteLinePackageComponentsTableTableManager(
-    _$AppDatabase db,
-    $QuoteLinePackageComponentsTable table,
+  $$LegacyQuoteLinePackageComponentsTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteLinePackageComponentsTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteLinePackageComponentsTableFilterComposer(
+              $$LegacyQuoteLinePackageComponentsTableFilterComposer(
                 $db: db,
                 $table: table,
               ),
           createOrderingComposer: () =>
-              $$QuoteLinePackageComponentsTableOrderingComposer(
+              $$LegacyQuoteLinePackageComponentsTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$QuoteLinePackageComponentsTableAnnotationComposer(
+              $$LegacyQuoteLinePackageComponentsTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -16724,7 +16774,7 @@ class $$QuoteLinePackageComponentsTableTableManager
                 Value<String> categoryLabel = const Value.absent(),
                 Value<double> quantityPerPackage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteLinePackageComponentsCompanion(
+              }) => LegacyQuoteLinePackageComponentsCompanion(
                 id: id,
                 lineItemId: lineItemId,
                 sortOrder: sortOrder,
@@ -16748,7 +16798,7 @@ class $$QuoteLinePackageComponentsTableTableManager
                 required String categoryLabel,
                 required double quantityPerPackage,
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteLinePackageComponentsCompanion.insert(
+              }) => LegacyQuoteLinePackageComponentsCompanion.insert(
                 id: id,
                 lineItemId: lineItemId,
                 sortOrder: sortOrder,
@@ -16764,7 +16814,11 @@ class $$QuoteLinePackageComponentsTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$QuoteLinePackageComponentsTableReferences(db, table, e),
+                  $$LegacyQuoteLinePackageComponentsTableReferences(
+                    db,
+                    table,
+                    e,
+                  ),
                 ),
               )
               .toList(),
@@ -16794,10 +16848,10 @@ class $$QuoteLinePackageComponentsTableTableManager
                                 currentTable: table,
                                 currentColumn: table.lineItemId,
                                 referencedTable:
-                                    $$QuoteLinePackageComponentsTableReferences
+                                    $$LegacyQuoteLinePackageComponentsTableReferences
                                         ._lineItemIdTable(db),
                                 referencedColumn:
-                                    $$QuoteLinePackageComponentsTableReferences
+                                    $$LegacyQuoteLinePackageComponentsTableReferences
                                         ._lineItemIdTable(db)
                                         .id,
                               )
@@ -16815,25 +16869,25 @@ class $$QuoteLinePackageComponentsTableTableManager
       );
 }
 
-typedef $$QuoteLinePackageComponentsTableProcessedTableManager =
+typedef $$LegacyQuoteLinePackageComponentsTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteLinePackageComponentsTable,
-      QuoteLinePackageComponentRow,
-      $$QuoteLinePackageComponentsTableFilterComposer,
-      $$QuoteLinePackageComponentsTableOrderingComposer,
-      $$QuoteLinePackageComponentsTableAnnotationComposer,
-      $$QuoteLinePackageComponentsTableCreateCompanionBuilder,
-      $$QuoteLinePackageComponentsTableUpdateCompanionBuilder,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteLinePackageComponentsTable,
+      LegacyQuoteLinePackageComponentRow,
+      $$LegacyQuoteLinePackageComponentsTableFilterComposer,
+      $$LegacyQuoteLinePackageComponentsTableOrderingComposer,
+      $$LegacyQuoteLinePackageComponentsTableAnnotationComposer,
+      $$LegacyQuoteLinePackageComponentsTableCreateCompanionBuilder,
+      $$LegacyQuoteLinePackageComponentsTableUpdateCompanionBuilder,
       (
-        QuoteLinePackageComponentRow,
-        $$QuoteLinePackageComponentsTableReferences,
+        LegacyQuoteLinePackageComponentRow,
+        $$LegacyQuoteLinePackageComponentsTableReferences,
       ),
-      QuoteLinePackageComponentRow,
+      LegacyQuoteLinePackageComponentRow,
       PrefetchHooks Function({bool lineItemId})
     >;
-typedef $$QuoteStatusHistoryTableCreateCompanionBuilder =
-    QuoteStatusHistoryCompanion Function({
+typedef $$LegacyQuoteStatusHistoryTableCreateCompanionBuilder =
+    LegacyQuoteStatusHistoryCompanion Function({
       required String id,
       required String quoteId,
       required int sortOrder,
@@ -16842,8 +16896,8 @@ typedef $$QuoteStatusHistoryTableCreateCompanionBuilder =
       required int changedAt,
       Value<int> rowid,
     });
-typedef $$QuoteStatusHistoryTableUpdateCompanionBuilder =
-    QuoteStatusHistoryCompanion Function({
+typedef $$LegacyQuoteStatusHistoryTableUpdateCompanionBuilder =
+    LegacyQuoteStatusHistoryCompanion Function({
       Value<String> id,
       Value<String> quoteId,
       Value<int> sortOrder,
@@ -16853,28 +16907,28 @@ typedef $$QuoteStatusHistoryTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$QuoteStatusHistoryTableReferences
+final class $$LegacyQuoteStatusHistoryTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $QuoteStatusHistoryTable,
-          QuoteStatusHistoryRow
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteStatusHistoryTable,
+          LegacyQuoteStatusHistoryRow
         > {
-  $$QuoteStatusHistoryTableReferences(
+  $$LegacyQuoteStatusHistoryTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
-      db.quotes.createAlias('quote_status_history__quote_id__quotes__id');
+  static $LegacyQuotesTable _quoteIdTable(_$LegacyAppDatabaseV3 db) =>
+      db.legacyQuotes.createAlias('quote_status_history__quote_id__quotes__id');
 
-  $$QuotesTableProcessedTableManager get quoteId {
+  $$LegacyQuotesTableProcessedTableManager get quoteId {
     final $_column = $_itemColumn<String>('quote_id')!;
 
-    final manager = $$QuotesTableTableManager(
+    final manager = $$LegacyQuotesTableTableManager(
       $_db,
-      $_db.quotes,
+      $_db.legacyQuotes,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
     if (item == null) return manager;
@@ -16884,9 +16938,9 @@ final class $$QuoteStatusHistoryTableReferences
   }
 }
 
-class $$QuoteStatusHistoryTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteStatusHistoryTable> {
-  $$QuoteStatusHistoryTableFilterComposer({
+class $$LegacyQuoteStatusHistoryTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteStatusHistoryTable> {
+  $$LegacyQuoteStatusHistoryTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16918,20 +16972,20 @@ class $$QuoteStatusHistoryTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$QuotesTableFilterComposer get quoteId {
-    final $$QuotesTableFilterComposer composer = $composerBuilder(
+  $$LegacyQuotesTableFilterComposer get quoteId {
+    final $$LegacyQuotesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableFilterComposer(
+          }) => $$LegacyQuotesTableFilterComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -16942,9 +16996,9 @@ class $$QuoteStatusHistoryTableFilterComposer
   }
 }
 
-class $$QuoteStatusHistoryTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteStatusHistoryTable> {
-  $$QuoteStatusHistoryTableOrderingComposer({
+class $$LegacyQuoteStatusHistoryTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteStatusHistoryTable> {
+  $$LegacyQuoteStatusHistoryTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -16976,20 +17030,20 @@ class $$QuoteStatusHistoryTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$QuotesTableOrderingComposer get quoteId {
-    final $$QuotesTableOrderingComposer composer = $composerBuilder(
+  $$LegacyQuotesTableOrderingComposer get quoteId {
+    final $$LegacyQuotesTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableOrderingComposer(
+          }) => $$LegacyQuotesTableOrderingComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17000,9 +17054,9 @@ class $$QuoteStatusHistoryTableOrderingComposer
   }
 }
 
-class $$QuoteStatusHistoryTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteStatusHistoryTable> {
-  $$QuoteStatusHistoryTableAnnotationComposer({
+class $$LegacyQuoteStatusHistoryTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteStatusHistoryTable> {
+  $$LegacyQuoteStatusHistoryTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17026,20 +17080,20 @@ class $$QuoteStatusHistoryTableAnnotationComposer
   GeneratedColumn<int> get changedAt =>
       $composableBuilder(column: $table.changedAt, builder: (column) => column);
 
-  $$QuotesTableAnnotationComposer get quoteId {
-    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
+  $$LegacyQuotesTableAnnotationComposer get quoteId {
+    final $$LegacyQuotesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
+      referencedTable: $db.legacyQuotes,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableAnnotationComposer(
+          }) => $$LegacyQuotesTableAnnotationComposer(
             $db: $db,
-            $table: $db.quotes,
+            $table: $db.legacyQuotes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -17050,34 +17104,43 @@ class $$QuoteStatusHistoryTableAnnotationComposer
   }
 }
 
-class $$QuoteStatusHistoryTableTableManager
+class $$LegacyQuoteStatusHistoryTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteStatusHistoryTable,
-          QuoteStatusHistoryRow,
-          $$QuoteStatusHistoryTableFilterComposer,
-          $$QuoteStatusHistoryTableOrderingComposer,
-          $$QuoteStatusHistoryTableAnnotationComposer,
-          $$QuoteStatusHistoryTableCreateCompanionBuilder,
-          $$QuoteStatusHistoryTableUpdateCompanionBuilder,
-          (QuoteStatusHistoryRow, $$QuoteStatusHistoryTableReferences),
-          QuoteStatusHistoryRow,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteStatusHistoryTable,
+          LegacyQuoteStatusHistoryRow,
+          $$LegacyQuoteStatusHistoryTableFilterComposer,
+          $$LegacyQuoteStatusHistoryTableOrderingComposer,
+          $$LegacyQuoteStatusHistoryTableAnnotationComposer,
+          $$LegacyQuoteStatusHistoryTableCreateCompanionBuilder,
+          $$LegacyQuoteStatusHistoryTableUpdateCompanionBuilder,
+          (
+            LegacyQuoteStatusHistoryRow,
+            $$LegacyQuoteStatusHistoryTableReferences,
+          ),
+          LegacyQuoteStatusHistoryRow,
           PrefetchHooks Function({bool quoteId})
         > {
-  $$QuoteStatusHistoryTableTableManager(
-    _$AppDatabase db,
-    $QuoteStatusHistoryTable table,
+  $$LegacyQuoteStatusHistoryTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteStatusHistoryTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteStatusHistoryTableFilterComposer($db: db, $table: table),
+              $$LegacyQuoteStatusHistoryTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$QuoteStatusHistoryTableOrderingComposer($db: db, $table: table),
+              $$LegacyQuoteStatusHistoryTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
           createComputedFieldComposer: () =>
-              $$QuoteStatusHistoryTableAnnotationComposer(
+              $$LegacyQuoteStatusHistoryTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -17090,7 +17153,7 @@ class $$QuoteStatusHistoryTableTableManager
                 Value<String> newStatus = const Value.absent(),
                 Value<int> changedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteStatusHistoryCompanion(
+              }) => LegacyQuoteStatusHistoryCompanion(
                 id: id,
                 quoteId: quoteId,
                 sortOrder: sortOrder,
@@ -17108,7 +17171,7 @@ class $$QuoteStatusHistoryTableTableManager
                 required String newStatus,
                 required int changedAt,
                 Value<int> rowid = const Value.absent(),
-              }) => QuoteStatusHistoryCompanion.insert(
+              }) => LegacyQuoteStatusHistoryCompanion.insert(
                 id: id,
                 quoteId: quoteId,
                 sortOrder: sortOrder,
@@ -17121,7 +17184,7 @@ class $$QuoteStatusHistoryTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$QuoteStatusHistoryTableReferences(db, table, e),
+                  $$LegacyQuoteStatusHistoryTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -17151,10 +17214,10 @@ class $$QuoteStatusHistoryTableTableManager
                                 currentTable: table,
                                 currentColumn: table.quoteId,
                                 referencedTable:
-                                    $$QuoteStatusHistoryTableReferences
+                                    $$LegacyQuoteStatusHistoryTableReferences
                                         ._quoteIdTable(db),
                                 referencedColumn:
-                                    $$QuoteStatusHistoryTableReferences
+                                    $$LegacyQuoteStatusHistoryTableReferences
                                         ._quoteIdTable(db)
                                         .id,
                               )
@@ -17172,34 +17235,34 @@ class $$QuoteStatusHistoryTableTableManager
       );
 }
 
-typedef $$QuoteStatusHistoryTableProcessedTableManager =
+typedef $$LegacyQuoteStatusHistoryTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteStatusHistoryTable,
-      QuoteStatusHistoryRow,
-      $$QuoteStatusHistoryTableFilterComposer,
-      $$QuoteStatusHistoryTableOrderingComposer,
-      $$QuoteStatusHistoryTableAnnotationComposer,
-      $$QuoteStatusHistoryTableCreateCompanionBuilder,
-      $$QuoteStatusHistoryTableUpdateCompanionBuilder,
-      (QuoteStatusHistoryRow, $$QuoteStatusHistoryTableReferences),
-      QuoteStatusHistoryRow,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteStatusHistoryTable,
+      LegacyQuoteStatusHistoryRow,
+      $$LegacyQuoteStatusHistoryTableFilterComposer,
+      $$LegacyQuoteStatusHistoryTableOrderingComposer,
+      $$LegacyQuoteStatusHistoryTableAnnotationComposer,
+      $$LegacyQuoteStatusHistoryTableCreateCompanionBuilder,
+      $$LegacyQuoteStatusHistoryTableUpdateCompanionBuilder,
+      (LegacyQuoteStatusHistoryRow, $$LegacyQuoteStatusHistoryTableReferences),
+      LegacyQuoteStatusHistoryRow,
       PrefetchHooks Function({bool quoteId})
     >;
-typedef $$QuoteNumberSequencesTableCreateCompanionBuilder =
-    QuoteNumberSequencesCompanion Function({
+typedef $$LegacyQuoteNumberSequencesTableCreateCompanionBuilder =
+    LegacyQuoteNumberSequencesCompanion Function({
       Value<int> year,
       required int lastSequence,
     });
-typedef $$QuoteNumberSequencesTableUpdateCompanionBuilder =
-    QuoteNumberSequencesCompanion Function({
+typedef $$LegacyQuoteNumberSequencesTableUpdateCompanionBuilder =
+    LegacyQuoteNumberSequencesCompanion Function({
       Value<int> year,
       Value<int> lastSequence,
     });
 
-class $$QuoteNumberSequencesTableFilterComposer
-    extends Composer<_$AppDatabase, $QuoteNumberSequencesTable> {
-  $$QuoteNumberSequencesTableFilterComposer({
+class $$LegacyQuoteNumberSequencesTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteNumberSequencesTable> {
+  $$LegacyQuoteNumberSequencesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17217,9 +17280,9 @@ class $$QuoteNumberSequencesTableFilterComposer
   );
 }
 
-class $$QuoteNumberSequencesTableOrderingComposer
-    extends Composer<_$AppDatabase, $QuoteNumberSequencesTable> {
-  $$QuoteNumberSequencesTableOrderingComposer({
+class $$LegacyQuoteNumberSequencesTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteNumberSequencesTable> {
+  $$LegacyQuoteNumberSequencesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17237,9 +17300,9 @@ class $$QuoteNumberSequencesTableOrderingComposer
   );
 }
 
-class $$QuoteNumberSequencesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $QuoteNumberSequencesTable> {
-  $$QuoteNumberSequencesTableAnnotationComposer({
+class $$LegacyQuoteNumberSequencesTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyQuoteNumberSequencesTable> {
+  $$LegacyQuoteNumberSequencesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17255,44 +17318,47 @@ class $$QuoteNumberSequencesTableAnnotationComposer
   );
 }
 
-class $$QuoteNumberSequencesTableTableManager
+class $$LegacyQuoteNumberSequencesTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $QuoteNumberSequencesTable,
-          QuoteNumberSequenceRow,
-          $$QuoteNumberSequencesTableFilterComposer,
-          $$QuoteNumberSequencesTableOrderingComposer,
-          $$QuoteNumberSequencesTableAnnotationComposer,
-          $$QuoteNumberSequencesTableCreateCompanionBuilder,
-          $$QuoteNumberSequencesTableUpdateCompanionBuilder,
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteNumberSequencesTable,
+          LegacyQuoteNumberSequenceRow,
+          $$LegacyQuoteNumberSequencesTableFilterComposer,
+          $$LegacyQuoteNumberSequencesTableOrderingComposer,
+          $$LegacyQuoteNumberSequencesTableAnnotationComposer,
+          $$LegacyQuoteNumberSequencesTableCreateCompanionBuilder,
+          $$LegacyQuoteNumberSequencesTableUpdateCompanionBuilder,
           (
-            QuoteNumberSequenceRow,
+            LegacyQuoteNumberSequenceRow,
             BaseReferences<
-              _$AppDatabase,
-              $QuoteNumberSequencesTable,
-              QuoteNumberSequenceRow
+              _$LegacyAppDatabaseV3,
+              $LegacyQuoteNumberSequencesTable,
+              LegacyQuoteNumberSequenceRow
             >,
           ),
-          QuoteNumberSequenceRow,
+          LegacyQuoteNumberSequenceRow,
           PrefetchHooks Function()
         > {
-  $$QuoteNumberSequencesTableTableManager(
-    _$AppDatabase db,
-    $QuoteNumberSequencesTable table,
+  $$LegacyQuoteNumberSequencesTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyQuoteNumberSequencesTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$QuoteNumberSequencesTableFilterComposer($db: db, $table: table),
+              $$LegacyQuoteNumberSequencesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$QuoteNumberSequencesTableOrderingComposer(
+              $$LegacyQuoteNumberSequencesTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$QuoteNumberSequencesTableAnnotationComposer(
+              $$LegacyQuoteNumberSequencesTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -17300,7 +17366,7 @@ class $$QuoteNumberSequencesTableTableManager
               ({
                 Value<int> year = const Value.absent(),
                 Value<int> lastSequence = const Value.absent(),
-              }) => QuoteNumberSequencesCompanion(
+              }) => LegacyQuoteNumberSequencesCompanion(
                 year: year,
                 lastSequence: lastSequence,
               ),
@@ -17308,7 +17374,7 @@ class $$QuoteNumberSequencesTableTableManager
               ({
                 Value<int> year = const Value.absent(),
                 required int lastSequence,
-              }) => QuoteNumberSequencesCompanion.insert(
+              }) => LegacyQuoteNumberSequencesCompanion.insert(
                 year: year,
                 lastSequence: lastSequence,
               ),
@@ -17320,29 +17386,29 @@ class $$QuoteNumberSequencesTableTableManager
       );
 }
 
-typedef $$QuoteNumberSequencesTableProcessedTableManager =
+typedef $$LegacyQuoteNumberSequencesTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $QuoteNumberSequencesTable,
-      QuoteNumberSequenceRow,
-      $$QuoteNumberSequencesTableFilterComposer,
-      $$QuoteNumberSequencesTableOrderingComposer,
-      $$QuoteNumberSequencesTableAnnotationComposer,
-      $$QuoteNumberSequencesTableCreateCompanionBuilder,
-      $$QuoteNumberSequencesTableUpdateCompanionBuilder,
+      _$LegacyAppDatabaseV3,
+      $LegacyQuoteNumberSequencesTable,
+      LegacyQuoteNumberSequenceRow,
+      $$LegacyQuoteNumberSequencesTableFilterComposer,
+      $$LegacyQuoteNumberSequencesTableOrderingComposer,
+      $$LegacyQuoteNumberSequencesTableAnnotationComposer,
+      $$LegacyQuoteNumberSequencesTableCreateCompanionBuilder,
+      $$LegacyQuoteNumberSequencesTableUpdateCompanionBuilder,
       (
-        QuoteNumberSequenceRow,
+        LegacyQuoteNumberSequenceRow,
         BaseReferences<
-          _$AppDatabase,
-          $QuoteNumberSequencesTable,
-          QuoteNumberSequenceRow
+          _$LegacyAppDatabaseV3,
+          $LegacyQuoteNumberSequencesTable,
+          LegacyQuoteNumberSequenceRow
         >,
       ),
-      QuoteNumberSequenceRow,
+      LegacyQuoteNumberSequenceRow,
       PrefetchHooks Function()
     >;
-typedef $$AgendaBlocksTableCreateCompanionBuilder =
-    AgendaBlocksCompanion Function({
+typedef $$LegacyAgendaBlocksTableCreateCompanionBuilder =
+    LegacyAgendaBlocksCompanion Function({
       required String id,
       required String title,
       Value<String?> notes,
@@ -17352,8 +17418,8 @@ typedef $$AgendaBlocksTableCreateCompanionBuilder =
       required int updatedAt,
       Value<int> rowid,
     });
-typedef $$AgendaBlocksTableUpdateCompanionBuilder =
-    AgendaBlocksCompanion Function({
+typedef $$LegacyAgendaBlocksTableUpdateCompanionBuilder =
+    LegacyAgendaBlocksCompanion Function({
       Value<String> id,
       Value<String> title,
       Value<String?> notes,
@@ -17364,9 +17430,9 @@ typedef $$AgendaBlocksTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-class $$AgendaBlocksTableFilterComposer
-    extends Composer<_$AppDatabase, $AgendaBlocksTable> {
-  $$AgendaBlocksTableFilterComposer({
+class $$LegacyAgendaBlocksTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyAgendaBlocksTable> {
+  $$LegacyAgendaBlocksTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17409,9 +17475,9 @@ class $$AgendaBlocksTableFilterComposer
   );
 }
 
-class $$AgendaBlocksTableOrderingComposer
-    extends Composer<_$AppDatabase, $AgendaBlocksTable> {
-  $$AgendaBlocksTableOrderingComposer({
+class $$LegacyAgendaBlocksTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyAgendaBlocksTable> {
+  $$LegacyAgendaBlocksTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17454,9 +17520,9 @@ class $$AgendaBlocksTableOrderingComposer
   );
 }
 
-class $$AgendaBlocksTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AgendaBlocksTable> {
-  $$AgendaBlocksTableAnnotationComposer({
+class $$LegacyAgendaBlocksTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyAgendaBlocksTable> {
+  $$LegacyAgendaBlocksTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17485,35 +17551,44 @@ class $$AgendaBlocksTableAnnotationComposer
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
-class $$AgendaBlocksTableTableManager
+class $$LegacyAgendaBlocksTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $AgendaBlocksTable,
-          AgendaBlockRow,
-          $$AgendaBlocksTableFilterComposer,
-          $$AgendaBlocksTableOrderingComposer,
-          $$AgendaBlocksTableAnnotationComposer,
-          $$AgendaBlocksTableCreateCompanionBuilder,
-          $$AgendaBlocksTableUpdateCompanionBuilder,
+          _$LegacyAppDatabaseV3,
+          $LegacyAgendaBlocksTable,
+          LegacyAgendaBlockRow,
+          $$LegacyAgendaBlocksTableFilterComposer,
+          $$LegacyAgendaBlocksTableOrderingComposer,
+          $$LegacyAgendaBlocksTableAnnotationComposer,
+          $$LegacyAgendaBlocksTableCreateCompanionBuilder,
+          $$LegacyAgendaBlocksTableUpdateCompanionBuilder,
           (
-            AgendaBlockRow,
-            BaseReferences<_$AppDatabase, $AgendaBlocksTable, AgendaBlockRow>,
+            LegacyAgendaBlockRow,
+            BaseReferences<
+              _$LegacyAppDatabaseV3,
+              $LegacyAgendaBlocksTable,
+              LegacyAgendaBlockRow
+            >,
           ),
-          AgendaBlockRow,
+          LegacyAgendaBlockRow,
           PrefetchHooks Function()
         > {
-  $$AgendaBlocksTableTableManager(_$AppDatabase db, $AgendaBlocksTable table)
-    : super(
+  $$LegacyAgendaBlocksTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyAgendaBlocksTable table,
+  ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$AgendaBlocksTableFilterComposer($db: db, $table: table),
+              $$LegacyAgendaBlocksTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$AgendaBlocksTableOrderingComposer($db: db, $table: table),
+              $$LegacyAgendaBlocksTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$AgendaBlocksTableAnnotationComposer($db: db, $table: table),
+              $$LegacyAgendaBlocksTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -17524,7 +17599,7 @@ class $$AgendaBlocksTableTableManager
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => AgendaBlocksCompanion(
+              }) => LegacyAgendaBlocksCompanion(
                 id: id,
                 title: title,
                 notes: notes,
@@ -17544,7 +17619,7 @@ class $$AgendaBlocksTableTableManager
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
-              }) => AgendaBlocksCompanion.insert(
+              }) => LegacyAgendaBlocksCompanion.insert(
                 id: id,
                 title: title,
                 notes: notes,
@@ -17562,25 +17637,29 @@ class $$AgendaBlocksTableTableManager
       );
 }
 
-typedef $$AgendaBlocksTableProcessedTableManager =
+typedef $$LegacyAgendaBlocksTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $AgendaBlocksTable,
-      AgendaBlockRow,
-      $$AgendaBlocksTableFilterComposer,
-      $$AgendaBlocksTableOrderingComposer,
-      $$AgendaBlocksTableAnnotationComposer,
-      $$AgendaBlocksTableCreateCompanionBuilder,
-      $$AgendaBlocksTableUpdateCompanionBuilder,
+      _$LegacyAppDatabaseV3,
+      $LegacyAgendaBlocksTable,
+      LegacyAgendaBlockRow,
+      $$LegacyAgendaBlocksTableFilterComposer,
+      $$LegacyAgendaBlocksTableOrderingComposer,
+      $$LegacyAgendaBlocksTableAnnotationComposer,
+      $$LegacyAgendaBlocksTableCreateCompanionBuilder,
+      $$LegacyAgendaBlocksTableUpdateCompanionBuilder,
       (
-        AgendaBlockRow,
-        BaseReferences<_$AppDatabase, $AgendaBlocksTable, AgendaBlockRow>,
+        LegacyAgendaBlockRow,
+        BaseReferences<
+          _$LegacyAppDatabaseV3,
+          $LegacyAgendaBlocksTable,
+          LegacyAgendaBlockRow
+        >,
       ),
-      AgendaBlockRow,
+      LegacyAgendaBlockRow,
       PrefetchHooks Function()
     >;
-typedef $$FinancialCategoriesTableCreateCompanionBuilder =
-    FinancialCategoriesCompanion Function({
+typedef $$LegacyFinancialCategoriesTableCreateCompanionBuilder =
+    LegacyFinancialCategoriesCompanion Function({
       required String id,
       required String name,
       required String kind,
@@ -17588,8 +17667,8 @@ typedef $$FinancialCategoriesTableCreateCompanionBuilder =
       required int createdAt,
       Value<int> rowid,
     });
-typedef $$FinancialCategoriesTableUpdateCompanionBuilder =
-    FinancialCategoriesCompanion Function({
+typedef $$LegacyFinancialCategoriesTableUpdateCompanionBuilder =
+    LegacyFinancialCategoriesCompanion Function({
       Value<String> id,
       Value<String> name,
       Value<String> kind,
@@ -17598,33 +17677,38 @@ typedef $$FinancialCategoriesTableUpdateCompanionBuilder =
       Value<int> rowid,
     });
 
-final class $$FinancialCategoriesTableReferences
+final class $$LegacyFinancialCategoriesTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $FinancialCategoriesTable,
-          FinancialCategoryRow
+          _$LegacyAppDatabaseV3,
+          $LegacyFinancialCategoriesTable,
+          LegacyFinancialCategoryRow
         > {
-  $$FinancialCategoriesTableReferences(
+  $$LegacyFinancialCategoriesTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static MultiTypedResultKey<$FinancialEntriesTable, List<FinancialEntryRow>>
-  _financialEntriesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.financialEntries,
-    aliasName: 'financial_categories__id__financial_entries__category_id',
-  );
+  static MultiTypedResultKey<
+    $LegacyFinancialEntriesTable,
+    List<LegacyFinancialEntryRow>
+  >
+  _legacyFinancialEntriesRefsTable(_$LegacyAppDatabaseV3 db) =>
+      MultiTypedResultKey.fromTable(
+        db.legacyFinancialEntries,
+        aliasName: 'financial_categories__id__financial_entries__category_id',
+      );
 
-  $$FinancialEntriesTableProcessedTableManager get financialEntriesRefs {
-    final manager = $$FinancialEntriesTableTableManager(
+  $$LegacyFinancialEntriesTableProcessedTableManager
+  get legacyFinancialEntriesRefs {
+    final manager = $$LegacyFinancialEntriesTableTableManager(
       $_db,
-      $_db.financialEntries,
+      $_db.legacyFinancialEntries,
     ).filter((f) => f.categoryId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _financialEntriesRefsTable($_db),
+      _legacyFinancialEntriesRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -17632,9 +17716,9 @@ final class $$FinancialCategoriesTableReferences
   }
 }
 
-class $$FinancialCategoriesTableFilterComposer
-    extends Composer<_$AppDatabase, $FinancialCategoriesTable> {
-  $$FinancialCategoriesTableFilterComposer({
+class $$LegacyFinancialCategoriesTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyFinancialCategoriesTable> {
+  $$LegacyFinancialCategoriesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17666,35 +17750,36 @@ class $$FinancialCategoriesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> financialEntriesRefs(
-    Expression<bool> Function($$FinancialEntriesTableFilterComposer f) f,
+  Expression<bool> legacyFinancialEntriesRefs(
+    Expression<bool> Function($$LegacyFinancialEntriesTableFilterComposer f) f,
   ) {
-    final $$FinancialEntriesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.financialEntries,
-      getReferencedColumn: (t) => t.categoryId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FinancialEntriesTableFilterComposer(
-            $db: $db,
-            $table: $db.financialEntries,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$LegacyFinancialEntriesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.legacyFinancialEntries,
+          getReferencedColumn: (t) => t.categoryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyFinancialEntriesTableFilterComposer(
+                $db: $db,
+                $table: $db.legacyFinancialEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
 
-class $$FinancialCategoriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $FinancialCategoriesTable> {
-  $$FinancialCategoriesTableOrderingComposer({
+class $$LegacyFinancialCategoriesTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyFinancialCategoriesTable> {
+  $$LegacyFinancialCategoriesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17727,9 +17812,9 @@ class $$FinancialCategoriesTableOrderingComposer
   );
 }
 
-class $$FinancialCategoriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FinancialCategoriesTable> {
-  $$FinancialCategoriesTableAnnotationComposer({
+class $$LegacyFinancialCategoriesTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyFinancialCategoriesTable> {
+  $$LegacyFinancialCategoriesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -17751,63 +17836,70 @@ class $$FinancialCategoriesTableAnnotationComposer
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  Expression<T> financialEntriesRefs<T extends Object>(
-    Expression<T> Function($$FinancialEntriesTableAnnotationComposer a) f,
+  Expression<T> legacyFinancialEntriesRefs<T extends Object>(
+    Expression<T> Function($$LegacyFinancialEntriesTableAnnotationComposer a) f,
   ) {
-    final $$FinancialEntriesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.financialEntries,
-      getReferencedColumn: (t) => t.categoryId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FinancialEntriesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.financialEntries,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+    final $$LegacyFinancialEntriesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.legacyFinancialEntries,
+          getReferencedColumn: (t) => t.categoryId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyFinancialEntriesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.legacyFinancialEntries,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return f(composer);
   }
 }
 
-class $$FinancialCategoriesTableTableManager
+class $$LegacyFinancialCategoriesTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $FinancialCategoriesTable,
-          FinancialCategoryRow,
-          $$FinancialCategoriesTableFilterComposer,
-          $$FinancialCategoriesTableOrderingComposer,
-          $$FinancialCategoriesTableAnnotationComposer,
-          $$FinancialCategoriesTableCreateCompanionBuilder,
-          $$FinancialCategoriesTableUpdateCompanionBuilder,
-          (FinancialCategoryRow, $$FinancialCategoriesTableReferences),
-          FinancialCategoryRow,
-          PrefetchHooks Function({bool financialEntriesRefs})
+          _$LegacyAppDatabaseV3,
+          $LegacyFinancialCategoriesTable,
+          LegacyFinancialCategoryRow,
+          $$LegacyFinancialCategoriesTableFilterComposer,
+          $$LegacyFinancialCategoriesTableOrderingComposer,
+          $$LegacyFinancialCategoriesTableAnnotationComposer,
+          $$LegacyFinancialCategoriesTableCreateCompanionBuilder,
+          $$LegacyFinancialCategoriesTableUpdateCompanionBuilder,
+          (
+            LegacyFinancialCategoryRow,
+            $$LegacyFinancialCategoriesTableReferences,
+          ),
+          LegacyFinancialCategoryRow,
+          PrefetchHooks Function({bool legacyFinancialEntriesRefs})
         > {
-  $$FinancialCategoriesTableTableManager(
-    _$AppDatabase db,
-    $FinancialCategoriesTable table,
+  $$LegacyFinancialCategoriesTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyFinancialCategoriesTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$FinancialCategoriesTableFilterComposer($db: db, $table: table),
+              $$LegacyFinancialCategoriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$FinancialCategoriesTableOrderingComposer(
+              $$LegacyFinancialCategoriesTableOrderingComposer(
                 $db: db,
                 $table: table,
               ),
           createComputedFieldComposer: () =>
-              $$FinancialCategoriesTableAnnotationComposer(
+              $$LegacyFinancialCategoriesTableAnnotationComposer(
                 $db: db,
                 $table: table,
               ),
@@ -17819,7 +17911,7 @@ class $$FinancialCategoriesTableTableManager
                 Value<bool> active = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => FinancialCategoriesCompanion(
+              }) => LegacyFinancialCategoriesCompanion(
                 id: id,
                 name: name,
                 kind: kind,
@@ -17835,7 +17927,7 @@ class $$FinancialCategoriesTableTableManager
                 required bool active,
                 required int createdAt,
                 Value<int> rowid = const Value.absent(),
-              }) => FinancialCategoriesCompanion.insert(
+              }) => LegacyFinancialCategoriesCompanion.insert(
                 id: id,
                 name: name,
                 kind: kind,
@@ -17847,34 +17939,35 @@ class $$FinancialCategoriesTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$FinancialCategoriesTableReferences(db, table, e),
+                  $$LegacyFinancialCategoriesTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({financialEntriesRefs = false}) {
+          prefetchHooksCallback: ({legacyFinancialEntriesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
-                if (financialEntriesRefs) db.financialEntries,
+                if (legacyFinancialEntriesRefs) db.legacyFinancialEntries,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (financialEntriesRefs)
+                  if (legacyFinancialEntriesRefs)
                     await $_getPrefetchedData<
-                      FinancialCategoryRow,
-                      $FinancialCategoriesTable,
-                      FinancialEntryRow
+                      LegacyFinancialCategoryRow,
+                      $LegacyFinancialCategoriesTable,
+                      LegacyFinancialEntryRow
                     >(
                       currentTable: table,
-                      referencedTable: $$FinancialCategoriesTableReferences
-                          ._financialEntriesRefsTable(db),
+                      referencedTable:
+                          $$LegacyFinancialCategoriesTableReferences
+                              ._legacyFinancialEntriesRefsTable(db),
                       managerFromTypedResult: (p0) =>
-                          $$FinancialCategoriesTableReferences(
+                          $$LegacyFinancialCategoriesTableReferences(
                             db,
                             table,
                             p0,
-                          ).financialEntriesRefs,
+                          ).legacyFinancialEntriesRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.categoryId == item.id),
                       typedResults: items,
@@ -17887,22 +17980,22 @@ class $$FinancialCategoriesTableTableManager
       );
 }
 
-typedef $$FinancialCategoriesTableProcessedTableManager =
+typedef $$LegacyFinancialCategoriesTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $FinancialCategoriesTable,
-      FinancialCategoryRow,
-      $$FinancialCategoriesTableFilterComposer,
-      $$FinancialCategoriesTableOrderingComposer,
-      $$FinancialCategoriesTableAnnotationComposer,
-      $$FinancialCategoriesTableCreateCompanionBuilder,
-      $$FinancialCategoriesTableUpdateCompanionBuilder,
-      (FinancialCategoryRow, $$FinancialCategoriesTableReferences),
-      FinancialCategoryRow,
-      PrefetchHooks Function({bool financialEntriesRefs})
+      _$LegacyAppDatabaseV3,
+      $LegacyFinancialCategoriesTable,
+      LegacyFinancialCategoryRow,
+      $$LegacyFinancialCategoriesTableFilterComposer,
+      $$LegacyFinancialCategoriesTableOrderingComposer,
+      $$LegacyFinancialCategoriesTableAnnotationComposer,
+      $$LegacyFinancialCategoriesTableCreateCompanionBuilder,
+      $$LegacyFinancialCategoriesTableUpdateCompanionBuilder,
+      (LegacyFinancialCategoryRow, $$LegacyFinancialCategoriesTableReferences),
+      LegacyFinancialCategoryRow,
+      PrefetchHooks Function({bool legacyFinancialEntriesRefs})
     >;
-typedef $$FinancialEntriesTableCreateCompanionBuilder =
-    FinancialEntriesCompanion Function({
+typedef $$LegacyFinancialEntriesTableCreateCompanionBuilder =
+    LegacyFinancialEntriesCompanion Function({
       required String id,
       required String kind,
       required String description,
@@ -17912,13 +18005,12 @@ typedef $$FinancialEntriesTableCreateCompanionBuilder =
       required String status,
       Value<int?> paidAt,
       Value<String?> notes,
-      Value<String?> quoteId,
       required int createdAt,
       required int updatedAt,
       Value<int> rowid,
     });
-typedef $$FinancialEntriesTableUpdateCompanionBuilder =
-    FinancialEntriesCompanion Function({
+typedef $$LegacyFinancialEntriesTableUpdateCompanionBuilder =
+    LegacyFinancialEntriesCompanion Function({
       Value<String> id,
       Value<String> kind,
       Value<String> description,
@@ -17928,35 +18020,36 @@ typedef $$FinancialEntriesTableUpdateCompanionBuilder =
       Value<String> status,
       Value<int?> paidAt,
       Value<String?> notes,
-      Value<String?> quoteId,
       Value<int> createdAt,
       Value<int> updatedAt,
       Value<int> rowid,
     });
 
-final class $$FinancialEntriesTableReferences
+final class $$LegacyFinancialEntriesTableReferences
     extends
         BaseReferences<
-          _$AppDatabase,
-          $FinancialEntriesTable,
-          FinancialEntryRow
+          _$LegacyAppDatabaseV3,
+          $LegacyFinancialEntriesTable,
+          LegacyFinancialEntryRow
         > {
-  $$FinancialEntriesTableReferences(
+  $$LegacyFinancialEntriesTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $FinancialCategoriesTable _categoryIdTable(_$AppDatabase db) => db
-      .financialCategories
-      .createAlias('financial_entries__category_id__financial_categories__id');
+  static $LegacyFinancialCategoriesTable _categoryIdTable(
+    _$LegacyAppDatabaseV3 db,
+  ) => db.legacyFinancialCategories.createAlias(
+    'financial_entries__category_id__financial_categories__id',
+  );
 
-  $$FinancialCategoriesTableProcessedTableManager get categoryId {
+  $$LegacyFinancialCategoriesTableProcessedTableManager get categoryId {
     final $_column = $_itemColumn<String>('category_id')!;
 
-    final manager = $$FinancialCategoriesTableTableManager(
+    final manager = $$LegacyFinancialCategoriesTableTableManager(
       $_db,
-      $_db.financialCategories,
+      $_db.legacyFinancialCategories,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_categoryIdTable($_db));
     if (item == null) return manager;
@@ -17964,28 +18057,11 @@ final class $$FinancialEntriesTableReferences
       manager.$state.copyWith(prefetchedData: [item]),
     );
   }
-
-  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
-      db.quotes.createAlias('financial_entries__quote_id__quotes__id');
-
-  $$QuotesTableProcessedTableManager? get quoteId {
-    final $_column = $_itemColumn<String>('quote_id');
-    if ($_column == null) return null;
-    final manager = $$QuotesTableTableManager(
-      $_db,
-      $_db.quotes,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
 }
 
-class $$FinancialEntriesTableFilterComposer
-    extends Composer<_$AppDatabase, $FinancialEntriesTable> {
-  $$FinancialEntriesTableFilterComposer({
+class $$LegacyFinancialEntriesTableFilterComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyFinancialEntriesTable> {
+  $$LegacyFinancialEntriesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -18042,56 +18118,34 @@ class $$FinancialEntriesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  $$FinancialCategoriesTableFilterComposer get categoryId {
-    final $$FinancialCategoriesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.categoryId,
-      referencedTable: $db.financialCategories,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$FinancialCategoriesTableFilterComposer(
-            $db: $db,
-            $table: $db.financialCategories,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
+  $$LegacyFinancialCategoriesTableFilterComposer get categoryId {
+    final $$LegacyFinancialCategoriesTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.categoryId,
+          referencedTable: $db.legacyFinancialCategories,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-
-  $$QuotesTableFilterComposer get quoteId {
-    final $$QuotesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableFilterComposer(
-            $db: $db,
-            $table: $db.quotes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
+              }) => $$LegacyFinancialCategoriesTableFilterComposer(
+                $db: $db,
+                $table: $db.legacyFinancialCategories,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
     return composer;
   }
 }
 
-class $$FinancialEntriesTableOrderingComposer
-    extends Composer<_$AppDatabase, $FinancialEntriesTable> {
-  $$FinancialEntriesTableOrderingComposer({
+class $$LegacyFinancialEntriesTableOrderingComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyFinancialEntriesTable> {
+  $$LegacyFinancialEntriesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -18148,21 +18202,21 @@ class $$FinancialEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  $$FinancialCategoriesTableOrderingComposer get categoryId {
-    final $$FinancialCategoriesTableOrderingComposer composer =
+  $$LegacyFinancialCategoriesTableOrderingComposer get categoryId {
+    final $$LegacyFinancialCategoriesTableOrderingComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.categoryId,
-          referencedTable: $db.financialCategories,
+          referencedTable: $db.legacyFinancialCategories,
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$FinancialCategoriesTableOrderingComposer(
+              }) => $$LegacyFinancialCategoriesTableOrderingComposer(
                 $db: $db,
-                $table: $db.financialCategories,
+                $table: $db.legacyFinancialCategories,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -18171,34 +18225,11 @@ class $$FinancialEntriesTableOrderingComposer
         );
     return composer;
   }
-
-  $$QuotesTableOrderingComposer get quoteId {
-    final $$QuotesTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableOrderingComposer(
-            $db: $db,
-            $table: $db.quotes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
-class $$FinancialEntriesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $FinancialEntriesTable> {
-  $$FinancialEntriesTableAnnotationComposer({
+class $$LegacyFinancialEntriesTableAnnotationComposer
+    extends Composer<_$LegacyAppDatabaseV3, $LegacyFinancialEntriesTable> {
+  $$LegacyFinancialEntriesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -18239,21 +18270,21 @@ class $$FinancialEntriesTableAnnotationComposer
   GeneratedColumn<int> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  $$FinancialCategoriesTableAnnotationComposer get categoryId {
-    final $$FinancialCategoriesTableAnnotationComposer composer =
+  $$LegacyFinancialCategoriesTableAnnotationComposer get categoryId {
+    final $$LegacyFinancialCategoriesTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.categoryId,
-          referencedTable: $db.financialCategories,
+          referencedTable: $db.legacyFinancialCategories,
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => $$FinancialCategoriesTableAnnotationComposer(
+              }) => $$LegacyFinancialCategoriesTableAnnotationComposer(
                 $db: $db,
-                $table: $db.financialCategories,
+                $table: $db.legacyFinancialCategories,
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -18262,59 +18293,45 @@ class $$FinancialEntriesTableAnnotationComposer
         );
     return composer;
   }
-
-  $$QuotesTableAnnotationComposer get quoteId {
-    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.quoteId,
-      referencedTable: $db.quotes,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$QuotesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.quotes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
-class $$FinancialEntriesTableTableManager
+class $$LegacyFinancialEntriesTableTableManager
     extends
         RootTableManager<
-          _$AppDatabase,
-          $FinancialEntriesTable,
-          FinancialEntryRow,
-          $$FinancialEntriesTableFilterComposer,
-          $$FinancialEntriesTableOrderingComposer,
-          $$FinancialEntriesTableAnnotationComposer,
-          $$FinancialEntriesTableCreateCompanionBuilder,
-          $$FinancialEntriesTableUpdateCompanionBuilder,
-          (FinancialEntryRow, $$FinancialEntriesTableReferences),
-          FinancialEntryRow,
-          PrefetchHooks Function({bool categoryId, bool quoteId})
+          _$LegacyAppDatabaseV3,
+          $LegacyFinancialEntriesTable,
+          LegacyFinancialEntryRow,
+          $$LegacyFinancialEntriesTableFilterComposer,
+          $$LegacyFinancialEntriesTableOrderingComposer,
+          $$LegacyFinancialEntriesTableAnnotationComposer,
+          $$LegacyFinancialEntriesTableCreateCompanionBuilder,
+          $$LegacyFinancialEntriesTableUpdateCompanionBuilder,
+          (LegacyFinancialEntryRow, $$LegacyFinancialEntriesTableReferences),
+          LegacyFinancialEntryRow,
+          PrefetchHooks Function({bool categoryId})
         > {
-  $$FinancialEntriesTableTableManager(
-    _$AppDatabase db,
-    $FinancialEntriesTable table,
+  $$LegacyFinancialEntriesTableTableManager(
+    _$LegacyAppDatabaseV3 db,
+    $LegacyFinancialEntriesTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$FinancialEntriesTableFilterComposer($db: db, $table: table),
+              $$LegacyFinancialEntriesTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
           createOrderingComposer: () =>
-              $$FinancialEntriesTableOrderingComposer($db: db, $table: table),
+              $$LegacyFinancialEntriesTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
           createComputedFieldComposer: () =>
-              $$FinancialEntriesTableAnnotationComposer($db: db, $table: table),
+              $$LegacyFinancialEntriesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -18326,11 +18343,10 @@ class $$FinancialEntriesTableTableManager
                 Value<String> status = const Value.absent(),
                 Value<int?> paidAt = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> quoteId = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => FinancialEntriesCompanion(
+              }) => LegacyFinancialEntriesCompanion(
                 id: id,
                 kind: kind,
                 description: description,
@@ -18340,7 +18356,6 @@ class $$FinancialEntriesTableTableManager
                 status: status,
                 paidAt: paidAt,
                 notes: notes,
-                quoteId: quoteId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -18356,11 +18371,10 @@ class $$FinancialEntriesTableTableManager
                 required String status,
                 Value<int?> paidAt = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
-                Value<String?> quoteId = const Value.absent(),
                 required int createdAt,
                 required int updatedAt,
                 Value<int> rowid = const Value.absent(),
-              }) => FinancialEntriesCompanion.insert(
+              }) => LegacyFinancialEntriesCompanion.insert(
                 id: id,
                 kind: kind,
                 description: description,
@@ -18370,7 +18384,6 @@ class $$FinancialEntriesTableTableManager
                 status: status,
                 paidAt: paidAt,
                 notes: notes,
-                quoteId: quoteId,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -18379,11 +18392,11 @@ class $$FinancialEntriesTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$FinancialEntriesTableReferences(db, table, e),
+                  $$LegacyFinancialEntriesTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({categoryId = false, quoteId = false}) {
+          prefetchHooksCallback: ({categoryId = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [],
@@ -18409,26 +18422,11 @@ class $$FinancialEntriesTableTableManager
                                 currentTable: table,
                                 currentColumn: table.categoryId,
                                 referencedTable:
-                                    $$FinancialEntriesTableReferences
+                                    $$LegacyFinancialEntriesTableReferences
                                         ._categoryIdTable(db),
                                 referencedColumn:
-                                    $$FinancialEntriesTableReferences
+                                    $$LegacyFinancialEntriesTableReferences
                                         ._categoryIdTable(db)
-                                        .id,
-                              )
-                              as T;
-                    }
-                    if (quoteId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.quoteId,
-                                referencedTable:
-                                    $$FinancialEntriesTableReferences
-                                        ._quoteIdTable(db),
-                                referencedColumn:
-                                    $$FinancialEntriesTableReferences
-                                        ._quoteIdTable(db)
                                         .id,
                               )
                               as T;
@@ -18445,221 +18443,84 @@ class $$FinancialEntriesTableTableManager
       );
 }
 
-typedef $$FinancialEntriesTableProcessedTableManager =
+typedef $$LegacyFinancialEntriesTableProcessedTableManager =
     ProcessedTableManager<
-      _$AppDatabase,
-      $FinancialEntriesTable,
-      FinancialEntryRow,
-      $$FinancialEntriesTableFilterComposer,
-      $$FinancialEntriesTableOrderingComposer,
-      $$FinancialEntriesTableAnnotationComposer,
-      $$FinancialEntriesTableCreateCompanionBuilder,
-      $$FinancialEntriesTableUpdateCompanionBuilder,
-      (FinancialEntryRow, $$FinancialEntriesTableReferences),
-      FinancialEntryRow,
-      PrefetchHooks Function({bool categoryId, bool quoteId})
+      _$LegacyAppDatabaseV3,
+      $LegacyFinancialEntriesTable,
+      LegacyFinancialEntryRow,
+      $$LegacyFinancialEntriesTableFilterComposer,
+      $$LegacyFinancialEntriesTableOrderingComposer,
+      $$LegacyFinancialEntriesTableAnnotationComposer,
+      $$LegacyFinancialEntriesTableCreateCompanionBuilder,
+      $$LegacyFinancialEntriesTableUpdateCompanionBuilder,
+      (LegacyFinancialEntryRow, $$LegacyFinancialEntriesTableReferences),
+      LegacyFinancialEntryRow,
+      PrefetchHooks Function({bool categoryId})
     >;
 
-class $AppDatabaseManager {
-  final _$AppDatabase _db;
-  $AppDatabaseManager(this._db);
-  $$ClientsTableTableManager get clients =>
-      $$ClientsTableTableManager(_db, _db.clients);
-  $$CatalogItemsTableTableManager get catalogItems =>
-      $$CatalogItemsTableTableManager(_db, _db.catalogItems);
-  $$CatalogPackageComponentsTableTableManager get catalogPackageComponents =>
-      $$CatalogPackageComponentsTableTableManager(
+class $LegacyAppDatabaseV3Manager {
+  final _$LegacyAppDatabaseV3 _db;
+  $LegacyAppDatabaseV3Manager(this._db);
+  $$LegacyClientsTableTableManager get legacyClients =>
+      $$LegacyClientsTableTableManager(_db, _db.legacyClients);
+  $$LegacyCatalogItemsTableTableManager get legacyCatalogItems =>
+      $$LegacyCatalogItemsTableTableManager(_db, _db.legacyCatalogItems);
+  $$LegacyCatalogPackageComponentsTableTableManager
+  get legacyCatalogPackageComponents =>
+      $$LegacyCatalogPackageComponentsTableTableManager(
         _db,
-        _db.catalogPackageComponents,
+        _db.legacyCatalogPackageComponents,
       );
-  $$CompanyProfilesTableTableManager get companyProfiles =>
-      $$CompanyProfilesTableTableManager(_db, _db.companyProfiles);
-  $$QuotesTableTableManager get quotes =>
-      $$QuotesTableTableManager(_db, _db.quotes);
-  $$QuoteClientSnapshotsTableTableManager get quoteClientSnapshots =>
-      $$QuoteClientSnapshotsTableTableManager(_db, _db.quoteClientSnapshots);
-  $$QuoteEventSnapshotsTableTableManager get quoteEventSnapshots =>
-      $$QuoteEventSnapshotsTableTableManager(_db, _db.quoteEventSnapshots);
-  $$QuoteCompanySnapshotsTableTableManager get quoteCompanySnapshots =>
-      $$QuoteCompanySnapshotsTableTableManager(_db, _db.quoteCompanySnapshots);
-  $$QuoteLineItemsTableTableManager get quoteLineItems =>
-      $$QuoteLineItemsTableTableManager(_db, _db.quoteLineItems);
-  $$QuoteLinePackageComponentsTableTableManager
-  get quoteLinePackageComponents =>
-      $$QuoteLinePackageComponentsTableTableManager(
+  $$LegacyCompanyProfilesTableTableManager get legacyCompanyProfiles =>
+      $$LegacyCompanyProfilesTableTableManager(_db, _db.legacyCompanyProfiles);
+  $$LegacyQuotesTableTableManager get legacyQuotes =>
+      $$LegacyQuotesTableTableManager(_db, _db.legacyQuotes);
+  $$LegacyQuoteClientSnapshotsTableTableManager
+  get legacyQuoteClientSnapshots =>
+      $$LegacyQuoteClientSnapshotsTableTableManager(
         _db,
-        _db.quoteLinePackageComponents,
+        _db.legacyQuoteClientSnapshots,
       );
-  $$QuoteStatusHistoryTableTableManager get quoteStatusHistory =>
-      $$QuoteStatusHistoryTableTableManager(_db, _db.quoteStatusHistory);
-  $$QuoteNumberSequencesTableTableManager get quoteNumberSequences =>
-      $$QuoteNumberSequencesTableTableManager(_db, _db.quoteNumberSequences);
-  $$AgendaBlocksTableTableManager get agendaBlocks =>
-      $$AgendaBlocksTableTableManager(_db, _db.agendaBlocks);
-  $$FinancialCategoriesTableTableManager get financialCategories =>
-      $$FinancialCategoriesTableTableManager(_db, _db.financialCategories);
-  $$FinancialEntriesTableTableManager get financialEntries =>
-      $$FinancialEntriesTableTableManager(_db, _db.financialEntries);
-}
-
-mixin _$ClientsDaoMixin on DatabaseAccessor<AppDatabase> {
-  $ClientsTable get clients => attachedDatabase.clients;
-  ClientsDaoManager get managers => ClientsDaoManager(this);
-}
-
-class ClientsDaoManager {
-  final _$ClientsDaoMixin _db;
-  ClientsDaoManager(this._db);
-  $$ClientsTableTableManager get clients =>
-      $$ClientsTableTableManager(_db.attachedDatabase, _db.clients);
-}
-
-mixin _$CompanyProfilesDaoMixin on DatabaseAccessor<AppDatabase> {
-  $CompanyProfilesTable get companyProfiles => attachedDatabase.companyProfiles;
-  CompanyProfilesDaoManager get managers => CompanyProfilesDaoManager(this);
-}
-
-class CompanyProfilesDaoManager {
-  final _$CompanyProfilesDaoMixin _db;
-  CompanyProfilesDaoManager(this._db);
-  $$CompanyProfilesTableTableManager get companyProfiles =>
-      $$CompanyProfilesTableTableManager(
-        _db.attachedDatabase,
-        _db.companyProfiles,
+  $$LegacyQuoteEventSnapshotsTableTableManager get legacyQuoteEventSnapshots =>
+      $$LegacyQuoteEventSnapshotsTableTableManager(
+        _db,
+        _db.legacyQuoteEventSnapshots,
       );
-}
-
-mixin _$CatalogDaoMixin on DatabaseAccessor<AppDatabase> {
-  $CatalogItemsTable get catalogItems => attachedDatabase.catalogItems;
-  $CatalogPackageComponentsTable get catalogPackageComponents =>
-      attachedDatabase.catalogPackageComponents;
-  CatalogDaoManager get managers => CatalogDaoManager(this);
-}
-
-class CatalogDaoManager {
-  final _$CatalogDaoMixin _db;
-  CatalogDaoManager(this._db);
-  $$CatalogItemsTableTableManager get catalogItems =>
-      $$CatalogItemsTableTableManager(_db.attachedDatabase, _db.catalogItems);
-  $$CatalogPackageComponentsTableTableManager get catalogPackageComponents =>
-      $$CatalogPackageComponentsTableTableManager(
-        _db.attachedDatabase,
-        _db.catalogPackageComponents,
+  $$LegacyQuoteCompanySnapshotsTableTableManager
+  get legacyQuoteCompanySnapshots =>
+      $$LegacyQuoteCompanySnapshotsTableTableManager(
+        _db,
+        _db.legacyQuoteCompanySnapshots,
       );
-}
-
-mixin _$QuotesDaoMixin on DatabaseAccessor<AppDatabase> {
-  $QuotesTable get quotes => attachedDatabase.quotes;
-  $QuoteClientSnapshotsTable get quoteClientSnapshots =>
-      attachedDatabase.quoteClientSnapshots;
-  $QuoteEventSnapshotsTable get quoteEventSnapshots =>
-      attachedDatabase.quoteEventSnapshots;
-  $QuoteCompanySnapshotsTable get quoteCompanySnapshots =>
-      attachedDatabase.quoteCompanySnapshots;
-  $QuoteLineItemsTable get quoteLineItems => attachedDatabase.quoteLineItems;
-  $QuoteLinePackageComponentsTable get quoteLinePackageComponents =>
-      attachedDatabase.quoteLinePackageComponents;
-  $QuoteStatusHistoryTable get quoteStatusHistory =>
-      attachedDatabase.quoteStatusHistory;
-  $QuoteNumberSequencesTable get quoteNumberSequences =>
-      attachedDatabase.quoteNumberSequences;
-  QuotesDaoManager get managers => QuotesDaoManager(this);
-}
-
-class QuotesDaoManager {
-  final _$QuotesDaoMixin _db;
-  QuotesDaoManager(this._db);
-  $$QuotesTableTableManager get quotes =>
-      $$QuotesTableTableManager(_db.attachedDatabase, _db.quotes);
-  $$QuoteClientSnapshotsTableTableManager get quoteClientSnapshots =>
-      $$QuoteClientSnapshotsTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteClientSnapshots,
+  $$LegacyQuoteLineItemsTableTableManager get legacyQuoteLineItems =>
+      $$LegacyQuoteLineItemsTableTableManager(_db, _db.legacyQuoteLineItems);
+  $$LegacyQuoteLinePackageComponentsTableTableManager
+  get legacyQuoteLinePackageComponents =>
+      $$LegacyQuoteLinePackageComponentsTableTableManager(
+        _db,
+        _db.legacyQuoteLinePackageComponents,
       );
-  $$QuoteEventSnapshotsTableTableManager get quoteEventSnapshots =>
-      $$QuoteEventSnapshotsTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteEventSnapshots,
+  $$LegacyQuoteStatusHistoryTableTableManager get legacyQuoteStatusHistory =>
+      $$LegacyQuoteStatusHistoryTableTableManager(
+        _db,
+        _db.legacyQuoteStatusHistory,
       );
-  $$QuoteCompanySnapshotsTableTableManager get quoteCompanySnapshots =>
-      $$QuoteCompanySnapshotsTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteCompanySnapshots,
+  $$LegacyQuoteNumberSequencesTableTableManager
+  get legacyQuoteNumberSequences =>
+      $$LegacyQuoteNumberSequencesTableTableManager(
+        _db,
+        _db.legacyQuoteNumberSequences,
       );
-  $$QuoteLineItemsTableTableManager get quoteLineItems =>
-      $$QuoteLineItemsTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteLineItems,
+  $$LegacyAgendaBlocksTableTableManager get legacyAgendaBlocks =>
+      $$LegacyAgendaBlocksTableTableManager(_db, _db.legacyAgendaBlocks);
+  $$LegacyFinancialCategoriesTableTableManager get legacyFinancialCategories =>
+      $$LegacyFinancialCategoriesTableTableManager(
+        _db,
+        _db.legacyFinancialCategories,
       );
-  $$QuoteLinePackageComponentsTableTableManager
-  get quoteLinePackageComponents =>
-      $$QuoteLinePackageComponentsTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteLinePackageComponents,
-      );
-  $$QuoteStatusHistoryTableTableManager get quoteStatusHistory =>
-      $$QuoteStatusHistoryTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteStatusHistory,
-      );
-  $$QuoteNumberSequencesTableTableManager get quoteNumberSequences =>
-      $$QuoteNumberSequencesTableTableManager(
-        _db.attachedDatabase,
-        _db.quoteNumberSequences,
-      );
-}
-
-mixin _$AgendaBlocksDaoMixin on DatabaseAccessor<AppDatabase> {
-  $AgendaBlocksTable get agendaBlocks => attachedDatabase.agendaBlocks;
-  AgendaBlocksDaoManager get managers => AgendaBlocksDaoManager(this);
-}
-
-class AgendaBlocksDaoManager {
-  final _$AgendaBlocksDaoMixin _db;
-  AgendaBlocksDaoManager(this._db);
-  $$AgendaBlocksTableTableManager get agendaBlocks =>
-      $$AgendaBlocksTableTableManager(_db.attachedDatabase, _db.agendaBlocks);
-}
-
-mixin _$FinancialCategoriesDaoMixin on DatabaseAccessor<AppDatabase> {
-  $FinancialCategoriesTable get financialCategories =>
-      attachedDatabase.financialCategories;
-  FinancialCategoriesDaoManager get managers =>
-      FinancialCategoriesDaoManager(this);
-}
-
-class FinancialCategoriesDaoManager {
-  final _$FinancialCategoriesDaoMixin _db;
-  FinancialCategoriesDaoManager(this._db);
-  $$FinancialCategoriesTableTableManager get financialCategories =>
-      $$FinancialCategoriesTableTableManager(
-        _db.attachedDatabase,
-        _db.financialCategories,
-      );
-}
-
-mixin _$FinancialEntriesDaoMixin on DatabaseAccessor<AppDatabase> {
-  $FinancialCategoriesTable get financialCategories =>
-      attachedDatabase.financialCategories;
-  $QuotesTable get quotes => attachedDatabase.quotes;
-  $FinancialEntriesTable get financialEntries =>
-      attachedDatabase.financialEntries;
-  FinancialEntriesDaoManager get managers => FinancialEntriesDaoManager(this);
-}
-
-class FinancialEntriesDaoManager {
-  final _$FinancialEntriesDaoMixin _db;
-  FinancialEntriesDaoManager(this._db);
-  $$FinancialCategoriesTableTableManager get financialCategories =>
-      $$FinancialCategoriesTableTableManager(
-        _db.attachedDatabase,
-        _db.financialCategories,
-      );
-  $$QuotesTableTableManager get quotes =>
-      $$QuotesTableTableManager(_db.attachedDatabase, _db.quotes);
-  $$FinancialEntriesTableTableManager get financialEntries =>
-      $$FinancialEntriesTableTableManager(
-        _db.attachedDatabase,
-        _db.financialEntries,
+  $$LegacyFinancialEntriesTableTableManager get legacyFinancialEntries =>
+      $$LegacyFinancialEntriesTableTableManager(
+        _db,
+        _db.legacyFinancialEntries,
       );
 }

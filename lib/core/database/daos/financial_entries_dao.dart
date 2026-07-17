@@ -18,6 +18,13 @@ class FinancialEntriesDao extends DatabaseAccessor<AppDatabase>
     )..where((row) => row.id.equals(id))).getSingleOrNull();
   }
 
+  Future<List<FinancialEntryRow>> getAllByQuoteId(String quoteId) {
+    return (select(financialEntries)
+          ..where((row) => row.quoteId.equals(quoteId))
+          ..orderBy([(row) => OrderingTerm.asc(row.date)]))
+        .get();
+  }
+
   Future<void> insertRow(FinancialEntriesCompanion row) {
     return into(financialEntries).insert(row);
   }

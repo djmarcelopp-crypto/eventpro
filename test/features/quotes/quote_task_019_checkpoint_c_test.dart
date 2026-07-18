@@ -46,10 +46,10 @@ void main() {
       );
 
       final container = quoteTestContainer(tester);
-      seedQuoteDependencies(container);
+      await seedQuoteDependencies(container);
 
       if (profile != null) {
-        container.read(companyProfileProvider.notifier).save(profile);
+        await container.read(companyProfileProvider.notifier).save(profile);
       }
 
       AppRouter.router.go(AppRoutes.quotes);
@@ -88,11 +88,7 @@ void main() {
         of: saveButton,
         matching: find.byType(Scrollable),
       );
-      await tester.scrollUntilVisible(
-        saveButton,
-        1200,
-        scrollable: scrollable,
-      );
+      await tester.scrollUntilVisible(saveButton, 1200, scrollable: scrollable);
       await tester.pumpAndSettle();
       await tester.tap(saveButton);
       await tester.pump();
@@ -113,17 +109,18 @@ void main() {
       expect(readFieldText(tester, 'quote_notes_field'), isEmpty);
     });
 
-    testWidgets('defaults personalizados e notas públicas padrão', (tester) async {
+    testWidgets('defaults personalizados e notas públicas padrão', (
+      tester,
+    ) async {
       await pumpNewQuoteFromList(
         tester,
-        profile: sampleConfiguredCompanyProfile(
-          timestamp: quoteE2eFixedNow,
-        ).copyWith(
-          quoteDefaults: const CompanyQuoteDefaults(
-            defaultValidityDays: 14,
-            defaultPublicNotes: 'Validade sujeita a disponibilidade.',
-          ),
-        ),
+        profile: sampleConfiguredCompanyProfile(timestamp: quoteE2eFixedNow)
+            .copyWith(
+              quoteDefaults: const CompanyQuoteDefaults(
+                defaultValidityDays: 14,
+                defaultPublicNotes: 'Validade sujeita a disponibilidade.',
+              ),
+            ),
       );
 
       final expectedValidity = QuoteDateFormatter.format(
@@ -133,7 +130,10 @@ void main() {
         ),
       );
 
-      expect(readFieldText(tester, 'quote_valid_until_field'), expectedValidity);
+      expect(
+        readFieldText(tester, 'quote_valid_until_field'),
+        expectedValidity,
+      );
       expect(
         readFieldText(tester, 'quote_notes_field'),
         'Validade sujeita a disponibilidade.',
@@ -165,9 +165,13 @@ void main() {
       );
 
       final container = quoteTestContainer(tester);
-      seedQuoteDependencies(container);
-      container.read(companyProfileProvider.notifier).save(
-            sampleConfiguredCompanyProfile(timestamp: quoteE2eFixedNow).copyWith(
+      await seedQuoteDependencies(container);
+      await container
+          .read(companyProfileProvider.notifier)
+          .save(
+            sampleConfiguredCompanyProfile(
+              timestamp: quoteE2eFixedNow,
+            ).copyWith(
               quoteDefaults: const CompanyQuoteDefaults(
                 defaultValidityDays: 30,
                 defaultPublicNotes: 'Defaults atuais do perfil',
@@ -175,7 +179,7 @@ void main() {
             ),
           );
 
-      seedQuote(
+      await seedQuote(
         container,
         buildRichQuoteAddDraft(id: 'quote-edit-defaults').copyWith(
           validUntil: savedValidity,
@@ -192,13 +196,21 @@ void main() {
         QuoteDateFormatter.format(savedValidity),
       );
       expect(readFieldText(tester, 'quote_notes_field'), savedNotes);
-      expect(find.byKey(const Key('quote_company_profile_banner')), findsNothing);
+      expect(
+        find.byKey(const Key('quote_company_profile_banner')),
+        findsNothing,
+      );
     });
 
-    testWidgets('perfil ausente exibe banner no novo orçamento', (tester) async {
+    testWidgets('perfil ausente exibe banner no novo orçamento', (
+      tester,
+    ) async {
       await pumpNewQuoteFromList(tester);
 
-      expect(find.byKey(const Key('quote_company_profile_banner')), findsOneWidget);
+      expect(
+        find.byKey(const Key('quote_company_profile_banner')),
+        findsOneWidget,
+      );
       expect(
         find.text(
           'Configure os dados da empresa para emitir documentos profissionais.',
@@ -223,7 +235,10 @@ void main() {
         profile: sampleConfiguredCompanyProfile(timestamp: quoteE2eFixedNow),
       );
 
-      expect(find.byKey(const Key('quote_company_profile_banner')), findsNothing);
+      expect(
+        find.byKey(const Key('quote_company_profile_banner')),
+        findsNothing,
+      );
     });
 
     testWidgets('botão abre Settings e preserva formulário ao voltar', (
@@ -261,7 +276,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Novo orçamento'), findsOneWidget);
-      expect(readFieldText(tester, 'quote_event_name_field'), 'Casamento Teste');
+      expect(
+        readFieldText(tester, 'quote_event_name_field'),
+        'Casamento Teste',
+      );
       expect(readFieldText(tester, 'quote_discount_field'), '10,00');
       expect(readFieldText(tester, 'quote_freight_field'), '5,00');
       expect(
@@ -285,9 +303,15 @@ void main() {
       await tester.tap(find.byKey(const Key('quote_configure_company_button')));
       await tester.pumpAndSettle();
 
-      container.read(companyProfileProvider.notifier).save(
-            sampleConfiguredCompanyProfile(timestamp: quoteE2eFixedNow).copyWith(
-              quoteDefaults: const CompanyQuoteDefaults(defaultValidityDays: 30),
+      await container
+          .read(companyProfileProvider.notifier)
+          .save(
+            sampleConfiguredCompanyProfile(
+              timestamp: quoteE2eFixedNow,
+            ).copyWith(
+              quoteDefaults: const CompanyQuoteDefaults(
+                defaultValidityDays: 30,
+              ),
             ),
           );
 
@@ -318,61 +342,67 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('salvar após configurar empresa cria snapshot com perfil novo', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(800, 3000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+    testWidgets(
+      'salvar após configurar empresa cria snapshot com perfil novo',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 3000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
 
-      final container = await pumpNewQuoteFromList(tester);
-      await fillMinimumQuoteForm(tester);
+        final container = await pumpNewQuoteFromList(tester);
+        await fillMinimumQuoteForm(tester);
 
-      await tester.tap(find.byKey(const Key('quote_configure_company_button')));
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-        find.byKey(const Key('company_trade_name_field')),
-        'DJ Marcelo PP',
-      );
-      await tester.enterText(
-        find.byKey(const Key('company_phone_field')),
-        '(67) 99999-0000',
-      );
-      await scrollAndTapCompanySave(tester);
-      await tester.pumpAndSettle();
-
-      if (find.byKey(const Key('company_profile_scroll')).evaluate().isNotEmpty) {
-        await tester.tap(find.byTooltip('Voltar'));
+        await tester.tap(
+          find.byKey(const Key('quote_configure_company_button')),
+        );
         await tester.pumpAndSettle();
-      }
 
-      for (var i = 0; i < 8; i++) {
-        await tester.pump(const Duration(milliseconds: 250));
-      }
-      await tester.pumpAndSettle();
+        await tester.enterText(
+          find.byKey(const Key('company_trade_name_field')),
+          'DJ Marcelo PP',
+        );
+        await tester.enterText(
+          find.byKey(const Key('company_phone_field')),
+          '(67) 99999-0000',
+        );
+        await scrollAndTapCompanySave(tester);
+        await tester.pumpAndSettle();
 
-      expect(find.text('Novo orçamento'), findsOneWidget);
-      expect(find.byKey(const Key('quote_form_scroll')), findsOneWidget);
-      expect(
-        container.read(companyProfileProvider)?.tradeName,
-        'DJ Marcelo PP',
-      );
+        if (find
+            .byKey(const Key('company_profile_scroll'))
+            .evaluate()
+            .isNotEmpty) {
+          await tester.tap(find.byTooltip('Voltar'));
+          await tester.pumpAndSettle();
+        }
 
-      await invokeQuoteSave(tester);
+        for (var i = 0; i < 8; i++) {
+          await tester.pump(const Duration(milliseconds: 250));
+        }
+        await tester.pumpAndSettle();
 
-      expect(container.read(quotesProvider), hasLength(1));
-      final quote = container.read(quotesProvider).single;
-      expect(quote.companySnapshot, isNotNull);
-      expect(
-        quote.companySnapshot!.identification.tradeName,
-        'DJ Marcelo PP',
-      );
-      expect(
-        quote.companySnapshot!.captureStatus,
-        QuoteCompanyCaptureStatus.incomplete,
-      );
-    });
+        expect(find.text('Novo orçamento'), findsOneWidget);
+        expect(find.byKey(const Key('quote_form_scroll')), findsOneWidget);
+        expect(
+          container.read(companyProfileProvider)?.tradeName,
+          'DJ Marcelo PP',
+        );
+
+        await invokeQuoteSave(tester);
+
+        expect(container.read(quotesProvider), hasLength(1));
+        final quote = container.read(quotesProvider).single;
+        expect(quote.companySnapshot, isNotNull);
+        expect(
+          quote.companySnapshot!.identification.tradeName,
+          'DJ Marcelo PP',
+        );
+        expect(
+          quote.companySnapshot!.captureStatus,
+          QuoteCompanyCaptureStatus.incomplete,
+        );
+      },
+    );
   });
 }

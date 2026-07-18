@@ -72,12 +72,30 @@ class _CatalogItemDetailScreenState
       return;
     }
 
-    ref.read(catalogProvider.notifier).updateItem(
-          item.copyWith(active: activating),
-        );
+    final updated = await ref
+        .read(catalogProvider.notifier)
+        .updateItem(item.copyWith(active: activating));
+
+    if (!mounted) {
+      return;
+    }
 
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
+
+    if (!updated) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Não foi possível salvar. Tente novamente.',
+            style: TextStyle(color: AppColors.white),
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     messenger.showSnackBar(
       SnackBar(
         content: Text(

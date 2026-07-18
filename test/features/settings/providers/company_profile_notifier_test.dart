@@ -6,6 +6,9 @@ import 'package:eventpro/features/settings/models/legal_representative.dart';
 import 'package:eventpro/features/settings/providers/company_profile_clock_provider.dart';
 import 'package:eventpro/features/settings/providers/company_profile_provider.dart';
 
+import '../fakes/company_profile_repository_test_overrides.dart';
+import '../fakes/fake_company_profile_repository.dart';
+
 void main() {
   group('CompanyProfileNotifier', () {
     late ProviderContainer container;
@@ -16,6 +19,7 @@ void main() {
       container = ProviderContainer(
         overrides: [
           companyProfileClockProvider.overrideWithValue(() => fixedNow),
+          ...companyProfileRepositoryOverrides(),
         ],
       );
     });
@@ -37,33 +41,54 @@ void main() {
       expect(container.read(companyProfileProvider), isNull);
     });
 
-    test('primeiro save cria perfil com createdAt e updatedAt do relógio', () {
-      final notifier = container.read(companyProfileProvider.notifier);
+    test('hydrate substitui o state pelo perfil informado', () {
+      final profile = sampleDraft();
 
-      notifier.save(sampleDraft());
+      container.read(companyProfileProvider.notifier).hydrate(profile);
 
-      final profile = container.read(companyProfileProvider)!;
-      expect(profile.tradeName, 'DJ Marcelo PP');
-      expect(profile.createdAt, fixedNow);
-      expect(profile.updatedAt, fixedNow);
+      expect(container.read(companyProfileProvider), profile);
     });
 
-    test('segundo save preserva createdAt e atualiza updatedAt', () {
+    test('hydrate aceita null quando não há perfil salvo', () {
+      container.read(companyProfileProvider.notifier).hydrate(sampleDraft());
+      container.read(companyProfileProvider.notifier).hydrate(null);
+
+      expect(container.read(companyProfileProvider), isNull);
+    });
+
+    test(
+      'primeiro save cria perfil com createdAt e updatedAt do relógio',
+      () async {
+        final notifier = container.read(companyProfileProvider.notifier);
+
+        final saved = await notifier.save(sampleDraft());
+        expect(saved, isTrue);
+
+        final profile = container.read(companyProfileProvider)!;
+        expect(profile.tradeName, 'DJ Marcelo PP');
+        expect(profile.createdAt, fixedNow);
+        expect(profile.updatedAt, fixedNow);
+      },
+    );
+
+    test('segundo save preserva createdAt e atualiza updatedAt', () async {
       var currentNow = fixedNow;
       final mutableContainer = ProviderContainer(
         overrides: [
           companyProfileClockProvider.overrideWithValue(() => currentNow),
+          ...companyProfileRepositoryOverrides(),
         ],
       );
       addTearDown(mutableContainer.dispose);
 
       final notifier = mutableContainer.read(companyProfileProvider.notifier);
-      notifier.save(sampleDraft());
+      await notifier.save(sampleDraft());
 
       currentNow = laterNow;
-      notifier.save(
+      final saved = await notifier.save(
         sampleDraft(tradeName: 'DJ Marcelo PP Atualizado'),
       );
+      expect(saved, isTrue);
 
       final profile = mutableContainer.read(companyProfileProvider)!;
       expect(profile.tradeName, 'DJ Marcelo PP Atualizado');
@@ -71,12 +96,12 @@ void main() {
       expect(profile.updatedAt, laterNow);
     });
 
-    test('não duplica perfil em saves sucessivos', () {
+    test('não duplica perfil em saves sucessivos', () async {
       final notifier = container.read(companyProfileProvider.notifier);
-      notifier.save(sampleDraft());
+      await notifier.save(sampleDraft());
       final firstCreatedAt = container.read(companyProfileProvider)!.createdAt;
 
-      notifier.save(
+      await notifier.save(
         sampleDraft().copyWith(
           legalName: 'Marcelo PP Festas LTDA',
           address: const CompanyAddress(
@@ -98,6 +123,29 @@ void main() {
       expect(profile, isNotNull);
       expect(profile!.legalName, 'Marcelo PP Festas LTDA');
       expect(profile.createdAt, firstCreatedAt);
+    });
+
+    test('falha no repositório preserva state anterior', () async {
+      final fakeRepository = FakeCompanyProfileRepository();
+      final failingContainer = ProviderContainer(
+        overrides: [
+          companyProfileClockProvider.overrideWithValue(() => fixedNow),
+          ...companyProfileRepositoryOverrides(repository: fakeRepository),
+        ],
+      );
+      addTearDown(failingContainer.dispose);
+
+      final notifier = failingContainer.read(companyProfileProvider.notifier);
+      await notifier.save(sampleDraft());
+      final beforeFailure = failingContainer.read(companyProfileProvider);
+
+      fakeRepository.shouldFailOnNextOperation = true;
+      final saved = await notifier.save(
+        sampleDraft(tradeName: 'Falha esperada'),
+      );
+
+      expect(saved, isFalse);
+      expect(failingContainer.read(companyProfileProvider), beforeFailure);
     });
   });
 }

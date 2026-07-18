@@ -24,7 +24,9 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('exibe seção completa com snapshot configurado', (tester) async {
+    testWidgets('exibe seção completa com snapshot configurado', (
+      tester,
+    ) async {
       await pumpQuoteAppSeeded(
         tester,
         sampleQuoteDraft(
@@ -38,12 +40,18 @@ void main() {
 
       await openDetail(tester, 'quote-company-full');
 
-      expect(find.byKey(const Key('quote_company_issuer_section')), findsOneWidget);
+      expect(
+        find.byKey(const Key('quote_company_issuer_section')),
+        findsOneWidget,
+      );
       expect(find.text('Empresa emissora'), findsOneWidget);
       expect(find.text('DJ Marcelo PP'), findsWidgets);
       expect(find.text('Marcelo PP Festas LTDA'), findsOneWidget);
       expect(find.text('11.222.333/0001-81'), findsOneWidget);
-      expect(find.text('Dados completos no momento da criação'), findsOneWidget);
+      expect(
+        find.text('Dados completos no momento da criação'),
+        findsOneWidget,
+      );
       expect(
         find.byKey(const Key('quote_company_snapshot_missing_notice')),
         findsNothing,
@@ -105,10 +113,7 @@ void main() {
       await openDetail(tester, 'quote-company-format');
 
       expect(find.textContaining('+55 (67) 98888-7777'), findsOneWidget);
-      expect(
-        find.text('Rua Example, 100 • Campo Grande - MS'),
-        findsOneWidget,
-      );
+      expect(find.text('Rua Example, 100 • Campo Grande - MS'), findsOneWidget);
     });
 
     testWidgets('não exibe PIX nem dados internos da empresa', (tester) async {
@@ -152,10 +157,7 @@ void main() {
     ) async {
       await pumpQuoteAppSeeded(
         tester,
-        sampleQuoteDraft(
-          id: 'quote-legacy',
-          companySnapshot: null,
-        ),
+        sampleQuoteDraft(id: 'quote-legacy', companySnapshot: null),
       );
 
       await openDetail(tester, 'quote-legacy');
@@ -170,7 +172,10 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.byKey(const Key('quote_company_issuer_section')), findsNothing);
+      expect(
+        find.byKey(const Key('quote_company_issuer_section')),
+        findsNothing,
+      );
       expect(find.text('Empresa emissora'), findsNothing);
     });
 
@@ -185,13 +190,15 @@ void main() {
       );
 
       final container = quoteTestContainer(tester);
-      container.read(companyProfileProvider.notifier).save(
+      await container
+          .read(companyProfileProvider.notifier)
+          .save(
             sampleConfiguredCompanyProfile().copyWith(
               tradeName: 'Perfil Atual',
             ),
           );
 
-      seedQuote(
+      await seedQuote(
         container,
         sampleQuoteDraft(
           id: 'quote-frozen-company',
@@ -203,10 +210,10 @@ void main() {
       expect(find.text('Snapshot Antigo'), findsWidgets);
       expect(find.text('Perfil Atual'), findsNothing);
 
-      container.read(companyProfileProvider.notifier).save(
-            sampleConfiguredCompanyProfile().copyWith(
-              tradeName: 'Perfil Novo',
-            ),
+      await container
+          .read(companyProfileProvider.notifier)
+          .save(
+            sampleConfiguredCompanyProfile().copyWith(tradeName: 'Perfil Novo'),
           );
 
       AppRouter.router.go(AppRoutes.quotes);
@@ -223,7 +230,9 @@ void main() {
         sampleQuoteDraft(
           id: 'quote-edit-company',
           status: QuoteStatus.draft,
-          companySnapshot: sampleCompanySnapshot(tradeName: 'Empresa Congelada'),
+          companySnapshot: sampleCompanySnapshot(
+            tradeName: 'Empresa Congelada',
+          ),
         ),
         location: AppRoutes.quotesDetail('quote-edit-company'),
       );
@@ -292,10 +301,13 @@ void main() {
       await confirmQuoteStatusDialog(tester);
       await expectCompanySection();
 
-      final quote = container.read(quotesProvider.notifier).findById(
-            'quote-transition-company',
-          )!;
-      expect(quote.companySnapshot!.identification.tradeName, 'Empresa Estável');
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-transition-company')!;
+      expect(
+        quote.companySnapshot!.identification.tradeName,
+        'Empresa Estável',
+      );
     });
 
     testWidgets('listagem e edição de orçamento legado não causam erro', (
@@ -320,9 +332,9 @@ void main() {
       await openQuoteEditFromDetail(tester);
       await tapQuoteSave(tester);
 
-      final quote = container.read(quotesProvider.notifier).findById(
-            'quote-legacy-flow',
-          )!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-legacy-flow')!;
       expect(quote.companySnapshot, isNull);
       expect(
         find.byKey(const Key('quote_company_snapshot_missing_notice')),

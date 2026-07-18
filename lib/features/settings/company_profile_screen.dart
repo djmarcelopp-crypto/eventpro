@@ -29,6 +29,7 @@ import 'utils/settings_cep_form_filler.dart';
 import 'utils/settings_cnpj_form_filler.dart';
 import 'utils/settings_form_conflict.dart';
 import 'utils/settings_navigation.dart';
+import 'settings_feedback.dart';
 import 'widgets/company_logo_form_section.dart';
 
 class CompanyProfileScreen extends ConsumerStatefulWidget {
@@ -104,8 +105,9 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
   }
 
   bool get _showCnpjLookupButton {
-    final digits =
-        CompanyProfileFormValidators.extractDigits(_cnpjController.text);
+    final digits = CompanyProfileFormValidators.extractDigits(
+      _cnpjController.text,
+    );
     return digits.length == 14 &&
         CompanyProfileFormValidators.validateCnpj(_cnpjController.text) == null;
   }
@@ -113,8 +115,9 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
   bool get _canLookupCnpj => _showCnpjLookupButton && !_isCnpjLookupLoading;
 
   bool get _showCepLookupButton {
-    final digits =
-        CompanyProfileFormValidators.extractDigits(_postalCodeController.text);
+    final digits = CompanyProfileFormValidators.extractDigits(
+      _postalCodeController.text,
+    );
     return digits.length == 8 &&
         CompanyProfileFormValidators.validatePostalCode(
               _postalCodeController.text,
@@ -125,31 +128,31 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
   bool get _canLookupCep => _showCepLookupButton && !_isCepLookupLoading;
 
   List<TextEditingController> get _allControllers => [
-        _tradeNameController,
-        _legalNameController,
-        _cnpjController,
-        _stateRegistrationController,
-        _phoneController,
-        _whatsAppController,
-        _emailController,
-        _instagramController,
-        _websiteController,
-        _postalCodeController,
-        _streetController,
-        _numberController,
-        _complementController,
-        _neighborhoodController,
-        _cityController,
-        _stateController,
-        _legalFullNameController,
-        _legalCpfController,
-        _legalRoleController,
-        _pixKeyController,
-        _beneficiaryNameController,
-        _paymentTermsController,
-        _defaultValidityDaysController,
-        _defaultPublicNotesController,
-      ];
+    _tradeNameController,
+    _legalNameController,
+    _cnpjController,
+    _stateRegistrationController,
+    _phoneController,
+    _whatsAppController,
+    _emailController,
+    _instagramController,
+    _websiteController,
+    _postalCodeController,
+    _streetController,
+    _numberController,
+    _complementController,
+    _neighborhoodController,
+    _cityController,
+    _stateController,
+    _legalFullNameController,
+    _legalCpfController,
+    _legalRoleController,
+    _pixKeyController,
+    _beneficiaryNameController,
+    _paymentTermsController,
+    _defaultValidityDaysController,
+    _defaultPublicNotesController,
+  ];
 
   @override
   void initState() {
@@ -455,10 +458,7 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 for (final conflict in conflicts) ...[
-                  Text(
-                    conflict.fieldLabel,
-                    style: AppTextStyles.titleSmall,
-                  ),
+                  Text(conflict.fieldLabel, style: AppTextStyles.titleSmall),
                   const SizedBox(height: 4),
                   Text(
                     '"${conflict.currentValue}" → "${conflict.newValue}"',
@@ -477,16 +477,14 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
             ),
             TextButton(
               key: const Key('settings_conflict_fill_empty_button'),
-              onPressed: () => Navigator.of(context).pop(
-                FormFillMode.fillEmptyOnly,
-              ),
+              onPressed: () =>
+                  Navigator.of(context).pop(FormFillMode.fillEmptyOnly),
               child: const Text('Preencher só vazios'),
             ),
             TextButton(
               key: const Key('settings_conflict_replace_button'),
-              onPressed: () => Navigator.of(context).pop(
-                FormFillMode.replaceAll,
-              ),
+              onPressed: () =>
+                  Navigator.of(context).pop(FormFillMode.replaceAll),
               child: const Text('Substituir'),
             ),
           ],
@@ -520,9 +518,7 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Dados da empresa carregados. Revise antes de salvar.',
-        ),
+        content: Text('Dados da empresa carregados. Revise antes de salvar.'),
       ),
     );
   }
@@ -542,9 +538,7 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
       mode = selectedMode;
     }
 
-    _applyCepFormValues(
-      SettingsCepFormFiller.apply(current, data, mode: mode),
-    );
+    _applyCepFormValues(SettingsCepFormFiller.apply(current, data, mode: mode));
 
     if (!mounted) {
       return;
@@ -552,19 +546,14 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Endereço carregado. Revise antes de salvar.',
-        ),
+        content: Text('Endereço carregado. Revise antes de salvar.'),
       ),
     );
   }
 
   void _showLookupError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: AppColors.error),
     );
   }
 
@@ -578,8 +567,9 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
 
     try {
       final service = ref.read(cnpjLookupServiceProvider);
-      final digits =
-          CompanyProfileFormValidators.extractDigits(_cnpjController.text);
+      final digits = CompanyProfileFormValidators.extractDigits(
+        _cnpjController.text,
+      );
       final data = await service.lookup(digits);
       await _applyCompanyData(data);
     } on CnpjLookupException catch (error) {
@@ -609,8 +599,9 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
 
     try {
       final service = ref.read(cepLookupServiceProvider);
-      final digits =
-          CompanyProfileFormValidators.extractDigits(_postalCodeController.text);
+      final digits = CompanyProfileFormValidators.extractDigits(
+        _postalCodeController.text,
+      );
       final data = await service.lookup(digits);
       await _applyCepData(data);
     } on CepLookupException catch (error) {
@@ -637,9 +628,7 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
         return AlertDialog(
           backgroundColor: AppColors.surface,
           title: const Text('Descartar alterações?'),
-          content: const Text(
-            'As alterações não salvas serão perdidas.',
-          ),
+          content: const Text('As alterações não salvas serão perdidas.'),
           actions: [
             TextButton(
               key: const Key('settings_discard_cancel_button'),
@@ -743,8 +732,9 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
     try {
       final existing = ref.read(companyProfileProvider);
       final now = ref.read(companyProfileClockProvider)();
-      final validityDays =
-          int.parse(_defaultValidityDaysController.text.trim());
+      final validityDays = int.parse(
+        _defaultValidityDaysController.text.trim(),
+      );
 
       String? finalLogoReference;
       var clearLogoReference = false;
@@ -796,7 +786,21 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
         clearLogoReference: clearLogoReference,
       );
 
-      ref.read(companyProfileProvider.notifier).save(profile);
+      final saved = await ref
+          .read(companyProfileProvider.notifier)
+          .save(profile);
+
+      if (!saved) {
+        if (rollbackLogoReference != null) {
+          await storage.deleteCommitted(rollbackLogoReference);
+        }
+        if (mounted) {
+          SettingsFeedbackPresenter.showErrorSnackBar(
+            SettingsErrorFeedback.save,
+          );
+        }
+        return;
+      }
 
       if (_removeLogoRequested && originalLogoToDelete != null) {
         await storage.deleteCommitted(originalLogoToDelete);
@@ -813,10 +817,7 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
         return;
       }
 
-      SettingsNavigation.leaveCompanyProfile(
-        context,
-        showSavedFeedback: true,
-      );
+      SettingsNavigation.leaveCompanyProfile(context, showSavedFeedback: true);
     } catch (_) {
       if (rollbackLogoReference != null) {
         await storage.deleteCommitted(rollbackLogoReference);
@@ -1030,8 +1031,9 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
                           const SizedBox(height: 12),
                           OutlinedButton(
                             key: const Key('settings_cnpj_lookup_button'),
-                            onPressed:
-                                _isCnpjLookupLoading ? null : _lookupCompanyData,
+                            onPressed: _isCnpjLookupLoading
+                                ? null
+                                : _lookupCompanyData,
                             child: _isCnpjLookupLoading
                                 ? const SizedBox(
                                     height: 20,
@@ -1104,7 +1106,8 @@ class _CompanyProfileScreenState extends ConsumerState<CompanyProfileScreen> {
                           label: 'Site',
                           controller: _websiteController,
                           keyboardType: TextInputType.url,
-                          validator: CompanyProfileFormValidators.validateWebsite,
+                          validator:
+                              CompanyProfileFormValidators.validateWebsite,
                           textInputAction: TextInputAction.next,
                         ),
                         const SizedBox(height: 32),

@@ -13,6 +13,7 @@ import 'package:eventpro/features/catalog/new_catalog_item_screen.dart';
 import 'package:eventpro/features/catalog/providers/catalog_image_services_provider.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 
+import 'fakes/catalog_repository_test_overrides.dart';
 import 'fakes/fake_catalog_image_picker_service.dart';
 import 'fakes/fake_catalog_image_storage_service.dart';
 
@@ -98,6 +99,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
+        overrides: catalogRepositoryOverrides(),
         child: MaterialApp.router(
           routerConfig: router,
         ),
@@ -196,6 +198,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: catalogRepositoryOverrides(),
           child: MaterialApp.router(
             routerConfig: router,
           ),
@@ -262,6 +265,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: catalogRepositoryOverrides(),
           child: MaterialApp.router(
             routerConfig: router,
           ),
@@ -319,6 +323,7 @@ void main() {
         UncontrolledProviderScope(
           container: container = ProviderContainer(
             overrides: [
+              ...catalogRepositoryOverrides(),
               catalogImageStorageProvider.overrideWithValue(storage),
             ],
           ),
@@ -345,7 +350,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      container.read(catalogProvider.notifier).addItem(item);
+      await container.read(catalogProvider.notifier).addItem(item);
       router.go('/edit');
       await tester.pumpAndSettle();
 

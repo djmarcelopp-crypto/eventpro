@@ -10,6 +10,7 @@ import 'package:eventpro/features/catalog/models/catalog_package_component.dart'
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/utils/catalog_item_deletion_coordinator.dart';
 
+import '../fakes/catalog_repository_test_overrides.dart';
 import '../fakes/fake_catalog_image_storage_service.dart';
 import 'catalog_package_dependency_checker_test.dart';
 
@@ -21,9 +22,7 @@ void main() {
     setUp(() {
       storage = FakeCatalogImageStorageService();
       container = ProviderContainer(
-        overrides: [
-          // image storage is passed directly to coordinator
-        ],
+        overrides: catalogRepositoryOverrides(),
       );
     });
 
@@ -43,7 +42,7 @@ void main() {
 
     test('exclui equipamento sem foto', () async {
       final eq = equipment();
-      container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(eq);
 
       final result = await delete(eq.id);
 
@@ -61,7 +60,7 @@ void main() {
         id: 'svc-1',
         createdAt: DateTime(2024, 1, 1),
       );
-      container.read(catalogProvider.notifier).addItem(service);
+      await container.read(catalogProvider.notifier).addItem(service);
 
       final result = await delete(service.id);
 
@@ -78,8 +77,8 @@ void main() {
           ),
         ],
       );
-      container.read(catalogProvider.notifier).addItem(equipment());
-      container.read(catalogProvider.notifier).addItem(pkg);
+      await container.read(catalogProvider.notifier).addItem(equipment());
+      await container.read(catalogProvider.notifier).addItem(pkg);
 
       final result = await delete(pkg.id);
 
@@ -100,8 +99,8 @@ void main() {
           ),
         ],
       );
-      container.read(catalogProvider.notifier).addItem(eq);
-      container.read(catalogProvider.notifier).addItem(pkg);
+      await container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(pkg);
 
       final result = await delete(eq.id);
 
@@ -122,8 +121,8 @@ void main() {
           ),
         ],
       );
-      container.read(catalogProvider.notifier).addItem(eq);
-      container.read(catalogProvider.notifier).addItem(pkg);
+      await container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(pkg);
 
       final result = await delete(eq.id);
 
@@ -134,7 +133,7 @@ void main() {
     test('remove foto após exclusão', () async {
       final eq = equipment().copyWith(imageReference: 'catalog/items/eq.jpg');
       storage.seedCommitted('catalog/items/eq.jpg', Uint8List.fromList([1, 2, 3]));
-      container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(eq);
 
       final result = await delete(eq.id);
 
@@ -147,7 +146,7 @@ void main() {
       storage.deleteCommittedShouldFail = true;
       final eq = equipment().copyWith(imageReference: 'catalog/items/eq.jpg');
       storage.seedCommitted('catalog/items/eq.jpg', Uint8List.fromList([1, 2, 3]));
-      container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(eq);
 
       final result = await delete(eq.id);
 
@@ -165,8 +164,8 @@ void main() {
       ).copyWith(imageReference: 'catalog/items/mic.jpg');
       storage.seedCommitted('catalog/items/eq.jpg', Uint8List.fromList([1]));
       storage.seedCommitted('catalog/items/mic.jpg', Uint8List.fromList([2]));
-      container.read(catalogProvider.notifier).addItem(eq);
-      container.read(catalogProvider.notifier).addItem(other);
+      await container.read(catalogProvider.notifier).addItem(eq);
+      await container.read(catalogProvider.notifier).addItem(other);
 
       await delete(eq.id);
 

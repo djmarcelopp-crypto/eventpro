@@ -14,12 +14,17 @@ import 'utils/quote_detail_presenter.dart';
 import 'utils/quotes_navigation.dart';
 import 'widgets/quote_company_snapshot_missing_notice.dart';
 import 'widgets/quote_detail_section.dart';
+import 'widgets/quote_equipment_section.dart';
 import 'widgets/quote_line_items_section.dart';
 import 'widgets/quote_not_found_state.dart';
 import 'widgets/quote_pdf_actions_section.dart';
 import 'widgets/quote_status_actions.dart';
 import 'widgets/quote_status_badge.dart';
 import 'widgets/quote_status_history_list.dart';
+import 'widgets/quote_team_section.dart';
+import '../billing/widgets/quote_invoice_section.dart';
+import '../logistics/widgets/quote_vehicle_section.dart';
+import '../contracts/widgets/quote_contract_section.dart';
 
 class QuoteDetailScreen extends ConsumerStatefulWidget {
   const QuoteDetailScreen({
@@ -90,7 +95,7 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
     });
 
     try {
-      final success = ref
+      final success = await ref
           .read(quotesProvider.notifier)
           .transitionStatus(widget.quoteId, target);
 
@@ -249,6 +254,16 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                     ],
                     const SizedBox(height: 16),
                     QuoteLineItemsSection(items: resolvedQuote.items),
+                    const SizedBox(height: 16),
+                    QuoteEquipmentSection(quoteId: resolvedQuote.id),
+                    const SizedBox(height: 16),
+                    QuoteTeamSection(quoteId: resolvedQuote.id),
+                    const SizedBox(height: 16),
+                    QuoteVehicleSection(quoteId: resolvedQuote.id),
+                    const SizedBox(height: 16),
+                    QuoteContractSection(quoteId: resolvedQuote.id),
+                    const SizedBox(height: 16),
+                    QuoteInvoiceSection(quoteId: resolvedQuote.id),
                     const SizedBox(height: 16),
                     QuoteDetailSection(
                       title: 'Financeiro',

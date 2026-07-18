@@ -78,20 +78,14 @@ void main() {
       expect(find.text('Caixa de som'), findsOneWidget);
       expect(find.text('Financeiro'), findsOneWidget);
       expect(find.text('Observações para o cliente'), findsOneWidget);
-      expect(
-        find.text('Observação pública do orçamento'),
-        findsOneWidget,
-      );
+      expect(find.text('Observação pública do orçamento'), findsOneWidget);
       expect(find.text('Observações internas'), findsOneWidget);
       expect(find.text('Nota interna da equipe'), findsOneWidget);
       expect(find.text('Histórico de status (1)'), findsOneWidget);
 
       await expandQuoteStatusHistory(tester);
 
-      expect(
-        find.text('Orçamento criado como Rascunho'),
-        findsOneWidget,
-      );
+      expect(find.text('Orçamento criado como Rascunho'), findsOneWidget);
     });
 
     testWidgets('campos opcionais vazios não aparecem', (tester) async {
@@ -159,10 +153,7 @@ void main() {
 
       expect(find.text('Editar orçamento'), findsOneWidget);
       expect(find.text('Maria Silva'), findsWidgets);
-      expect(
-        find.text('Observação pública do orçamento'),
-        findsOneWidget,
-      );
+      expect(find.text('Observação pública do orçamento'), findsOneWidget);
       expect(find.text('Casamento Ana'), findsOneWidget);
 
       await tester.enterText(
@@ -173,16 +164,12 @@ void main() {
       await tapQuoteSave(tester);
 
       expect(find.byKey(const Key('quote_detail_scroll')), findsOneWidget);
-      expect(
-        find.text('Orçamento atualizado com sucesso'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Observação pública atualizada'),
-        findsOneWidget,
-      );
+      expect(find.text('Orçamento atualizado com sucesso'), findsOneWidget);
+      expect(find.text('Observação pública atualizada'), findsOneWidget);
 
-      final updated = container.read(quotesProvider.notifier).findById(quote.id)!;
+      final updated = container
+          .read(quotesProvider.notifier)
+          .findById(quote.id)!;
       expect(updated.id, quote.id);
       expect(updated.number, quote.number);
       expect(updated.createdAt, quote.createdAt);
@@ -194,18 +181,18 @@ void main() {
         final quoteId = 'quote-block-${targetStatus.name}';
         await pumpQuoteAppWithContainer(tester);
         final container = quoteTestContainer(tester);
-        seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
+        await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
 
         if (targetStatus == QuoteStatus.sent) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
         } else if (targetStatus == QuoteStatus.approved) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-          transitionQuoteTo(container, quoteId, QuoteStatus.approved);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.approved);
         } else if (targetStatus == QuoteStatus.rejected) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-          transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
         } else if (targetStatus == QuoteStatus.cancelled) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
         }
 
         AppRouter.router.go(AppRoutes.quotesEdit(quoteId));
@@ -248,22 +235,20 @@ void main() {
       );
 
       await openQuoteDetailFromList(tester, 'quote-inactive');
-      container.read(catalogProvider.notifier).updateItem(
-            sampleCatalogItem(active: false),
-          );
+      container
+          .read(catalogProvider.notifier)
+          .updateItem(sampleCatalogItem(active: false));
       await tester.pumpAndSettle();
       await openQuoteEditFromDetail(tester);
 
       expect(find.text('Nome congelado no orçamento'), findsOneWidget);
-      expect(
-        find.textContaining('Item inativo no catálogo'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Item inativo no catálogo'), findsOneWidget);
 
       await tapQuoteSave(tester);
 
-      final updated =
-          container.read(quotesProvider.notifier).findById('quote-inactive')!;
+      final updated = container
+          .read(quotesProvider.notifier)
+          .findById('quote-inactive')!;
       expect(updated.items.single.name, 'Nome congelado no orçamento');
       expect(updated.items.single.unit, 'Pacote');
     });
@@ -275,8 +260,10 @@ void main() {
 
       await pumpQuoteAppWithContainer(tester);
       final container = quoteTestContainer(tester);
-      container.read(clientsProvider.notifier).addClient(sampleClient());
-      container.read(quotesProvider.notifier).addQuote(
+      await seedQuoteDependencies(container);
+      await container
+          .read(quotesProvider.notifier)
+          .addQuote(
             buildRichQuoteAddDraft(id: 'quote-missing').copyWith(
               items: [
                 sampleLineItem(
@@ -299,35 +286,37 @@ void main() {
 
       await tapQuoteSave(tester);
 
-      final updated =
-          container.read(quotesProvider.notifier).findById('quote-missing')!;
+      final updated = container
+          .read(quotesProvider.notifier)
+          .findById('quote-missing')!;
       expect(updated.items.single.name, 'Item ausente congelado');
       expect(updated.items.single.catalogItemId, 'missing-item');
     });
 
-    testWidgets('alterar orçamento não modifica clientsProvider nem catalogProvider', (
-      tester,
-    ) async {
-      useTallViewport(tester);
+    testWidgets(
+      'alterar orçamento não modifica clientsProvider nem catalogProvider',
+      (tester) async {
+        useTallViewport(tester);
 
-      final container = await pumpQuoteAppSeeded(
-        tester,
-        buildRichQuoteAddDraft(id: 'quote-isolation'),
-        location: AppRoutes.quotesEdit('quote-isolation'),
-      );
-      final clientsBefore = List.of(container.read(clientsProvider));
-      final catalogBefore = List.of(container.read(catalogProvider));
+        final container = await pumpQuoteAppSeeded(
+          tester,
+          buildRichQuoteAddDraft(id: 'quote-isolation'),
+          location: AppRoutes.quotesEdit('quote-isolation'),
+        );
+        final clientsBefore = List.of(container.read(clientsProvider));
+        final catalogBefore = List.of(container.read(catalogProvider));
 
-      await tester.enterText(
-        find.byKey(const Key('quote_notes_field')),
-        'Alteração isolada',
-      );
-      await tester.pumpAndSettle();
-      await tapQuoteSave(tester);
+        await tester.enterText(
+          find.byKey(const Key('quote_notes_field')),
+          'Alteração isolada',
+        );
+        await tester.pumpAndSettle();
+        await tapQuoteSave(tester);
 
-      expect(container.read(clientsProvider), clientsBefore);
-      expect(container.read(catalogProvider), catalogBefore);
-    });
+        expect(container.read(clientsProvider), clientsBefore);
+        expect(container.read(catalogProvider), catalogBefore);
+      },
+    );
   });
 
   group('TASK-017 E2E — transições de status', () {
@@ -337,13 +326,15 @@ void main() {
     ) async {
       await pumpQuoteAppWithContainer(tester);
       final container = quoteTestContainer(tester);
-      seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
+      await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
       AppRouter.router.go(AppRoutes.quotesDetail(quoteId));
       await tester.pumpAndSettle();
       return container;
     }
 
-    testWidgets('diálogo draft → sent cancelar não altera status', (tester) async {
+    testWidgets('diálogo draft → sent cancelar não altera status', (
+      tester,
+    ) async {
       final container = await openDetail(tester, 'quote-sent-cancel');
 
       await scrollQuoteDetailUntilVisible(
@@ -354,12 +345,16 @@ void main() {
       await tester.pumpAndSettle();
       await cancelQuoteStatusDialog(tester);
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-sent-cancel')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-sent-cancel')!;
       expect(quote.status, QuoteStatus.draft);
       expect(quote.statusHistory, hasLength(1));
     });
 
-    testWidgets('diálogo draft → sent confirmar altera uma vez', (tester) async {
+    testWidgets('diálogo draft → sent confirmar altera uma vez', (
+      tester,
+    ) async {
       final container = await openDetail(tester, 'quote-sent-confirm');
 
       await scrollQuoteDetailUntilVisible(
@@ -372,42 +367,47 @@ void main() {
 
       expect(find.text('Orçamento marcado como enviado'), findsOneWidget);
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-sent-confirm')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-sent-confirm')!;
       expect(quote.status, QuoteStatus.sent);
       expect(quote.statusHistory, hasLength(2));
       expect(quote.statusHistory.last.newStatus, QuoteStatus.sent);
     });
 
-    testWidgets('sent → approved atualiza status, approvedAt, contrato e histórico', (
-      tester,
-    ) async {
-      final container = await openDetail(tester, 'quote-approve');
-      transitionQuoteTo(container, 'quote-approve', QuoteStatus.sent);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'sent → approved atualiza status, approvedAt, contrato e histórico',
+      (tester) async {
+        final container = await openDetail(tester, 'quote-approve');
+        await transitionQuoteTo(container, 'quote-approve', QuoteStatus.sent);
+        await tester.pumpAndSettle();
 
-      await scrollQuoteDetailUntilVisible(
-        tester,
-        find.byKey(const Key('quote_detail_approve_button')),
-      );
-      await tester.tap(find.byKey(const Key('quote_detail_approve_button')));
-      await tester.pumpAndSettle();
-      await confirmQuoteStatusDialog(tester);
+        await scrollQuoteDetailUntilVisible(
+          tester,
+          find.byKey(const Key('quote_detail_approve_button')),
+        );
+        await tester.tap(find.byKey(const Key('quote_detail_approve_button')));
+        await tester.pumpAndSettle();
+        await confirmQuoteStatusDialog(tester);
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-approve')!;
-      expect(quote.status, QuoteStatus.approved);
-      expect(quote.approvedAt, quoteE2eFixedNow);
-      expect(quote.isApprovedForContract, isTrue);
-      expect(find.text('Aprovado'), findsWidgets);
-      expect(find.text('Aprovado em'), findsOneWidget);
-      expect(find.text('13/julho/2026 às 10:30'), findsWidgets);
-      await expandQuoteStatusHistory(tester);
-      expect(find.text('Rascunho → Enviado'), findsOneWidget);
-      expect(find.text('Enviado → Aprovado'), findsOneWidget);
-    });
+        final quote = container
+            .read(quotesProvider.notifier)
+            .findById('quote-approve')!;
+        expect(quote.status, QuoteStatus.approved);
+        expect(quote.approvedAt, quoteE2eFixedNow);
+        expect(quote.isApprovedForContract, isTrue);
+        expect(find.text('Aprovado'), findsWidgets);
+        expect(find.text('Aprovado em'), findsOneWidget);
+        expect(find.text('13/julho/2026 às 10:30'), findsWidgets);
+        await expandQuoteStatusHistory(tester);
+        expect(find.text('Rascunho → Enviado'), findsOneWidget);
+        expect(find.text('Enviado → Aprovado'), findsOneWidget);
+      },
+    );
 
     testWidgets('sent → rejected', (tester) async {
       final container = await openDetail(tester, 'quote-reject');
-      transitionQuoteTo(container, 'quote-reject', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-reject', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await scrollQuoteDetailUntilVisible(
@@ -418,7 +418,9 @@ void main() {
       await tester.pumpAndSettle();
       await confirmQuoteStatusDialog(tester);
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-reject')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-reject')!;
       expect(quote.status, QuoteStatus.rejected);
       expect(find.text('Recusado'), findsWidgets);
       await expandQuoteStatusHistory(tester);
@@ -437,15 +439,16 @@ void main() {
       await tester.pumpAndSettle();
       await confirmQuoteStatusDialog(tester);
 
-      final quote =
-          container.read(quotesProvider.notifier).findById('quote-cancel-draft')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-cancel-draft')!;
       expect(quote.status, QuoteStatus.cancelled);
     });
 
     testWidgets('enviado pode ser cancelado', (tester) async {
       useTallViewport(tester);
       final container = await openDetail(tester, 'quote-cancel-sent');
-      transitionQuoteTo(container, 'quote-cancel-sent', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-cancel-sent', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await scrollQuoteDetailUntilVisible(
@@ -456,16 +459,25 @@ void main() {
       await tester.pumpAndSettle();
       await confirmQuoteStatusDialog(tester);
 
-      final quote =
-          container.read(quotesProvider.notifier).findById('quote-cancel-sent')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-cancel-sent')!;
       expect(quote.status, QuoteStatus.cancelled);
     });
 
     testWidgets('aprovado pode ser cancelado', (tester) async {
       useTallViewport(tester);
       final container = await openDetail(tester, 'quote-cancel-approved');
-      transitionQuoteTo(container, 'quote-cancel-approved', QuoteStatus.sent);
-      transitionQuoteTo(container, 'quote-cancel-approved', QuoteStatus.approved);
+      await transitionQuoteTo(
+        container,
+        'quote-cancel-approved',
+        QuoteStatus.sent,
+      );
+      await transitionQuoteTo(
+        container,
+        'quote-cancel-approved',
+        QuoteStatus.approved,
+      );
       await tester.pumpAndSettle();
 
       await scrollQuoteDetailUntilVisible(
@@ -482,28 +494,31 @@ void main() {
       expect(quote.status, QuoteStatus.cancelled);
     });
 
-    testWidgets('duplo clique em transição válida gera uma entrada no histórico', (
-      tester,
-    ) async {
-      useTallViewport(tester);
-      final container = await openDetail(tester, 'quote-double');
+    testWidgets(
+      'duplo clique em transição válida gera uma entrada no histórico',
+      (tester) async {
+        useTallViewport(tester);
+        final container = await openDetail(tester, 'quote-double');
 
-      final markSent = find.byKey(const Key('quote_detail_mark_sent_button'));
-      await scrollQuoteDetailUntilVisible(tester, markSent);
-      await tester.tap(markSent);
-      await tester.pumpAndSettle();
+        final markSent = find.byKey(const Key('quote_detail_mark_sent_button'));
+        await scrollQuoteDetailUntilVisible(tester, markSent);
+        await tester.tap(markSent);
+        await tester.pumpAndSettle();
 
-      final confirm = find.byKey(const Key('quote_status_dialog_confirm'));
-      expect(confirm, findsOneWidget);
-      await tester.tap(confirm);
-      await tester.tap(confirm);
-      await tester.pump();
-      await tester.pumpAndSettle();
+        final confirm = find.byKey(const Key('quote_status_dialog_confirm'));
+        expect(confirm, findsOneWidget);
+        await tester.tap(confirm);
+        await tester.tap(confirm);
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-double')!;
-      expect(quote.status, QuoteStatus.sent);
-      expect(quote.statusHistory, hasLength(2));
-    });
+        final quote = container
+            .read(quotesProvider.notifier)
+            .findById('quote-double')!;
+        expect(quote.status, QuoteStatus.sent);
+        expect(quote.statusHistory, hasLength(2));
+      },
+    );
 
     testWidgets('transição inválida mostra feedback e não altera histórico', (
       tester,
@@ -517,7 +532,7 @@ void main() {
       await tester.tap(find.byKey(const Key('quote_detail_mark_sent_button')));
       await tester.pumpAndSettle();
 
-      transitionQuoteTo(container, 'quote-invalid', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-invalid', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await confirmQuoteStatusDialog(tester);
@@ -527,14 +542,18 @@ void main() {
         findsOneWidget,
       );
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-invalid')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-invalid')!;
       expect(quote.status, QuoteStatus.sent);
       expect(quote.statusHistory, hasLength(2));
     });
   });
 
   group('TASK-017 E2E — listagem e contrato', () {
-    testWidgets('badge da lista atualiza após voltar dos detalhes', (tester) async {
+    testWidgets('badge da lista atualiza após voltar dos detalhes', (
+      tester,
+    ) async {
       final container = await pumpQuoteAppSeeded(
         tester,
         buildRichQuoteAddDraft(id: 'quote-badge'),
@@ -544,7 +563,7 @@ void main() {
       expect(find.text('Rascunho'), findsOneWidget);
 
       await openQuoteDetailFromList(tester, 'quote-badge');
-      transitionQuoteTo(container, 'quote-badge', QuoteStatus.sent);
+      await transitionQuoteTo(container, 'quote-badge', QuoteStatus.sent);
       await tester.pumpAndSettle();
 
       await tester.tap(find.byTooltip('Voltar'));
@@ -554,74 +573,81 @@ void main() {
       expect(find.text('Enviado'), findsOneWidget);
     });
 
-    testWidgets('botão Gerar contrato aparece somente em approved e está desabilitado', (
-      tester,
-    ) async {
-      final container = await pumpQuoteAppSeeded(
-        tester,
-        buildRichQuoteAddDraft(id: 'quote-contract-draft'),
-        location: AppRoutes.quotesDetail('quote-contract-draft'),
-      );
+    testWidgets(
+      'botão Gerar contrato aparece somente em approved e está desabilitado',
+      (tester) async {
+        final container = await pumpQuoteAppSeeded(
+          tester,
+          buildRichQuoteAddDraft(id: 'quote-contract-draft'),
+          location: AppRoutes.quotesDetail('quote-contract-draft'),
+        );
 
-      expect(
-        find.byKey(const Key('quote_detail_generate_contract_button')),
-        findsNothing,
-      );
+        expect(
+          find.byKey(const Key('quote_detail_generate_contract_button')),
+          findsNothing,
+        );
 
-      transitionQuoteTo(container, 'quote-contract-draft', QuoteStatus.sent);
-      transitionQuoteTo(container, 'quote-contract-draft', QuoteStatus.approved);
-      await tester.pumpAndSettle();
+        await transitionQuoteTo(
+          container,
+          'quote-contract-draft',
+          QuoteStatus.sent,
+        );
+        await transitionQuoteTo(
+          container,
+          'quote-contract-draft',
+          QuoteStatus.approved,
+        );
+        await tester.pumpAndSettle();
 
-      final contractButton = find.byKey(
-        const Key('quote_detail_generate_contract_button'),
-      );
-      await scrollQuoteDetailUntilVisible(tester, contractButton);
-      expect(contractButton, findsOneWidget);
-      expect(find.text('Gerar contrato (Em breve)'), findsOneWidget);
+        final contractButton = find.byKey(
+          const Key('quote_detail_generate_contract_button'),
+        );
+        await scrollQuoteDetailUntilVisible(tester, contractButton);
+        expect(contractButton, findsOneWidget);
+        expect(find.text('Gerar contrato (Em breve)'), findsOneWidget);
 
-      final button = tester.widget<PrimaryButton>(contractButton);
-      expect(button.onPressed, isNull);
-    });
+        final button = tester.widget<PrimaryButton>(contractButton);
+        expect(button.onPressed, isNull);
+      },
+    );
   });
 
   group('TASK-017 E2E — pilha de navegação', () {
-    testWidgets('Detalhes → Editar → Salvar → Voltar até Dashboard preserva pilha', (
-      tester,
-    ) async {
-      useTallViewport(tester);
+    testWidgets(
+      'Detalhes → Editar → Salvar → Voltar até Dashboard preserva pilha',
+      (tester) async {
+        useTallViewport(tester);
 
-      await pumpQuoteAppWithContainer(tester);
-      final container = quoteTestContainer(tester);
-      seedQuote(container, buildRichQuoteAddDraft(id: 'quote-stack'));
+        await pumpQuoteAppWithContainer(tester);
+        final container = quoteTestContainer(tester);
+        await seedQuote(container, buildRichQuoteAddDraft(id: 'quote-stack'));
 
-      AppRouter.router.go(AppRoutes.dashboard);
-      await tester.pumpAndSettle();
-      AppRouter.router.push(AppRoutes.quotes);
-      await tester.pumpAndSettle();
+        AppRouter.router.go(AppRoutes.dashboard);
+        await tester.pumpAndSettle();
+        AppRouter.router.push(AppRoutes.quotes);
+        await tester.pumpAndSettle();
 
-      await openQuoteDetailFromList(tester, 'quote-stack');
-      await openQuoteEditFromDetail(tester);
+        await openQuoteDetailFromList(tester, 'quote-stack');
+        await openQuoteEditFromDetail(tester);
 
-      await tester.enterText(
-        find.byKey(const Key('quote_notes_field')),
-        'Notas após navegação',
-      );
-      await tester.pumpAndSettle();
-      await tapQuoteSave(tester);
+        await tester.enterText(
+          find.byKey(const Key('quote_notes_field')),
+          'Notas após navegação',
+        );
+        await tester.pumpAndSettle();
+        await tapQuoteSave(tester);
 
-      expect(
-        find.text('Orçamento atualizado com sucesso'),
-        findsOneWidget,
-      );
+        expect(find.text('Orçamento atualizado com sucesso'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Voltar'));
-      await tester.pumpAndSettle();
-      expect(find.text('Orçamentos'), findsOneWidget);
+        await tester.tap(find.byTooltip('Voltar'));
+        await tester.pumpAndSettle();
+        expect(find.text('Orçamentos'), findsOneWidget);
 
-      await tester.tap(find.byTooltip('Voltar'));
-      await tester.pumpAndSettle();
-      expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
-    });
+        await tester.tap(find.byTooltip('Voltar'));
+        await tester.pumpAndSettle();
+        expect(find.text('Bem-vindo ao EventPro'), findsOneWidget);
+      },
+    );
   });
 
   group('TASK-017 E2E — reabrir para edição', () {
@@ -631,9 +657,9 @@ void main() {
     ) async {
       await pumpQuoteAppWithContainer(tester);
       final container = quoteTestContainer(tester);
-      seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
-      transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-      transitionQuoteTo(container, quoteId, QuoteStatus.approved);
+      await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
+      await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+      await transitionQuoteTo(container, quoteId, QuoteStatus.approved);
       AppRouter.router.go(AppRoutes.quotesDetail(quoteId));
       await tester.pumpAndSettle();
       return container;
@@ -654,8 +680,11 @@ void main() {
       useTallViewport(tester);
       await pumpQuoteAppWithContainer(tester);
       final container = quoteTestContainer(tester);
-      seedQuote(container, buildRichQuoteAddDraft(id: 'quote-reopen-sent'));
-      transitionQuoteTo(container, 'quote-reopen-sent', QuoteStatus.sent);
+      await seedQuote(
+        container,
+        buildRichQuoteAddDraft(id: 'quote-reopen-sent'),
+      );
+      await transitionQuoteTo(container, 'quote-reopen-sent', QuoteStatus.sent);
       AppRouter.router.go(AppRoutes.quotesDetail('quote-reopen-sent'));
       await tester.pumpAndSettle();
 
@@ -674,23 +703,28 @@ void main() {
       Future<void> expectNoReopen(String quoteId, QuoteStatus status) async {
         await pumpQuoteAppWithContainer(tester);
         final container = quoteTestContainer(tester);
-        seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
+        await seedQuote(container, buildRichQuoteAddDraft(id: quoteId));
         if (status == QuoteStatus.rejected) {
-          transitionQuoteTo(container, quoteId, QuoteStatus.sent);
-          transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.sent);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.rejected);
         } else {
-          transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
+          await transitionQuoteTo(container, quoteId, QuoteStatus.cancelled);
         }
         AppRouter.router.go(AppRoutes.quotesDetail(quoteId));
         await tester.pumpAndSettle();
-        expect(find.byKey(const Key('quote_detail_reopen_button')), findsNothing);
+        expect(
+          find.byKey(const Key('quote_detail_reopen_button')),
+          findsNothing,
+        );
       }
 
       await expectNoReopen('quote-reopen-rejected', QuoteStatus.rejected);
       await expectNoReopen('quote-reopen-cancelled', QuoteStatus.cancelled);
     });
 
-    testWidgets('cancelar diálogo de reabertura não altera status', (tester) async {
+    testWidgets('cancelar diálogo de reabertura não altera status', (
+      tester,
+    ) async {
       useTallViewport(tester);
       final container = await openApprovedDetail(tester, 'quote-reopen-cancel');
 
@@ -702,7 +736,9 @@ void main() {
       await tester.pumpAndSettle();
       await cancelQuoteStatusDialog(tester);
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-reopen-cancel')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-reopen-cancel')!;
       expect(quote.status, QuoteStatus.approved);
       expect(quote.approvedAt, quoteE2eFixedNow);
       expect(quote.statusHistory, hasLength(3));
@@ -712,8 +748,13 @@ void main() {
       tester,
     ) async {
       useTallViewport(tester);
-      final container = await openApprovedDetail(tester, 'quote-reopen-confirm');
-      final before = container.read(quotesProvider.notifier).findById('quote-reopen-confirm')!;
+      final container = await openApprovedDetail(
+        tester,
+        'quote-reopen-confirm',
+      );
+      final before = container
+          .read(quotesProvider.notifier)
+          .findById('quote-reopen-confirm')!;
 
       await scrollQuoteDetailUntilVisible(
         tester,
@@ -725,7 +766,9 @@ void main() {
 
       expect(find.text('Orçamento reaberto para edição'), findsOneWidget);
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-reopen-confirm')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-reopen-confirm')!;
       expect(quote.status, QuoteStatus.draft);
       expect(quote.approvedAt, isNull);
       expect(quote.number, before.number);
@@ -765,7 +808,9 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      final quote = container.read(quotesProvider.notifier).findById('quote-reopen-double')!;
+      final quote = container
+          .read(quotesProvider.notifier)
+          .findById('quote-reopen-double')!;
       expect(quote.status, QuoteStatus.draft);
       expect(quote.statusHistory, hasLength(4));
     });
@@ -785,7 +830,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final container = quoteTestContainer(tester);
-        final seeded = seedQuote(
+        final seeded = await seedQuote(
           container,
           buildRichQuoteAddDraft(id: 'quote-reopen-cycle'),
         );
@@ -801,7 +846,9 @@ void main() {
           tester,
           find.byKey(const Key('quote_detail_mark_sent_button')),
         );
-        await tester.tap(find.byKey(const Key('quote_detail_mark_sent_button')));
+        await tester.tap(
+          find.byKey(const Key('quote_detail_mark_sent_button')),
+        );
         await tester.pumpAndSettle();
         await confirmQuoteStatusDialog(tester);
 
@@ -815,7 +862,10 @@ void main() {
         await confirmQuoteStatusDialog(tester);
 
         expect(
-          container.read(quotesProvider.notifier).findById('quote-reopen-cycle')!.approvedAt,
+          container
+              .read(quotesProvider.notifier)
+              .findById('quote-reopen-cycle')!
+              .approvedAt,
           DateTime(2026, 7, 13, 12, 0),
         );
 
@@ -828,8 +878,9 @@ void main() {
         await tester.pumpAndSettle();
         await confirmQuoteStatusDialog(tester);
 
-        final reopened =
-            container.read(quotesProvider.notifier).findById('quote-reopen-cycle')!;
+        final reopened = container
+            .read(quotesProvider.notifier)
+            .findById('quote-reopen-cycle')!;
         expect(reopened.status, QuoteStatus.draft);
         expect(reopened.approvedAt, isNull);
         expect(reopened.number, number);
@@ -841,7 +892,9 @@ void main() {
           tester,
           find.byKey(const Key('quote_detail_mark_sent_button')),
         );
-        await tester.tap(find.byKey(const Key('quote_detail_mark_sent_button')));
+        await tester.tap(
+          find.byKey(const Key('quote_detail_mark_sent_button')),
+        );
         await tester.pumpAndSettle();
         await confirmQuoteStatusDialog(tester);
 
@@ -854,8 +907,9 @@ void main() {
         await tester.pumpAndSettle();
         await confirmQuoteStatusDialog(tester);
 
-        final finalQuote =
-            container.read(quotesProvider.notifier).findById('quote-reopen-cycle')!;
+        final finalQuote = container
+            .read(quotesProvider.notifier)
+            .findById('quote-reopen-cycle')!;
         expect(finalQuote.approvedAt, DateTime(2026, 7, 13, 15, 0));
         expect(finalQuote.statusHistory, hasLength(6));
         expect(finalQuote.statusHistory[2].newStatus, QuoteStatus.approved);

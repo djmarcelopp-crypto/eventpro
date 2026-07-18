@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-O módulo de Configurações mantém o **perfil único da empresa** em memória (`CompanyProfile?`). Não há múltiplos perfis nem histórico de versões nesta entrega.
+O módulo de Configurações mantém o **perfil único da empresa** (`CompanyProfile?`), persistido localmente em SQLite via Drift (`CompanyProfilesDao` / `DriftCompanyProfileRepository`, TASK-024 CP-C) e hidratado automaticamente ao iniciar o app (CP-F). Não há múltiplos perfis nem histórico de versões nesta entrega.
 
 O perfil alimentará futuramente snapshots em PDF e contratos. **Documentos já gerados não serão alterados** quando o perfil for editado.
 
@@ -42,7 +42,7 @@ Logo e PIX são **opcionais** para status Configurado.
 
 ### Limitação conhecida
 
-Ao reiniciar o app, o perfil some da memória mas arquivos de logo podem permanecer no disco (**logo órfão**). Limpeza automática fica para etapa futura com persistência.
+O perfil é persistido em SQLite e não se perde ao reiniciar o app (TASK-024 CP-C/CP-F). Arquivos de **logo órfão** ainda podem permanecer no disco em cenários de falha durante troca/remoção; limpeza automática desses arquivos permanece como evolução futura.
 
 ## Consulta CNPJ
 

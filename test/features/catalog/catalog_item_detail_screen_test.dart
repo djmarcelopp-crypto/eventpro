@@ -11,6 +11,7 @@ import 'package:eventpro/features/catalog/providers/catalog_image_services_provi
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 import 'package:eventpro/features/catalog/widgets/catalog_list_item.dart';
 
+import 'fakes/catalog_repository_test_overrides.dart';
 import 'fakes/fake_catalog_image_storage_service.dart';
 
 void main() {
@@ -37,12 +38,13 @@ void main() {
   }) async {
     final container = ProviderContainer(
       overrides: [
+        ...catalogRepositoryOverrides(),
         catalogImageStorageProvider.overrideWithValue(
           FakeCatalogImageStorageService(),
         ),
       ],
     );
-    container.read(catalogProvider.notifier).addItem(item);
+    await container.read(catalogProvider.notifier).addItem(item);
 
     await tester.pumpWidget(
       UncontrolledProviderScope(

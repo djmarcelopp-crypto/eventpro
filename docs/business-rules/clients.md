@@ -69,9 +69,9 @@
 
 ## Persistência
 
-- Nesta fase, os clientes existem apenas durante a sessão do aplicativo.
-- Os dados são perdidos ao fechar ou reiniciar o app.
-- A integração com Firebase será implementada em etapa futura.
+- Os clientes são persistidos localmente em SQLite via Drift (`ClientsDao` / `DriftClientRepository`), desde a TASK-024 CP-B.
+- Os dados são hidratados automaticamente ao iniciar o app (TASK-024 CP-F); nenhum cliente é perdido ao fechar ou reiniciar.
+- A integração com Firebase (sincronização online) permanece em etapa futura.
 
 ## Detalhes do cliente
 

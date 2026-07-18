@@ -29,10 +29,7 @@ import 'utils/form_fill_mode.dart';
 import 'utils/text_input_masks.dart';
 
 class NewClientScreen extends ConsumerStatefulWidget {
-  const NewClientScreen({
-    super.key,
-    this.clientId,
-  });
+  const NewClientScreen({super.key, this.clientId});
 
   final String? clientId;
 
@@ -70,6 +67,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   bool _isCepLookupLoading = false;
   bool _alsoWhatsApp = false;
   bool _initializedForEdit = false;
+  bool _isSaving = false;
 
   bool get _isEditing => widget.clientId != null;
 
@@ -132,8 +130,9 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     setState(() {
       _clientType = values.clientType;
-      _birthday =
-          values.clientType == ClientType.individual ? values.birthday : null;
+      _birthday = values.clientType == ClientType.individual
+          ? values.birthday
+          : null;
       _alsoWhatsApp = values.alsoWhatsApp;
       _initializedForEdit = true;
     });
@@ -229,7 +228,9 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
   bool get _canLookupCnpj => _showCnpjLookupButton && !_isCnpjLookupLoading;
 
   bool get _showCepLookupButton {
-    final digits = ClientFormValidators.extractDigits(_postalCodeController.text);
+    final digits = ClientFormValidators.extractDigits(
+      _postalCodeController.text,
+    );
     return digits.length == 8 &&
         ClientFormValidators.validatePostalCode(_postalCodeController.text) ==
             null;
@@ -338,10 +339,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 for (final conflict in conflicts) ...[
-                  Text(
-                    conflict.fieldLabel,
-                    style: AppTextStyles.titleSmall,
-                  ),
+                  Text(conflict.fieldLabel, style: AppTextStyles.titleSmall),
                   const SizedBox(height: 4),
                   Text(
                     '"${conflict.currentValue}" → "${conflict.newValue}"',
@@ -358,15 +356,13 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(
-                FormFillMode.fillEmptyOnly,
-              ),
+              onPressed: () =>
+                  Navigator.of(context).pop(FormFillMode.fillEmptyOnly),
               child: const Text('Preencher só vazios'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(
-                FormFillMode.replaceAll,
-              ),
+              onPressed: () =>
+                  Navigator.of(context).pop(FormFillMode.replaceAll),
               child: const Text('Substituir'),
             ),
           ],
@@ -390,9 +386,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       mode = selectedMode;
     }
 
-    _applyFormValues(
-      CnpjFormFiller.apply(current, data, mode: mode),
-    );
+    _applyFormValues(CnpjFormFiller.apply(current, data, mode: mode));
 
     if (!mounted) {
       return;
@@ -400,9 +394,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Dados da empresa carregados. Revise antes de salvar.',
-        ),
+        content: Text('Dados da empresa carregados. Revise antes de salvar.'),
       ),
     );
   }
@@ -422,9 +414,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       mode = selectedMode;
     }
 
-    _applyAddressValues(
-      CepFormFiller.apply(current, data, mode: mode),
-    );
+    _applyAddressValues(CepFormFiller.apply(current, data, mode: mode));
 
     if (!mounted) {
       return;
@@ -432,9 +422,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Endereço carregado. Revise antes de salvar.',
-        ),
+        content: Text('Endereço carregado. Revise antes de salvar.'),
       ),
     );
   }
@@ -474,10 +462,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
   void _showLookupError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
+      SnackBar(content: Text(message), backgroundColor: AppColors.error),
     );
   }
 
@@ -559,7 +544,9 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
     if (phoneDigits == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Informe um telefone válido antes de marcar esta opção.'),
+          content: Text(
+            'Informe um telefone válido antes de marcar esta opção.',
+          ),
         ),
       );
       return;
@@ -584,7 +571,11 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
     });
   }
 
-  void _onSave() {
+  Future<void> _onSave() async {
+    if (_isSaving) {
+      return;
+    }
+
     final birthdayError = _isIndividual
         ? ClientFormValidators.validateBirthday(_birthday)
         : null;
@@ -609,8 +600,8 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
     final existingClient = _isEditing
         ? (GoRouterState.of(context).extra is Client
-            ? GoRouterState.of(context).extra as Client
-            : ref.read(clientsProvider.notifier).findById(widget.clientId!))
+              ? GoRouterState.of(context).extra as Client
+              : ref.read(clientsProvider.notifier).findById(widget.clientId!))
         : null;
 
     if (_isEditing && existingClient == null) {
@@ -639,19 +630,51 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
       createdAt: existingClient?.createdAt,
     );
 
-    if (_isEditing) {
-      ref.read(clientsProvider.notifier).updateClient(client);
-      context.go(AppRoutes.clients);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ClientListFeedbackPresenter.showSnackBar(ClientListFeedback.updated);
-        });
-      });
-      return;
-    }
+    setState(() => _isSaving = true);
 
-    ref.read(clientsProvider.notifier).addClient(client);
-    context.pop(true);
+    try {
+      if (_isEditing) {
+        final saved = await ref
+            .read(clientsProvider.notifier)
+            .updateClient(client);
+        if (!mounted) {
+          return;
+        }
+        if (!saved) {
+          ClientListFeedbackPresenter.showErrorSnackBar(
+            ClientListErrorFeedback.save,
+          );
+          return;
+        }
+
+        context.go(AppRoutes.clients);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ClientListFeedbackPresenter.showSnackBar(
+              ClientListFeedback.updated,
+            );
+          });
+        });
+        return;
+      }
+
+      final saved = await ref.read(clientsProvider.notifier).addClient(client);
+      if (!mounted) {
+        return;
+      }
+      if (!saved) {
+        ClientListFeedbackPresenter.showErrorSnackBar(
+          ClientListErrorFeedback.save,
+        );
+        return;
+      }
+
+      context.pop(true);
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   String? _validateDocument(String? value) {
@@ -687,9 +710,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                 ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Text('Buscar endereço'),
           ),
@@ -778,8 +799,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final documentLabel =
-        _clientType == ClientType.individual ? 'CPF' : 'CNPJ';
+    final documentLabel = _clientType == ClientType.individual ? 'CPF' : 'CNPJ';
     final documentHint = _isCompanyDocument
         ? 'Digite o CNPJ para buscar os dados da empresa'
         : '000.000.000-00';
@@ -793,9 +813,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
         ),
         title: Text(
           _isEditing ? 'Editar cliente' : 'Novo cliente',
-          style: AppTextStyles.headlineMedium.copyWith(
-            fontSize: 20,
-          ),
+          style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
         ),
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.white,
@@ -808,9 +826,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
             padding: const EdgeInsets.all(24),
             child: Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: _maxContentWidth,
-                ),
+                constraints: const BoxConstraints(maxWidth: _maxContentWidth),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -916,10 +932,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
                         prefixIcon: _isCompanyDocument
-                            ? const Icon(
-                                Icons.search,
-                                color: AppColors.primary,
-                              )
+                            ? const Icon(Icons.search, color: AppColors.primary)
                             : null,
                         suffixIcon: _isCompanyDocument && _showCnpjLookupButton
                             ? const Icon(
@@ -939,8 +952,9 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                         const SizedBox(height: 12),
                         OutlinedButton(
                           key: const Key('cnpj_lookup_button'),
-                          onPressed:
-                              _isCnpjLookupLoading ? null : _lookupCompanyData,
+                          onPressed: _isCnpjLookupLoading
+                              ? null
+                              : _lookupCompanyData,
                           child: _isCnpjLookupLoading
                               ? const SizedBox(
                                   height: 20,
@@ -1018,6 +1032,7 @@ class _NewClientScreenState extends ConsumerState<NewClientScreen> {
                       PrimaryButton(
                         key: const Key('client_save_button'),
                         label: 'Salvar',
+                        isLoading: _isSaving,
                         onPressed: _onSave,
                       ),
                     ],

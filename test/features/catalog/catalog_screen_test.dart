@@ -7,6 +7,8 @@ import 'package:eventpro/features/catalog/catalog_screen.dart';
 import 'package:eventpro/features/catalog/models/catalog_item.dart';
 import 'package:eventpro/features/catalog/providers/catalog_provider.dart';
 
+import 'fakes/catalog_repository_test_overrides.dart';
+
 void main() {
   group('CatalogScreen grid', () {
     CatalogItem buildItem({
@@ -37,11 +39,13 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
 
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: catalogRepositoryOverrides(),
+      );
       addTearDown(container.dispose);
 
       for (final item in items) {
-        container.read(catalogProvider.notifier).addItem(item);
+        await container.read(catalogProvider.notifier).addItem(item);
       }
 
       await tester.pumpWidget(

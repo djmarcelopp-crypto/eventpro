@@ -1,14 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/catalog_item.dart';
+import '../data/repositories/catalog_repository.dart';
 import '../models/catalog_delete_result.dart';
+import '../models/catalog_item.dart';
+import 'catalog_repository_provider.dart';
 
 class CatalogNotifier extends Notifier<List<CatalogItem>> {
+  CatalogRepository get _repository => ref.read(catalogRepositoryProvider);
+
   @override
   List<CatalogItem> build() => [];
 
-  void addItem(CatalogItem item) {
-    state = [...state, item];
+  void hydrate(List<CatalogItem> items) {
+    state = items;
+  }
+
+  Future<bool> addItem(CatalogItem item) async {
+    try {
+      await _repository.insert(item);
+      state = [...state, item];
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   CatalogItem? findById(String id) {
@@ -20,10 +34,13 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
     return null;
   }
 
-  void updateItem(CatalogItem item, {bool clearImageReference = false}) {
+  Future<bool> updateItem(
+    CatalogItem item, {
+    bool clearImageReference = false,
+  }) async {
     final existing = findById(item.id);
     if (existing == null) {
-      return;
+      return false;
     }
 
     final updated = item.copyWith(
@@ -35,24 +52,34 @@ class CatalogNotifier extends Notifier<List<CatalogItem>> {
           : (item.imageReference ?? existing.imageReference),
     );
 
-    state = [
-      for (final current in state)
-        if (current.id == updated.id) updated else current,
-    ];
+    try {
+      await _repository.update(updated);
+      state = [
+        for (final current in state)
+          if (current.id == updated.id) updated else current,
+      ];
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
-  CatalogDeleteResult deleteItem(String id) {
+  Future<CatalogDeleteResult> deleteItem(String id) async {
     final exists = state.any((item) => item.id == id);
     if (!exists) {
       return const CatalogDeleteResult(status: CatalogDeleteStatus.notFound);
     }
 
-    state = [
-      for (final current in state)
-        if (current.id != id) current,
-    ];
-
-    return const CatalogDeleteResult(status: CatalogDeleteStatus.deleted);
+    try {
+      await _repository.delete(id);
+      state = [
+        for (final current in state)
+          if (current.id != id) current,
+      ];
+      return const CatalogDeleteResult(status: CatalogDeleteStatus.deleted);
+    } catch (_) {
+      return const CatalogDeleteResult(status: CatalogDeleteStatus.failure);
+    }
   }
 }
 

@@ -4,7 +4,7 @@
 
 O módulo de Orçamentos reúne propostas comerciais para clientes da empresa, utilizando snapshots congelados de clientes, eventos e itens do Catálogo.
 
-Nesta fase, os orçamentos existem apenas durante a sessão do aplicativo (provider em memória). A integração com Firebase será implementada em etapa futura.
+Os orçamentos (incluindo snapshots, itens, componentes de pacote e histórico de status) são persistidos localmente em SQLite via Drift (`QuotesDao` / `DriftQuoteRepository`), desde a TASK-024 CP-E, e hidratados automaticamente ao iniciar o app (CP-F). A integração com Firebase (sincronização online) permanece em etapa futura.
 
 ## Status e transições
 
@@ -188,8 +188,7 @@ Formato: `ORC-{ANO}-{SEQUÊNCIA}` — ex.: `ORC-2026-0001`.
 
 - Sequência por ano, padding de 4 dígitos.
 - Não usa tamanho da lista.
-- Sem repetição na mesma sessão.
-- Persistência no banco será implementada futuramente.
+- Sequência reservada e persistida atomicamente no SQLite (`QuoteNumberSequences`, TASK-024 CP-E) dentro da mesma transação da gravação do orçamento; não avança em caso de falha e não se repete entre sessões.
 
 ## Observações internas
 
@@ -204,9 +203,8 @@ Formato: `ORC-{ANO}-{SEQUÊNCIA}` — ex.: `ORC-2026-0001`.
 
 ## Persistência e serialização
 
-- Nesta fase: provider em memória; dados perdidos ao reiniciar o app.
-- `toJson`/`fromJson` **não implementados** nesta fase.
-- Serialização será definida junto com persistência e versionamento do banco.
+- Orçamentos são persistidos em SQLite via Drift (grafo completo: quote, snapshots, itens, componentes de pacote e histórico), desde a TASK-024 CP-E, e hidratados no startup (CP-F).
+- `toJson`/`fromJson` **não implementados**; a conversão domínio ↔ banco é feita por `QuoteMapper` (Drift Companion/Row), não por serialização JSON.
 
 ## Integração futura com Contratos
 

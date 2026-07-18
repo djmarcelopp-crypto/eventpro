@@ -4,7 +4,7 @@
 
 O Catálogo reúne **equipamentos**, **serviços** e **pacotes** usados pela empresa em orçamentos e operação.
 
-Nesta fase, os itens existem apenas durante a sessão do aplicativo (provider em memória). A integração com Firebase será implementada em etapa futura.
+Os itens do catálogo são persistidos localmente em SQLite via Drift (`CatalogDao` / `DriftCatalogRepository`), desde a TASK-024 CP-D, e hidratados automaticamente ao iniciar o app (CP-F). A integração com Firebase (sincronização online) permanece em etapa futura.
 
 ## Tipos de item
 
@@ -171,14 +171,14 @@ Novas categorias exigirão alteração do enum `CatalogCategory`.
 - **Múltiplas fotos por item:** evolução futura — fora do escopo atual.
 - Firebase Storage, upload em nuvem e câmera: fora do escopo atual.
 
-### Limitação de persistência
+### Limitação conhecida
 
-O catálogo permanece em memória nesta fase. As fotos persistem no disco local do dispositivo, mas os metadados dos itens são perdidos ao reiniciar o app. Arquivos órfãos podem permanecer no disco até limpeza futura.
+Os metadados dos itens são persistidos em SQLite (TASK-024 CP-D) e as fotos persistem no disco local do dispositivo. Arquivos de foto órfãos (ex.: item excluído com falha na limpeza do arquivo) podem permanecer no disco até limpeza futura — ver seção "Foto na exclusão".
 
 ## Persistência
 
-- Nesta fase, os itens existem apenas durante a sessão do aplicativo.
-- Os dados são perdidos ao fechar ou reiniciar o app.
+- Os itens do catálogo (equipamentos, serviços e pacotes) são persistidos localmente em SQLite via Drift, desde a TASK-024 CP-D.
+- Os dados são hidratados automaticamente ao iniciar o app (TASK-024 CP-F); nenhum item é perdido ao fechar ou reiniciar.
 
 ## Rotas
 

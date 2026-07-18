@@ -12,10 +12,7 @@ import 'utils/client_detail_presenter.dart';
 import 'widgets/client_detail_section.dart';
 
 class ClientDetailScreen extends ConsumerWidget {
-  const ClientDetailScreen({
-    super.key,
-    required this.clientId,
-  });
+  const ClientDetailScreen({super.key, required this.clientId});
 
   final String clientId;
 
@@ -40,9 +37,7 @@ class ClientDetailScreen extends ConsumerWidget {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.error,
-              ),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('Excluir'),
             ),
@@ -55,7 +50,19 @@ class ClientDetailScreen extends ConsumerWidget {
       return;
     }
 
-    ref.read(clientsProvider.notifier).deleteClient(clientId);
+    final deleted = await ref
+        .read(clientsProvider.notifier)
+        .deleteClient(clientId);
+    if (!context.mounted) {
+      return;
+    }
+    if (!deleted) {
+      ClientListFeedbackPresenter.showErrorSnackBar(
+        ClientListErrorFeedback.delete,
+      );
+      return;
+    }
+
     context.go(AppRoutes.clients);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -152,7 +159,9 @@ class ClientDetailScreen extends ConsumerWidget {
                   children: [
                     ClientDetailSection(
                       title: 'Identificação',
-                      items: ClientDetailPresenter.identification(resolvedClient),
+                      items: ClientDetailPresenter.identification(
+                        resolvedClient,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     ClientDetailSection(
@@ -177,10 +186,7 @@ class ClientDetailScreen extends ConsumerWidget {
                         footer: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              internalNotes,
-                              style: AppTextStyles.bodyLarge,
-                            ),
+                            Text(internalNotes, style: AppTextStyles.bodyLarge),
                             const SizedBox(height: 8),
                             Text(
                               'Esta informação não aparece no orçamento.',

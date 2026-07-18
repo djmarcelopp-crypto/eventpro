@@ -4,6 +4,13 @@ enum DashboardModuleId {
   clients,
   catalog,
   quotes,
+  agenda,
+  financial,
+  equipment,
+  team,
+  logistics,
+  contracts,
+  billing,
   settings,
 }
 
@@ -39,6 +46,48 @@ const List<DashboardModule> dashboardModules = [
     title: 'Orçamentos',
     description: 'Crie e envie orçamentos',
     icon: Icons.request_quote_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.agenda,
+    title: 'Agenda',
+    description: 'Propostas, eventos confirmados e bloqueios',
+    icon: Icons.calendar_month_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.financial,
+    title: 'Financeiro',
+    description: 'Receitas, despesas e saldo',
+    icon: Icons.account_balance_wallet_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.equipment,
+    title: 'Estoque',
+    description: 'Equipamentos e inventário',
+    icon: Icons.handyman_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.team,
+    title: 'Equipe',
+    description: 'Colaboradores e funções',
+    icon: Icons.groups_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.logistics,
+    title: 'Logística',
+    description: 'Veículos e transporte',
+    icon: Icons.local_shipping_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.contracts,
+    title: 'Contratos',
+    description: 'Modelos e assinaturas',
+    icon: Icons.handshake_outlined,
+  ),
+  DashboardModule(
+    id: DashboardModuleId.billing,
+    title: 'Faturamento',
+    description: 'Emissão e pagamentos',
+    icon: Icons.receipt_long_outlined,
   ),
   DashboardModule(
     id: DashboardModuleId.settings,

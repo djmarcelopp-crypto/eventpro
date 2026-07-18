@@ -8,6 +8,7 @@ import 'package:eventpro/features/quotes/pdf/theme/quote_pdf_fonts.dart';
 import 'package:eventpro/features/quotes/providers/quote_clock_provider.dart';
 import 'package:eventpro/features/quotes/providers/quotes_provider.dart';
 
+import '../fakes/quote_repository_test_overrides.dart';
 import '../quotes_test_helpers.dart';
 import 'fakes/fake_quote_pdf_export_service.dart';
 import 'fakes/fake_quote_pdf_generator.dart';
@@ -31,7 +32,7 @@ void main() {
       fakeLogoLoader = FakeQuotePdfLogoLoaderService();
     });
 
-    ProviderContainer createContainer({required Quote quote}) {
+    Future<ProviderContainer> createContainer({required Quote quote}) async {
       final container = ProviderContainer(
         overrides: [
           quoteClockProvider.overrideWithValue(() => DateTime(2026, 7, 13)),
@@ -39,9 +40,10 @@ void main() {
           quotePdfGeneratorProvider.overrideWithValue(fakeGenerator),
           quotePdfLogoLoaderProvider.overrideWithValue(fakeLogoLoader),
           quotePdfExportServiceProvider.overrideWithValue(fakeExport),
+          ...quoteRepositoryOverrides(),
         ],
       );
-      container.read(quotesProvider.notifier).addQuote(quote);
+      await container.read(quotesProvider.notifier).addQuote(quote);
       return container;
     }
 
@@ -55,7 +57,7 @@ void main() {
     }
 
     test('exporta gerando bytes uma única vez', () async {
-      final container = createContainer(quote: eligibleQuote());
+      final container = await createContainer(quote: eligibleQuote());
       addTearDown(container.dispose);
 
       final subscription = container.listen(
@@ -77,7 +79,7 @@ void main() {
     });
 
     test('reutiliza bytes na segunda exportação', () async {
-      final container = createContainer(quote: eligibleQuote());
+      final container = await createContainer(quote: eligibleQuote());
       addTearDown(container.dispose);
 
       final subscription = container.listen(
@@ -103,7 +105,7 @@ void main() {
 
     test('clique duplo concorrente executa somente uma operação', () async {
       fakeGenerator.delay = const Duration(milliseconds: 100);
-      final container = createContainer(quote: eligibleQuote());
+      final container = await createContainer(quote: eligibleQuote());
       addTearDown(container.dispose);
 
       final subscription = container.listen(
@@ -130,7 +132,7 @@ void main() {
 
     test('cancelamento permanece silencioso', () async {
       fakeExport.nextResult = const QuotePdfExportCancelled();
-      final container = createContainer(quote: eligibleQuote());
+      final container = await createContainer(quote: eligibleQuote());
       addTearDown(container.dispose);
 
       final subscription = container.listen(
@@ -149,7 +151,7 @@ void main() {
 
     test('falha de exportação retorna erro', () async {
       fakeExport.nextResult = const QuotePdfExportFailed();
-      final container = createContainer(quote: eligibleQuote());
+      final container = await createContainer(quote: eligibleQuote());
       addTearDown(container.dispose);
 
       final subscription = container.listen(

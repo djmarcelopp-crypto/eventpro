@@ -17,6 +17,11 @@ import 'fakes/fake_company_logo_picker_service.dart';
 import 'fakes/fake_company_logo_storage_service.dart';
 import 'fakes/fake_settings_cep_lookup_service.dart';
 import 'fakes/fake_settings_cnpj_lookup_service.dart';
+import '../agenda/fakes/agenda_block_repository_test_overrides.dart';
+import '../catalog/fakes/catalog_repository_test_overrides.dart';
+import '../clients/fakes/client_repository_test_overrides.dart';
+import '../quotes/fakes/quote_repository_test_overrides.dart';
+import 'fakes/company_profile_repository_test_overrides.dart';
 
 void main() {
   group('Settings Checkpoint C', () {
@@ -45,6 +50,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            ...clientRepositoryOverrides(),
+            ...companyProfileRepositoryOverrides(),
+            ...catalogRepositoryOverrides(),
+            ...quoteRepositoryOverrides(),
+            ...agendaBlockRepositoryOverrides(),
             companyLogoPickerProvider.overrideWithValue(fakeLogoPicker),
             companyLogoStorageProvider.overrideWithValue(fakeLogoStorage),
             cnpjLookupServiceProvider.overrideWithValue(fakeCnpjLookup),
@@ -62,11 +72,7 @@ void main() {
         of: target,
         matching: find.byType(Scrollable),
       );
-      await tester.scrollUntilVisible(
-        target,
-        1200,
-        scrollable: scrollable,
-      );
+      await tester.scrollUntilVisible(target, 1200, scrollable: scrollable);
       await tester.pumpAndSettle();
       await tester.ensureVisible(target);
       await tester.pumpAndSettle();
@@ -173,7 +179,18 @@ void main() {
       AppRouter.router.go(AppRoutes.dashboard);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Configurações'));
+      final settingsCard = find.text('Configurações');
+      final dashboardScrollable = find.ancestor(
+        of: settingsCard,
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(
+        settingsCard,
+        300,
+        scrollable: dashboardScrollable,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(settingsCard);
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('settings_scroll')), findsOneWidget);
 
@@ -261,7 +278,10 @@ void main() {
       await fillMinimumProfile(tester);
       await tapLogoButton(tester, const Key('company_select_logo_button'));
       expect(fakeLogoStorage.stageCallCount, 1);
-      expect(find.byKey(const Key('company_replace_logo_button')), findsOneWidget);
+      expect(
+        find.byKey(const Key('company_replace_logo_button')),
+        findsOneWidget,
+      );
 
       fakeLogoPicker.pickCount = 0;
       await tapLogoButton(tester, const Key('company_replace_logo_button'));
@@ -270,7 +290,10 @@ void main() {
 
       await tapLogoButton(tester, const Key('company_remove_logo_button'));
       expect(fakeLogoStorage.discardLog, isNotEmpty);
-      expect(find.byKey(const Key('company_select_logo_button')), findsOneWidget);
+      expect(
+        find.byKey(const Key('company_select_logo_button')),
+        findsOneWidget,
+      );
 
       await tapCompanyProfileSave(tester);
       await tester.pumpAndSettle();
@@ -307,7 +330,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Descartar alterações?'), findsOneWidget);
 
-      await tester.tap(find.byKey(const Key('settings_discard_confirm_button')));
+      await tester.tap(
+        find.byKey(const Key('settings_discard_confirm_button')),
+      );
       await tester.pumpAndSettle();
 
       expect(fakeLogoStorage.discardLog, contains(staged));
@@ -326,7 +351,9 @@ void main() {
       final container = ProviderScope.containerOf(
         tester.element(find.byType(EventProApp)),
       );
-      container.read(companyProfileProvider.notifier).save(
+      await container
+          .read(companyProfileProvider.notifier)
+          .save(
             CompanyProfile(
               tradeName: 'DJ Marcelo PP',
               phoneDigits: '67999998888',
@@ -343,7 +370,9 @@ void main() {
 
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('settings_discard_confirm_button')));
+      await tester.tap(
+        find.byKey(const Key('settings_discard_confirm_button')),
+      );
       await tester.pumpAndSettle();
 
       final profile = container.read(companyProfileProvider)!;
@@ -375,17 +404,24 @@ void main() {
         'Nome Atual',
       );
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('settings_cnpj_lookup_button')), findsOneWidget);
+      expect(
+        find.byKey(const Key('settings_cnpj_lookup_button')),
+        findsOneWidget,
+      );
       await tapCnpjLookup(tester);
 
       expect(find.text('Alguns campos já estão preenchidos'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('settings_conflict_replace_button')));
+      await tester.tap(
+        find.byKey(const Key('settings_conflict_replace_button')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('DJ Marcelo PP'), findsOneWidget);
     });
 
-    testWidgets('CNPJ erro da API não bloqueia cadastro manual', (tester) async {
+    testWidgets('CNPJ erro da API não bloqueia cadastro manual', (
+      tester,
+    ) async {
       fakeCnpjLookup = FakeSettingsCnpjLookupService(
         exception: const CnpjLookupException(CnpjLookupFailure.notFound),
       );
@@ -460,7 +496,9 @@ void main() {
       await tapCepLookup(tester);
 
       expect(find.text('Alguns campos já estão preenchidos'), findsOneWidget);
-      await tester.tap(find.byKey(const Key('settings_conflict_fill_empty_button')));
+      await tester.tap(
+        find.byKey(const Key('settings_conflict_fill_empty_button')),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Rua Antiga'), findsOneWidget);

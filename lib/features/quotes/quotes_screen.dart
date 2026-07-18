@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router/app_router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/app_page_header.dart';
 import 'quote_list_feedback.dart';
 import 'providers/quotes_provider.dart';
 import 'utils/quotes_navigation.dart';
@@ -40,21 +39,10 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-          onPressed: () => QuotesNavigation.leaveQuotes(context),
-        ),
-        title: Text(
-          'Orçamentos',
-          style: AppTextStyles.headlineMedium.copyWith(
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.white,
-        elevation: 0,
+      appBar: AppPageHeader(
+        title: 'Orçamentos',
+        onBack: () => QuotesNavigation.leaveQuotes(context),
+        forceBack: true,
         actions: [
           if (quotes.isNotEmpty)
             IconButton(

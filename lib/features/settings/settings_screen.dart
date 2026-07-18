@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router/app_router.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/app_page_header.dart';
 import 'providers/company_profile_provider.dart';
 import 'utils/company_profile_completeness.dart';
 import 'utils/settings_navigation.dart';
 import 'widgets/company_profile_summary_card.dart';
+import 'widgets/demo_environment_card.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -21,19 +22,10 @@ class SettingsScreen extends ConsumerWidget {
     final status = CompanyProfileCompleteness.status(profile);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-          onPressed: () => SettingsNavigation.leaveSettings(context),
-        ),
-        title: Text(
-          'Configurações',
-          style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.white,
-        elevation: 0,
+      appBar: AppPageHeader(
+        title: 'Configurações',
+        forceBack: true,
+        onBack: () => SettingsNavigation.leaveSettings(context),
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -56,6 +48,13 @@ class SettingsScreen extends ConsumerWidget {
                       status: status,
                       onTap: () => context.push(AppRoutes.settingsCompany),
                     ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Demonstração',
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    const DemoEnvironmentCard(),
                   ],
                 ),
               ),

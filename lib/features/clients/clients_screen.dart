@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router/app_router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/app_page_header.dart';
 import 'client_list_feedback.dart';
 import 'providers/clients_provider.dart';
 import 'widgets/client_list_item.dart';
@@ -41,21 +40,8 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
     final clients = ref.watch(clientsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Clientes',
-          style: AppTextStyles.headlineMedium.copyWith(
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.white,
-        elevation: 0,
+      appBar: AppPageHeader(
+        title: 'Clientes',
         actions: [
           if (clients.isNotEmpty)
             IconButton(

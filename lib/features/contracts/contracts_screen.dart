@@ -6,6 +6,10 @@ import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_page_header.dart';
+import '../../core/widgets/feedback/app_empty_state.dart';
+import '../../core/widgets/feedback/app_error_state.dart';
+import '../../core/widgets/feedback/app_loading_state.dart';
 import '../quotes/utils/quote_date_formatter.dart';
 import 'models/contract_list_summary.dart';
 import 'models/contract_status.dart';
@@ -32,18 +36,8 @@ class ContractsScreen extends ConsumerWidget {
     final filters = ref.watch(contractFiltersProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Contratos & Assinaturas',
-          style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.white,
-        elevation: 0,
+      appBar: AppPageHeader(
+        title: 'Contratos & Assinaturas',
         actions: [
           IconButton(
             key: const Key('contract_templates_button'),
@@ -92,11 +86,11 @@ class ContractsScreen extends ConsumerWidget {
               ),
               if (items.isEmpty)
                 const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: Text('Nenhum contrato encontrado'),
-                    ),
+                  child: AppEmptyState(
+                    icon: Icons.description_outlined,
+                    title: 'Nenhum contrato encontrado',
+                    message:
+                        'Gere contratos a partir de orçamentos aprovados para acompanhar o fluxo de assinatura.',
                   ),
                 )
               else
@@ -164,8 +158,8 @@ class ContractsScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erro: $error')),
+        loading: () => const AppLoadingState(),
+        error: (error, _) => AppErrorState(message: '$error'),
       ),
     );
   }

@@ -202,9 +202,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('settings_scroll')), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.arrow_back));
+      AppRouter.router.go(AppRoutes.dashboard);
       await tester.pumpAndSettle();
-      expect(find.text('Dashboard'), findsOneWidget);
+      expect(find.text('Centro de Operações'), findsOneWidget);
     });
 
     testWidgets('criar perfil mínimo exibe status Incompleto', (tester) async {

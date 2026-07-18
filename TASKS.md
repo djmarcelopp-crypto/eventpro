@@ -4,106 +4,95 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
-## TASK-031 — Contratos & Assinaturas
+## TASK-032 — Faturamento & Documentos Fiscais
 
-**Branch:** `cursor/task-031-contratos`
+**Branch:** `cursor/task-032-faturamento`
 
-**Objetivo:** Criar o módulo Contratos & Assinaturas — modelos (`ContractTemplate`), contratos vinculados a orçamentos (`Contract`), UI de gestão, integração com dashboard/orçamento e fluxo contratual interno — sem PDF, sem assinatura digital externa e sem integrações de terceiros.
+**Objetivo:** Criar o módulo Faturamento & Documentos Fiscais — faturas (`Invoice`) e itens (`InvoiceItem`) vinculados a orçamentos, UI de gestão, integração com dashboard/orçamento, resumo financeiro derivado e fluxo interno de status — sem PDF, NF-e/NFS-e, boleto, PIX, bancos ou conciliação.
 
 ### Checkpoints
 
 | CP | Descrição | Commit | Status |
 |----|-----------|--------|--------|
 | A | Fundação do domínio (entidades, enums, validadores, contratos) | *(pendente)* | ✅ Concluído |
-| B | Persistência Drift — templates/contratos, migração v10→v11 | *(pendente)* | ✅ Concluído |
-| C | Casos de uso — ContractService / ContractTemplateService | *(pendente)* | ✅ Concluído |
-| D | QuoteContractSummary + QuoteContractService | *(pendente)* | ✅ Concluído |
+| B | Persistência Drift — invoices/items, migração v11→v12 | *(pendente)* | ✅ Concluído |
+| C | Casos de uso — InvoiceService | *(pendente)* | ✅ Concluído |
+| D | QuoteInvoiceSummary + QuoteInvoiceService | *(pendente)* | ✅ Concluído |
+| Gate | Numeração, totais, matriz única, finance desacoplado | *(pendente)* | ✅ Concluído |
 | E | UI, providers, dashboard e seção em orçamentos | *(pendente)* | ✅ Concluído |
-| F | Fluxo contratual interno (workflow + summary + providers) | *(pendente)* | ✅ Concluído |
-| G | Documentação final — `docs/tasks/TASK-031.md`, `docs/business-rules/contracts.md`, revisão de `ARCHITECTURE.md` | *(pendente)* | ✅ Concluído |
+| F | Fluxo de faturamento (workflow + summary + providers) | *(pendente)* | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-032.md`, `docs/business-rules/billing.md`, revisão de `ARCHITECTURE.md` | *(pendente)* | ✅ Concluído |
 
-**TASK-031 implementada.** Histórico completo consolidado em `docs/tasks/TASK-031.md`. Commits aguardam aprovação do PO/CTO.
+**TASK-032 implementada.** Histórico completo consolidado em `docs/tasks/TASK-032.md`. Commits aguardam aprovação do PO/CTO.
 
 ### CP-A — concluído
 
-**Escopo entregue:**
+**Escopo entregue:** domínio `Invoice` / `InvoiceItem` / status / type, validators, contratos de repositório — sem Drift/UI.
 
-- `Contract`, `ContractTemplate`, `ContractStatus`, `ContractSignatureStatus`, validators, contratos de repositório
-- Sem Drift, providers ou UI
-
-**Verificação:** `flutter analyze` (infos pré-existentes); `flutter test` com 1486 testes passando.
-
-**Fora de escopo do CP-A (mantido):** persistência, providers, telas, workflow UI, PDF.
+**Verificação:** testes do Bloco 1 acumulados até o gate (ver CP-G/docs).
 
 ### CP-B — concluído
 
-**Escopo entregue:**
-
-- Tabelas `contract_templates` e `contracts`; DAOs; mappers; `Drift*Repository`
-- `schemaVersion` 10→11; FK quote RESTRICT; FK template SET NULL; migração real testada
-
-**Verificação:** `flutter test` com 1491 testes passando.
-
-**Fora de escopo do CP-B (mantido):** providers, telas, PDF.
+**Escopo entregue:** tabelas `invoices` / `invoice_items`; schema **11→12**; FK quote RESTRICT; items CASCADE; legacy v11.
 
 ### CP-C — concluído
 
-**Escopo entregue:**
-
-- `ContractService` / `ContractTemplateService` com result objects
-- Número `CTR-YYYY-####`; transições básicas; relógio injetável
-- Schema, providers e UI inalterados
-
-**Verificação:** `flutter test` com 1504 testes passando.
-
-**Fora de escopo do CP-C (mantido):** providers, telas, PDF, assinatura externa.
+**Escopo entregue:** `InvoiceService` (numeração `INV-YYYY-####`, totais, transições via `InvoiceStatusTransitions`).
 
 ### CP-D — concluído
 
-**Escopo entregue:**
+**Escopo entregue:** `QuoteInvoiceSummary` / `QuoteInvoiceService` (gerar/status/pagar/cancelar) — sem UI.
 
-- `QuoteContractSummary` / `QuoteContractService` (gerar, cancelar, status)
-- Sem UI
+### Gate arquitetural — concluído
 
-**Verificação:** `flutter test` com 1508 testes passando.
+**Escopo entregue:** numeração omitível; totais no serviço + rollback; matriz única; `InvoiceFinancialSummary` desacoplado do Financeiro.
 
-**Fora de escopo do CP-D (mantido):** providers/UI de contratos, PDF.
+**Verificação:** `flutter test` com **1577** testes passando.
 
 ### CP-E — concluído
 
 **Escopo entregue:**
 
-- Providers Riverpod, telas Contratos/templates/detalhe, associação a orçamentos
-- Módulo e resumo no Dashboard; filtros por status/número
-- Schema inalterado (permanece v11)
+- Providers Riverpod, telas de faturamento, associação a orçamentos
+- Módulo e resumo no Dashboard; filtros por status/tipo/número
+- Schema inalterado (permanece v12); UI sem cálculo/transição local
 
-**Verificação:** `flutter test` com 1522 testes passando.
+**Verificação:** `flutter test` com **1592** testes passando.
 
-**Fora de escopo do CP-E (mantido):** PDF, assinatura digital, workflow dedicado (CP-F).
+**Fora de escopo do CP-E (mantido):** PDF, NF-e, workflow dedicado (CP-F).
 
 ### CP-F — concluído
 
 **Escopo entregue:**
 
-- `ContractWorkflowService` / `ContractWorkflowSummary` + providers
-- Happy path e bloqueios (cancelar/assinar/expirar/regressão)
-- Sem PDF, sem assinatura externa, sem schema novo
+- `InvoiceWorkflowService` / `InvoiceWorkflowSummary` + providers
+- Consulta `InvoiceStatusTransitions` (sem segunda matriz)
+- Happy path e bloqueios (cancelar/pagar/regressão/repetição)
+- Sem PDF, NF-e, boleto, PIX, banco; sem schema novo
 
-**Verificação:** `flutter test` com 1536 testes passando.
+**Verificação:** `flutter test` com **1601** testes passando.
 
-**Fora de escopo do CP-F (mantido):** PDF, assinatura digital, integrações externas.
+**Fora de escopo do CP-F (mantido):** emissão fiscal real, PDF, meios de pagamento externos.
 
 ### CP-G — concluído
 
 **Escopo entregue:**
 
-- `docs/tasks/TASK-031.md` e `docs/business-rules/contracts.md` criados
+- `docs/tasks/TASK-032.md` e `docs/business-rules/billing.md` criados
 - `ARCHITECTURE.md`, `PROJECT.md`, este documento e `docs/roadmap.md` atualizados
 - Nenhuma alteração em `lib/`, `test/`, schema, providers ou UI — checkpoint exclusivamente documental
 
-**Verificação:** `flutter analyze` e `flutter test` com 1536 testes passando (suíte inalterada).
+**Verificação:** `flutter analyze` e `flutter test` com **1601** testes passando (suíte inalterada).
 
 **Commit:** *(pendente de aprovação/commit)*
+
+---
+
+## TASK-031 — Contratos & Assinaturas
+
+**Branch:** `cursor/task-031-contratos`
+
+**Status:** implementada. Histórico completo em `docs/tasks/TASK-031.md`. Regras: `docs/business-rules/contracts.md`.
 
 ---
 

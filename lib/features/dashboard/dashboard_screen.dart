@@ -7,6 +7,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../settings/providers/company_profile_provider.dart';
 import '../settings/utils/company_profile_presenter.dart';
+import '../billing/models/invoice_list_summary.dart';
+import '../billing/providers/invoice_list_summary_provider.dart';
+import '../billing/widgets/invoice_summary_cards.dart';
 import '../contracts/models/contract_list_summary.dart';
 import '../contracts/providers/contract_list_summary_provider.dart';
 import '../contracts/widgets/contract_summary_cards.dart';
@@ -63,6 +66,8 @@ class DashboardScreen extends ConsumerWidget {
         context.push(AppRoutes.vehicles);
       case DashboardModuleId.contracts:
         context.push(AppRoutes.contracts);
+      case DashboardModuleId.billing:
+        context.push(AppRoutes.invoices);
       case DashboardModuleId.settings:
         context.push(AppRoutes.settings);
     }
@@ -77,6 +82,7 @@ class DashboardScreen extends ConsumerWidget {
     final teamSummaryAsync = ref.watch(teamListSummaryProvider);
     final vehicleSummaryAsync = ref.watch(vehicleListSummaryProvider);
     final contractSummaryAsync = ref.watch(contractListSummaryProvider);
+    final invoiceSummaryAsync = ref.watch(invoiceListSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -181,6 +187,21 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       error: (_, _) => const ContractSummaryCards(
                         summary: ContractListSummary.empty,
+                      ),
+                    ),
+                    const SizedBox(height: _sectionSpacing),
+                    Text(
+                      'Faturamento',
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: _gridSpacing),
+                    invoiceSummaryAsync.when(
+                      data: (summary) => InvoiceSummaryCards(summary: summary),
+                      loading: () => const InvoiceSummaryCards(
+                        summary: InvoiceListSummary.empty,
+                      ),
+                      error: (_, _) => const InvoiceSummaryCards(
+                        summary: InvoiceListSummary.empty,
                       ),
                     ),
                   ],

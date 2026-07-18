@@ -148,7 +148,7 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 
 ## Contratos & Assinaturas — evoluções avançadas
 
-**Status:** MVP do módulo entregue na `TASK-031` (implementada; commits pendentes de aprovação). Ver `docs/tasks/TASK-031.md` e `docs/business-rules/contracts.md`.
+**Status:** MVP do módulo entregue na `TASK-031`. Ver `docs/tasks/TASK-031.md` e `docs/business-rules/contracts.md`.
 
 ### O que já foi entregue (TASK-031)
 
@@ -166,3 +166,27 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 - Auditoria de eventos de assinatura.
 - Hidratação do módulo Contratos no bootstrap do app.
 - Notificações de envio/expiração.
+
+---
+
+## Faturamento & Documentos Fiscais — evoluções avançadas
+
+**Status:** MVP do módulo entregue na `TASK-032` (implementada; commits pendentes de aprovação). Ver `docs/tasks/TASK-032.md` e `docs/business-rules/billing.md`.
+
+### O que já foi entregue (TASK-032)
+
+- Faturas e itens persistidos em Drift (`schemaVersion` 12).
+- Número automático `INV-YYYY-####`; FK quote RESTRICT; items CASCADE; totais recalculados no serviço.
+- Matriz única `InvoiceStatusTransitions`; workflow consulta a matriz e resume ações para a UI.
+- UI de faturamentos, seção no orçamento e resumo no dashboard.
+- `InvoiceFinancialSummary` derivado (sem escrever no módulo Financeiro).
+- Fluxo interno `draft → issued → paid`, com cancelamento e bloqueios de regressão/repetição.
+
+### O que permanece futuro (fora do escopo da TASK-032)
+
+- Geração de PDF da fatura.
+- Emissão fiscal real (NF-e / NFS-e).
+- Boleto, PIX e integração bancária.
+- Conciliação automática, webhooks e envio externo.
+- Criação automática de `FinancialEntry` a partir da fatura.
+- Hidratação do módulo Faturamento no bootstrap do app.

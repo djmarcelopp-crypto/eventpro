@@ -22,6 +22,7 @@ import 'widgets/quote_status_actions.dart';
 import 'widgets/quote_status_badge.dart';
 import 'widgets/quote_status_history_list.dart';
 import 'widgets/quote_team_section.dart';
+import '../billing/widgets/quote_invoice_section.dart';
 import '../logistics/widgets/quote_vehicle_section.dart';
 import '../contracts/widgets/quote_contract_section.dart';
 
@@ -261,6 +262,8 @@ class _QuoteDetailScreenState extends ConsumerState<QuoteDetailScreen> {
                     QuoteVehicleSection(quoteId: resolvedQuote.id),
                     const SizedBox(height: 16),
                     QuoteContractSection(quoteId: resolvedQuote.id),
+                    const SizedBox(height: 16),
+                    QuoteInvoiceSection(quoteId: resolvedQuote.id),
                     const SizedBox(height: 16),
                     QuoteDetailSection(
                       title: 'Financeiro',

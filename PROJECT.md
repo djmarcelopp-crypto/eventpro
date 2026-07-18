@@ -146,23 +146,32 @@ DJ Marcelo PP Festas e Eventos
 
 | Checkpoint | Descrição | Status |
 |------------|-----------|--------|
+| **CP-A…G** | Domínio → persistência v11 → serviços → UI → workflow → docs | ✅ Concluído |
+
+**TASK-031 implementada.** Documento final: `docs/tasks/TASK-031.md`. Regras: `docs/business-rules/contracts.md`.
+
+### TASK-032 — Faturamento & Documentos Fiscais
+
+| Checkpoint | Descrição | Status |
+|------------|-----------|--------|
 | **CP-A** | Fundação do domínio (entidades, enums, validadores, contratos) | ✅ Concluído |
-| **CP-B** | Persistência Drift — templates/contratos, migração v10→v11 | ✅ Concluído |
-| **CP-C** | Casos de uso — ContractService / ContractTemplateService | ✅ Concluído |
-| **CP-D** | QuoteContractSummary + QuoteContractService | ✅ Concluído |
+| **CP-B** | Persistência Drift — invoices/items, migração v11→v12 | ✅ Concluído |
+| **CP-C** | Casos de uso — InvoiceService (numeração, totais, transições) | ✅ Concluído |
+| **CP-D** | QuoteInvoiceSummary + QuoteInvoiceService | ✅ Concluído |
+| **Gate** | Numeração, totais, matriz única, finance desacoplado | ✅ Concluído |
 | **CP-E** | UI, providers, dashboard e seção em orçamentos | ✅ Concluído |
-| **CP-F** | Fluxo contratual interno (workflow + summary + providers) | ✅ Concluído |
+| **CP-F** | Fluxo de faturamento (workflow + summary + providers) | ✅ Concluído |
 | **CP-G** | Documentação final da task | ✅ Concluído |
 
-**TASK-031 implementada.** Documento final: `docs/tasks/TASK-031.md`. Regras: `docs/business-rules/contracts.md`. Commits aguardam aprovação do PO/CTO.
+**TASK-032 implementada.** Documento final: `docs/tasks/TASK-032.md`. Regras: `docs/business-rules/billing.md`. Commits aguardam aprovação do PO/CTO.
 
 ### Branch e commit atuais
 
 | Campo | Valor |
 |-------|-------|
-| Branch | `cursor/task-031-contratos` |
-| Último commit | *(base da branch — TASK-030 tip)* |
-| Alterações locais | TASK-031 CP-A…G implementados e verificados — **sem commit** (aguardando PO/CTO) |
+| Branch | `cursor/task-032-faturamento` |
+| Último commit | *(base da branch — TASK-031 tip)* |
+| Alterações locais | TASK-032 CP-A…G (+ gate Bloco 1) implementados e verificados — **sem commit** (aguardando PO/CTO) |
 | Próximo checkpoint | Nenhum — aguardando versionamento e definição da próxima task pelo Product Owner |
 
 ---
@@ -192,6 +201,7 @@ O sistema deverá possuir:
 - Equipe & Escalas (roster, vínculo a orçamentos e disponibilidade dinâmica — TASK-029)
 - Logística & Transporte (frota, vínculo a orçamentos e disponibilidade logística dinâmica — TASK-030)
 - Contratos & Assinaturas (modelos, contratos por orçamento e fluxo interno de status — TASK-031; PDF/assinatura digital — fases futuras)
+- Faturamento & Documentos Fiscais (faturas/itens por orçamento, totais e fluxo interno — TASK-032; PDF/NF-e/boleto/PIX/bancos — fases futuras)
 - Gráficos/exportações financeiras avançadas, reservas efetivas de estoque, check-in/folha de equipe, GPS/rotas e IA — **fases futuras**
 
 ---
@@ -212,7 +222,8 @@ Funcionalidades entregues ou em desenvolvimento no MVP:
 - Equipe & Escalas: funções e colaboradores (schema v7), vínculo `quote_team_members` (schema v8), UI de gestão e disponibilidade dinâmica sem persistir estado derivado (TASK-029)
 - Logística & Transporte: tipos e veículos (schema v9), vínculo `quote_vehicles` (schema v10), UI de gestão e disponibilidade logística dinâmica sem persistir estado derivado (TASK-030)
 - Contratos & Assinaturas: templates e contratos (schema v11), UI de gestão, integração com orçamento/dashboard e fluxo interno de status sem PDF/assinatura externa (TASK-031)
-- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro, Estoque, Equipe, Logística e Contratos carregam sob demanda ao abrir o módulo
+- Faturamento & Documentos Fiscais: invoices/items (schema v12), UI de gestão, integração com orçamento/dashboard, resumo financeiro derivado e fluxo interno de status sem PDF/NF-e/banco (TASK-032)
+- Hidratação automática de clientes, catálogo, configurações da empresa, orçamentos e bloqueios da Agenda ao iniciar o app (TASK-024 CP-F; TASK-025 CP-E); Financeiro, Estoque, Equipe, Logística, Contratos e Faturamento carregam sob demanda ao abrir o módulo
 
 ---
 

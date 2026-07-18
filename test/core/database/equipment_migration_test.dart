@@ -112,7 +112,7 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        expect(upgraded.schemaVersion, 11);
+        expect(upgraded.schemaVersion, 12);
 
         final clients = await upgraded.select(upgraded.clients).get();
         expect(clients.single.id, 'client-v4');
@@ -190,7 +190,7 @@ void main() {
         final upgraded = AppDatabase.forTesting(dbFile);
         addTearDown(upgraded.close);
 
-        expect(upgraded.schemaVersion, 11);
+        expect(upgraded.schemaVersion, 12);
 
         final clients = await upgraded.select(upgraded.clients).get();
         expect(clients.single.id, 'client-v1');

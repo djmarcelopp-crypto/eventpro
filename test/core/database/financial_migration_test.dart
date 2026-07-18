@@ -96,7 +96,7 @@ void main() {
 
         // AppDatabase is now at v5 (TASK-028 CP-B); a v2 database upgrades
         // through v3 (financial), v4 (quoteId) and v5 (equipment tables).
-        expect(upgraded.schemaVersion, 11);
+        expect(upgraded.schemaVersion, 12);
 
         final tableNames = await upgraded
             .customSelect(
@@ -201,7 +201,7 @@ void main() {
 
         // Direct v1 -> v5 jump: agenda_blocks, financial tables, quoteId and
         // equipment tables are all created across onUpgrade steps.
-        expect(upgraded.schemaVersion, 11);
+        expect(upgraded.schemaVersion, 12);
 
         expect(await upgraded.select(upgraded.clients).get(), hasLength(1));
         expect(

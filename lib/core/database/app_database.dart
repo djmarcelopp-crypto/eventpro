@@ -26,6 +26,8 @@ part 'daos/vehicles_dao.dart';
 part 'daos/quote_vehicles_dao.dart';
 part 'daos/contract_templates_dao.dart';
 part 'daos/contracts_dao.dart';
+part 'daos/invoices_dao.dart';
+part 'daos/invoice_items_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -55,6 +57,8 @@ part 'daos/contracts_dao.dart';
     QuoteVehicles,
     ContractTemplates,
     Contracts,
+    Invoices,
+    InvoiceItems,
   ],
   daos: [
     ClientsDao,
@@ -75,6 +79,8 @@ part 'daos/contracts_dao.dart';
     QuoteVehiclesDao,
     ContractTemplatesDao,
     ContractsDao,
+    InvoicesDao,
+    InvoiceItemsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -89,7 +95,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -166,6 +172,12 @@ class AppDatabase extends _$AppDatabase {
       if (from <= 10 && to >= 11) {
         await migrator.createTable(contractTemplates);
         await migrator.createTable(contracts);
+      }
+      // TASK-032 CP-B — domínio Faturamento. Nenhuma tabela existente é
+      // alterada; apenas `invoices` e `invoice_items`.
+      if (from <= 11 && to >= 12) {
+        await migrator.createTable(invoices);
+        await migrator.createTable(invoiceItems);
       }
     },
   );

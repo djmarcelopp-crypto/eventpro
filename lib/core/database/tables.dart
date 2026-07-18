@@ -613,3 +613,64 @@ class Contracts extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+/// Invoices linked to quotes (TASK-032 CP-B).
+@DataClassName('InvoiceRow')
+@TableIndex(name: 'idx_invoices_quote_id', columns: {#quoteId})
+@TableIndex(name: 'idx_invoices_status', columns: {#status})
+@TableIndex(name: 'idx_invoices_number', columns: {#invoiceNumber})
+class Invoices extends Table {
+  @override
+  String get tableName => 'invoices';
+
+  TextColumn get id => text()();
+  TextColumn get quoteId => text().references(
+        Quotes,
+        #id,
+        onDelete: KeyAction.restrict,
+        onUpdate: KeyAction.cascade,
+      )();
+  TextColumn get invoiceNumber => text()();
+
+  /// Serialized [InvoiceType] name.
+  TextColumn get type => text()();
+
+  /// Serialized [InvoiceStatus] name.
+  TextColumn get status => text()();
+  IntColumn get issueDate => integer().nullable()();
+  IntColumn get dueDate => integer().nullable()();
+  IntColumn get paidAt => integer().nullable()();
+  IntColumn get subtotalCents => integer()();
+  IntColumn get taxCents => integer()();
+  IntColumn get discountCents => integer()();
+  IntColumn get totalCents => integer()();
+  TextColumn get notes => text()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Invoice line items (TASK-032 CP-B).
+@DataClassName('InvoiceItemRow')
+@TableIndex(name: 'idx_invoice_items_invoice_id', columns: {#invoiceId})
+class InvoiceItems extends Table {
+  @override
+  String get tableName => 'invoice_items';
+
+  TextColumn get id => text()();
+  TextColumn get invoiceId => text().references(
+        Invoices,
+        #id,
+        onDelete: KeyAction.cascade,
+        onUpdate: KeyAction.cascade,
+      )();
+  TextColumn get description => text()();
+  RealColumn get quantity => real()();
+  IntColumn get unitPriceCents => integer()();
+  IntColumn get totalPriceCents => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

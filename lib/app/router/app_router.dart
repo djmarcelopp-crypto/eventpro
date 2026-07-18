@@ -24,6 +24,10 @@ import '../../features/logistics/quote_vehicles_screen.dart';
 import '../../features/logistics/vehicle_detail_screen.dart';
 import '../../features/logistics/vehicle_types_screen.dart';
 import '../../features/logistics/vehicles_screen.dart';
+import '../../features/billing/invoice_detail_screen.dart';
+import '../../features/billing/invoices_screen.dart';
+import '../../features/billing/new_invoice_screen.dart';
+import '../../features/billing/quote_invoices_screen.dart';
 import '../../features/contracts/contract_detail_screen.dart';
 import '../../features/contracts/contract_templates_screen.dart';
 import '../../features/contracts/contracts_screen.dart';
@@ -62,6 +66,8 @@ abstract class AppRoutes {
   static String quotesVehicles(String id) => '$quotes/$id/vehicles';
 
   static String quotesContracts(String id) => '$quotes/$id/contracts';
+
+  static String quotesInvoices(String id) => '$quotes/$id/invoices';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -118,6 +124,11 @@ abstract class AppRoutes {
   static const contractTemplates = '/contracts/templates';
 
   static String contractDetail(String id) => '$contracts/$id';
+
+  static const invoices = '/invoices';
+  static const invoicesNew = '/invoices/new';
+
+  static String invoiceDetail(String id) => '$invoices/$id';
 }
 
 abstract class AppRouter {
@@ -203,6 +214,12 @@ abstract class AppRouter {
               GoRoute(
                 path: 'contracts',
                 builder: (context, state) => QuoteContractsScreen(
+                  quoteId: state.pathParameters['id']!,
+                ),
+              ),
+              GoRoute(
+                path: 'invoices',
+                builder: (context, state) => QuoteInvoicesScreen(
                   quoteId: state.pathParameters['id']!,
                 ),
               ),
@@ -392,6 +409,25 @@ abstract class AppRouter {
             path: ':id',
             builder: (context, state) => ContractDetailScreen(
               contractId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.invoices,
+        builder: (context, state) => const InvoicesScreen(),
+        routes: [
+          GoRoute(
+            path: 'new',
+            builder: (context, state) {
+              final quoteId = state.uri.queryParameters['quoteId'];
+              return NewInvoiceScreen(initialQuoteId: quoteId);
+            },
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => InvoiceDetailScreen(
+              invoiceId: state.pathParameters['id']!,
             ),
           ),
         ],

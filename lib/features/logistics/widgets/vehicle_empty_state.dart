@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/feedback/app_empty_state.dart';
 
 class VehicleEmptyState extends StatelessWidget {
   const VehicleEmptyState({super.key, required this.onAdd});
@@ -11,29 +9,13 @@ class VehicleEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(32),
-      child: Column(
-        children: [
-          const Icon(Icons.local_shipping_outlined, size: 48, color: AppColors.primary),
-          const SizedBox(height: 16),
-          Text('Nenhum veículo cadastrado', style: AppTextStyles.titleMedium),
-          const SizedBox(height: 8),
-          Text(
-            'Cadastre a frota para planejar transporte nos orçamentos.',
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.white.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 24),
-          PrimaryButton(
-            key: const Key('vehicle_empty_add'),
-            label: 'Novo veículo',
-            onPressed: onAdd,
-          ),
-        ],
-      ),
+    return AppEmptyState(
+      icon: Icons.local_shipping_outlined,
+      title: 'Nenhum veículo cadastrado',
+      message: 'Cadastre a frota para planejar transporte nos orçamentos.',
+      primaryActionLabel: 'Novo veículo',
+      primaryActionKey: const Key('vehicle_empty_add'),
+      onPrimaryAction: onAdd,
     );
   }
 }

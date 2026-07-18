@@ -43,6 +43,7 @@ import '../../features/quotes/quotes_screen.dart';
 import '../../features/settings/company_profile_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../splash_screen.dart';
+import '../../core/navigation/app_shell.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 
 abstract class AppRoutes {
@@ -139,297 +140,302 @@ abstract class AppRouter {
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
       ),
-      GoRoute(
-        path: AppRoutes.dashboard,
-        builder: (context, state) => const DashboardScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.catalog,
-        builder: (context, state) => const CatalogScreen(),
+      ShellRoute(
+        builder: (context, state, child) => AppShell(child: child),
         routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewCatalogItemScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => CatalogItemDetailScreen(
-              itemId: state.pathParameters['id']!,
+        GoRoute(
+          path: AppRoutes.dashboard,
+          builder: (context, state) => const DashboardScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.catalog,
+          builder: (context, state) => const CatalogScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewCatalogItemScreen(),
             ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewCatalogItemScreen(
-                  itemId: state.pathParameters['id'],
-                ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => CatalogItemDetailScreen(
+                itemId: state.pathParameters['id']!,
               ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.quotes,
-        builder: (context, state) => const QuotesScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewQuoteScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => QuoteDetailScreen(
-              quoteId: state.pathParameters['id']!,
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewCatalogItemScreen(
+                    itemId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
             ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewQuoteScreen(
-                  quoteId: state.pathParameters['id'],
-                ),
-              ),
-              GoRoute(
-                path: 'pdf',
-                builder: (context, state) => QuotePdfPreviewScreen(
-                  quoteId: state.pathParameters['id']!,
-                ),
-              ),
-              GoRoute(
-                path: 'equipment',
-                builder: (context, state) => QuoteEquipmentScreen(
-                  quoteId: state.pathParameters['id']!,
-                ),
-              ),
-              GoRoute(
-                path: 'team',
-                builder: (context, state) => QuoteTeamScreen(
-                  quoteId: state.pathParameters['id']!,
-                ),
-              ),
-              GoRoute(
-                path: 'vehicles',
-                builder: (context, state) => QuoteVehiclesScreen(
-                  quoteId: state.pathParameters['id']!,
-                ),
-              ),
-              GoRoute(
-                path: 'contracts',
-                builder: (context, state) => QuoteContractsScreen(
-                  quoteId: state.pathParameters['id']!,
-                ),
-              ),
-              GoRoute(
-                path: 'invoices',
-                builder: (context, state) => QuoteInvoicesScreen(
-                  quoteId: state.pathParameters['id']!,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.clients,
-        builder: (context, state) => const ClientsScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewClientScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => ClientDetailScreen(
-              clientId: state.pathParameters['id']!,
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.quotes,
+          builder: (context, state) => const QuotesScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewQuoteScreen(),
             ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewClientScreen(
-                  clientId: state.pathParameters['id'],
-                ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => QuoteDetailScreen(
+                quoteId: state.pathParameters['id']!,
               ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.settings,
-        builder: (context, state) => const SettingsScreen(),
-        routes: [
-          GoRoute(
-            path: 'company',
-            builder: (context, state) => const CompanyProfileScreen(),
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.agenda,
-        builder: (context, state) => const AgendaScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewAgendaBlockScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => AgendaBlockDetailScreen(
-              blockId: state.pathParameters['id']!,
-            ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewAgendaBlockScreen(
-                  blockId: state.pathParameters['id'],
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewQuoteScreen(
+                    quoteId: state.pathParameters['id'],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.financial,
-        builder: (context, state) => const FinancialScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewFinancialEntryScreen(),
-          ),
-          GoRoute(
-            path: 'categories',
-            builder: (context, state) => const FinancialCategoriesScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => FinancialEntryDetailScreen(
-              entryId: state.pathParameters['id']!,
-            ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewFinancialEntryScreen(
-                  entryId: state.pathParameters['id'],
+                GoRoute(
+                  path: 'pdf',
+                  builder: (context, state) => QuotePdfPreviewScreen(
+                    quoteId: state.pathParameters['id']!,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.equipment,
-        builder: (context, state) => const EquipmentScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewEquipmentScreen(),
-          ),
-          GoRoute(
-            path: 'categories',
-            builder: (context, state) => const EquipmentCategoriesScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => EquipmentDetailScreen(
-              equipmentId: state.pathParameters['id']!,
-            ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewEquipmentScreen(
-                  equipmentId: state.pathParameters['id'],
+                GoRoute(
+                  path: 'equipment',
+                  builder: (context, state) => QuoteEquipmentScreen(
+                    quoteId: state.pathParameters['id']!,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.team,
-        builder: (context, state) => const TeamScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewTeamMemberScreen(),
-          ),
-          GoRoute(
-            path: 'roles',
-            builder: (context, state) => const TeamRolesScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => TeamMemberDetailScreen(
-              memberId: state.pathParameters['id']!,
-            ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewTeamMemberScreen(
-                  memberId: state.pathParameters['id'],
+                GoRoute(
+                  path: 'team',
+                  builder: (context, state) => QuoteTeamScreen(
+                    quoteId: state.pathParameters['id']!,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.vehicles,
-        builder: (context, state) => const VehiclesScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) => const NewVehicleScreen(),
-          ),
-          GoRoute(
-            path: 'types',
-            builder: (context, state) => const VehicleTypesScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => VehicleDetailScreen(
-              vehicleId: state.pathParameters['id']!,
-            ),
-            routes: [
-              GoRoute(
-                path: 'edit',
-                builder: (context, state) => NewVehicleScreen(
-                  vehicleId: state.pathParameters['id'],
+                GoRoute(
+                  path: 'vehicles',
+                  builder: (context, state) => QuoteVehiclesScreen(
+                    quoteId: state.pathParameters['id']!,
+                  ),
                 ),
+                GoRoute(
+                  path: 'contracts',
+                  builder: (context, state) => QuoteContractsScreen(
+                    quoteId: state.pathParameters['id']!,
+                  ),
+                ),
+                GoRoute(
+                  path: 'invoices',
+                  builder: (context, state) => QuoteInvoicesScreen(
+                    quoteId: state.pathParameters['id']!,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.clients,
+          builder: (context, state) => const ClientsScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewClientScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => ClientDetailScreen(
+                clientId: state.pathParameters['id']!,
               ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.contracts,
-        builder: (context, state) => const ContractsScreen(),
-        routes: [
-          GoRoute(
-            path: 'templates',
-            builder: (context, state) => const ContractTemplatesScreen(),
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => ContractDetailScreen(
-              contractId: state.pathParameters['id']!,
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewClientScreen(
+                    clientId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
-      GoRoute(
-        path: AppRoutes.invoices,
-        builder: (context, state) => const InvoicesScreen(),
-        routes: [
-          GoRoute(
-            path: 'new',
-            builder: (context, state) {
-              final quoteId = state.uri.queryParameters['quoteId'];
-              return NewInvoiceScreen(initialQuoteId: quoteId);
-            },
-          ),
-          GoRoute(
-            path: ':id',
-            builder: (context, state) => InvoiceDetailScreen(
-              invoiceId: state.pathParameters['id']!,
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.settings,
+          builder: (context, state) => const SettingsScreen(),
+          routes: [
+            GoRoute(
+              path: 'company',
+              builder: (context, state) => const CompanyProfileScreen(),
             ),
-          ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.agenda,
+          builder: (context, state) => const AgendaScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewAgendaBlockScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => AgendaBlockDetailScreen(
+                blockId: state.pathParameters['id']!,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewAgendaBlockScreen(
+                    blockId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.financial,
+          builder: (context, state) => const FinancialScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewFinancialEntryScreen(),
+            ),
+            GoRoute(
+              path: 'categories',
+              builder: (context, state) => const FinancialCategoriesScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => FinancialEntryDetailScreen(
+                entryId: state.pathParameters['id']!,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewFinancialEntryScreen(
+                    entryId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.equipment,
+          builder: (context, state) => const EquipmentScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewEquipmentScreen(),
+            ),
+            GoRoute(
+              path: 'categories',
+              builder: (context, state) => const EquipmentCategoriesScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => EquipmentDetailScreen(
+                equipmentId: state.pathParameters['id']!,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewEquipmentScreen(
+                    equipmentId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.team,
+          builder: (context, state) => const TeamScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewTeamMemberScreen(),
+            ),
+            GoRoute(
+              path: 'roles',
+              builder: (context, state) => const TeamRolesScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => TeamMemberDetailScreen(
+                memberId: state.pathParameters['id']!,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewTeamMemberScreen(
+                    memberId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.vehicles,
+          builder: (context, state) => const VehiclesScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const NewVehicleScreen(),
+            ),
+            GoRoute(
+              path: 'types',
+              builder: (context, state) => const VehicleTypesScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => VehicleDetailScreen(
+                vehicleId: state.pathParameters['id']!,
+              ),
+              routes: [
+                GoRoute(
+                  path: 'edit',
+                  builder: (context, state) => NewVehicleScreen(
+                    vehicleId: state.pathParameters['id'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.contracts,
+          builder: (context, state) => const ContractsScreen(),
+          routes: [
+            GoRoute(
+              path: 'templates',
+              builder: (context, state) => const ContractTemplatesScreen(),
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => ContractDetailScreen(
+                contractId: state.pathParameters['id']!,
+              ),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: AppRoutes.invoices,
+          builder: (context, state) => const InvoicesScreen(),
+          routes: [
+            GoRoute(
+              path: 'new',
+              builder: (context, state) {
+                final quoteId = state.uri.queryParameters['quoteId'];
+                return NewInvoiceScreen(initialQuoteId: quoteId);
+              },
+            ),
+            GoRoute(
+              path: ':id',
+              builder: (context, state) => InvoiceDetailScreen(
+                invoiceId: state.pathParameters['id']!,
+              ),
+            ),
+          ],
+        ),
         ],
       ),
     ],

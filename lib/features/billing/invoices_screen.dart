@@ -6,6 +6,10 @@ import '../../app/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_page_header.dart';
+import '../../core/widgets/feedback/app_empty_state.dart';
+import '../../core/widgets/feedback/app_error_state.dart';
+import '../../core/widgets/feedback/app_loading_state.dart';
 import '../quotes/utils/quote_money_display.dart';
 import 'models/invoice_list_summary.dart';
 import 'models/invoice_status.dart';
@@ -28,18 +32,8 @@ class InvoicesScreen extends ConsumerWidget {
     final filters = ref.watch(invoiceFiltersProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Faturamento',
-          style: AppTextStyles.headlineMedium.copyWith(fontSize: 20),
-        ),
-        backgroundColor: AppColors.background,
-        foregroundColor: AppColors.white,
-        elevation: 0,
+      appBar: AppPageHeader(
+        title: 'Faturamento',
         actions: [
           IconButton(
             key: const Key('invoice_create_button'),
@@ -90,12 +84,14 @@ class InvoicesScreen extends ConsumerWidget {
                 ),
               ),
               if (items.isEmpty)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: Text('Nenhum faturamento encontrado'),
-                    ),
+                SliverToBoxAdapter(
+                  child: AppEmptyState(
+                    icon: Icons.receipt_long_outlined,
+                    title: 'Nenhum faturamento encontrado',
+                    message:
+                        'Crie um faturamento ou ajuste os filtros para visualizar resultados.',
+                    primaryActionLabel: 'Novo faturamento',
+                    onPrimaryAction: () => context.push(AppRoutes.invoicesNew),
                   ),
                 )
               else
@@ -165,8 +161,8 @@ class InvoicesScreen extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(child: Text('Erro: $error')),
+        loading: () => const AppLoadingState(),
+        error: (error, _) => AppErrorState(message: '$error'),
       ),
     );
   }

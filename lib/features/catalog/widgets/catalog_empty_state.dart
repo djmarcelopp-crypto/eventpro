@@ -17,6 +17,8 @@ class CatalogEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Catalog keeps a dedicated visual placeholder; CTA copy stays consistent
+    // with the shared empty-state language used across modules.
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -37,7 +39,7 @@ class CatalogEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Cadastre equipamentos e serviços para usar nos orçamentos',
+                'Cadastre equipamentos e serviços para usar nos orçamentos.',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyMedium,
               ),

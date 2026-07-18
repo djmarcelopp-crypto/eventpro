@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/primary_button.dart';
+import '../../../core/widgets/feedback/app_empty_state.dart';
 
 class FinancialEmptyState extends StatelessWidget {
   const FinancialEmptyState({
@@ -18,54 +16,24 @@ class FinancialEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 400),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.account_balance_wallet_outlined,
-                size: 48,
-                color: AppColors.mutedWhite,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                hasActiveFilters
-                    ? 'Nenhum lançamento com esses filtros'
-                    : 'Nenhum lançamento financeiro',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                hasActiveFilters
-                    ? 'Ajuste ou limpe os filtros para ver outros lançamentos.'
-                    : 'Registre receitas e despesas para acompanhar o saldo.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: AppColors.mutedWhite,
-                ),
-              ),
-              const SizedBox(height: 20),
-              if (hasActiveFilters && onClearFilters != null)
-                OutlinedButton(
-                  key: const Key('financial_empty_clear_filters'),
-                  onPressed: onClearFilters,
-                  child: const Text('Limpar filtros'),
-                )
-              else
-                PrimaryButton(
-                  key: const Key('financial_empty_new_entry'),
-                  label: 'Novo lançamento',
-                  onPressed: onNewEntry,
-                ),
-            ],
-          ),
-        ),
-      ),
+    if (hasActiveFilters && onClearFilters != null) {
+      return AppEmptyState(
+        icon: Icons.account_balance_wallet_outlined,
+        title: 'Nenhum lançamento com esses filtros',
+        message: 'Ajuste ou limpe os filtros para ver outros lançamentos.',
+        primaryActionLabel: 'Limpar filtros',
+        primaryActionKey: const Key('financial_empty_clear_filters'),
+        onPrimaryAction: onClearFilters,
+      );
+    }
+
+    return AppEmptyState(
+      icon: Icons.account_balance_wallet_outlined,
+      title: 'Nenhum lançamento financeiro',
+      message: 'Registre receitas e despesas para acompanhar o saldo.',
+      primaryActionLabel: 'Novo lançamento',
+      primaryActionKey: const Key('financial_empty_new_entry'),
+      onPrimaryAction: onNewEntry,
     );
   }
 }

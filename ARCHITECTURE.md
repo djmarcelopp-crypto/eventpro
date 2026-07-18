@@ -1,6 +1,6 @@
 # Arquitetura — EventPro ERP
 
-Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025), a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026) —, o módulo Financeiro com categorias, lançamentos, resumos e relatórios por período (TASK-027), o módulo Estoque & Equipamentos com inventário, vínculo a orçamentos e disponibilidade dinâmica (TASK-028), o módulo Equipe & Escalas com roster, vínculo a orçamentos e disponibilidade dinâmica (TASK-029) e o módulo Logística & Transporte com frota, vínculo a orçamentos e disponibilidade logística dinâmica (TASK-030).
+Documentação oficial da arquitetura do EventPro ERP. Descreve a estrutura atual do projeto, incluindo a camada de persistência local com Drift/SQLite (TASK-024), o módulo de Agenda com ocupação computada (TASK-025), a Agenda Inteligente — consultas de disponibilidade em português, deterministas e sem persistência (TASK-026) —, o módulo Financeiro com categorias, lançamentos, resumos e relatórios por período (TASK-027), o módulo Estoque & Equipamentos com inventário, vínculo a orçamentos e disponibilidade dinâmica (TASK-028), o módulo Equipe & Escalas com roster, vínculo a orçamentos e disponibilidade dinâmica (TASK-029), o módulo Logística & Transporte com frota, vínculo a orçamentos e disponibilidade logística dinâmica (TASK-030) e o módulo Contratos & Assinaturas com modelos, contratos vinculados a orçamentos e fluxo interno de status (TASK-031).
 
 ---
 
@@ -56,6 +56,7 @@ Organização **feature-first**: cada módulo do MVP vive em `lib/features/`.
 | Estoque & Equipamentos | `equipment/` | ✅ Drift — `equipment_categories` + `equipment` (TASK-028 CP-B, schema v5); `quote_equipment` (CP-D, schema v6); disponibilidade **computada** (CP-F), nunca persistida; carregamento sob demanda |
 | Equipe & Escalas | `team/` | ✅ Drift — `team_roles` + `team_members` (TASK-029 CP-B, schema v7); `quote_team_members` (CP-D, schema v8); disponibilidade **computada** (CP-F), nunca persistida; carregamento sob demanda |
 | Logística & Transporte | `logistics/` | ✅ Drift — `vehicle_types` + `vehicles` (TASK-030 CP-B, schema v9); `quote_vehicles` (CP-D, schema v10); disponibilidade **computada** (CP-F), nunca persistida; carregamento sob demanda |
+| Contratos & Assinaturas | `contracts/` | ✅ Drift — `contract_templates` + `contracts` (TASK-031 CP-B, schema v11); fluxo contratual interno (CP-F); sem PDF/assinatura externa; carregamento sob demanda |
 
 ### Estrutura interna de uma feature (quando complexa)
 
@@ -134,6 +135,12 @@ appDatabaseProvider
 | `quoteVehicleProvider` | Logística | `AsyncNotifierProvider.family` | Linhas de logística por `quoteId` |
 | `vehicleAvailabilityProvider` | Logística | `FutureProvider` | Disponibilidade **computada** (TASK-030 CP-F) |
 | `logisticsPlanSummaryProvider` | Logística | `FutureProvider` | Resumo de planejamento + frete planejado |
+| `contractProvider` | Contratos | `AsyncNotifierProvider` | Contratos; load sob demanda via serviço (TASK-031 CP-E) |
+| `contractTemplateProvider` | Contratos | `AsyncNotifierProvider` | Modelos de contrato |
+| `quoteContractProvider` | Contratos | `AsyncNotifierProvider.family` | Contratos por `quoteId` |
+| `contractListSummaryProvider` | Contratos | `Provider` | Contagens para listagem/dashboard |
+| `contractWorkflowServiceProvider` | Contratos | `Provider` | Máquina de estados contratual (TASK-031 CP-F) |
+| `contractWorkflowSummaryProvider` | Contratos | `Provider.family` | Próximos status permitidos por contrato |
 | `teamAvailabilitySummaryProvider` | Equipe | `FutureProvider` | Totais disponíveis / indisponíveis / conflitos / percentual |
 | `appBootstrapProvider` | Global | `AsyncNotifierProvider<void>` | Orquestra a hidratação dos cinco notifiers no startup (TASK-024 CP-F; estendido na TASK-025 CP-E) — **não** inclui Financeiro, Estoque nem Equipe nesta fase |
 
@@ -196,7 +203,7 @@ Operações de pacotes (catálogo) usam transações no DAO (`CatalogDao`) para 
 
 - **Drift** é a camada ORM/type-safe sobre **SQLite**.
 - Banco local: arquivo `eventpro.sqlite` (path resolvido por `database_path.dart`).
-- `schemaVersion`: **10** (v1 TASK-024; v2 TASK-025 `agenda_blocks`; v3–v4 TASK-027 financeiro; v5–v6 TASK-028 estoque; v7–v8 TASK-029 equipe; v9–v10 TASK-030 logística).
+- `schemaVersion`: **11** (v1 TASK-024; v2 TASK-025 `agenda_blocks`; v3–v4 TASK-027 financeiro; v5–v6 TASK-028 estoque; v7–v8 TASK-029 equipe; v9–v10 TASK-030 logística; v11 TASK-031 contratos).
 - FKs habilitadas via `PRAGMA foreign_keys = ON`.
 
 ### Estrutura em `lib/core/database/`
@@ -225,9 +232,14 @@ lib/core/database/
     team_roles_dao.dart
     team_members_dao.dart
     quote_team_members_dao.dart
+    vehicle_types_dao.dart
+    vehicles_dao.dart
+    quote_vehicles_dao.dart
+    contract_templates_dao.dart
+    contracts_dao.dart
 ```
 
-### Tabelas (schema v8)
+### Tabelas (schema v11)
 
 | Tabela | Feature | Status DAO | Desde |
 |--------|---------|------------|-------|
@@ -248,6 +260,8 @@ lib/core/database/
 | `vehicle_types` | Logística | ✅ | v9 (TASK-030 CP-B) |
 | `vehicles` | Logística | ✅ | v9 (TASK-030 CP-B) |
 | `quote_vehicles` | Logística ↔ Orçamentos | ✅ | v10 (TASK-030 CP-D) |
+| `contract_templates` | Contratos | ✅ | v11 (TASK-031 CP-B) |
+| `contracts` | Contratos ↔ Orçamentos | ✅ | v11 (TASK-031 CP-B) |
 
 ### Geração de código
 
@@ -280,8 +294,9 @@ dart run build_runner build --delete-conflicting-outputs
 - **v7 → v8 (TASK-029 CP-D):** cria `quote_team_members` (`from <= 7 && to >= 8`); FKs CASCADE (quote) / RESTRICT (member, role); snapshot legado v7.
 - **v8 → v9 (TASK-030 CP-B):** cria `vehicle_types` e `vehicles` (`from <= 8 && to >= 9`); snapshot legado v8.
 - **v9 → v10 (TASK-030 CP-D):** cria `quote_vehicles` (`from <= 9 && to >= 10`); FKs CASCADE (quote) / RESTRICT (vehicle, driver); snapshot legado v9.
+- **v10 → v11 (TASK-031 CP-B):** cria `contract_templates` e `contracts` (`from <= 10 && to >= 11`); FK quote **RESTRICT**; FK template **SET NULL**; snapshot legado v10.
 
-**Quando `schemaVersion` precisar avançar novamente (v8 → v9+), seguir o mesmo checklist:**
+**Quando `schemaVersion` precisar avançar novamente (v11 → v12+), seguir o mesmo checklist:**
 
 1. **Snapshot do schema anterior** — antes de alterar `tables.dart`, gerar um snapshot do schema vigente (ex.: `dart run drift_dev schema dump`) para servir de fixture real de "banco legado" nos testes de migração.
 2. **Alteração incremental** — mudar `tables.dart` e incrementar `schemaVersion` em uma unidade por vez (nunca saltar versões).
@@ -291,7 +306,7 @@ dart run build_runner build --delete-conflicting-outputs
 6. **Suíte completa** — `flutter analyze` e `flutter test` completos antes de considerar a migração concluída.
 7. **Documentar** — registrar a migração em `TASKS.md`/`docs/tasks/` com o motivo da mudança e o par de versões tratado.
 
-Checklist validado na prática na TASK-025 CP-A, reaplicado na TASK-027 CP-B/CP-D, TASK-028 CP-B/CP-D, TASK-029 CP-B/CP-D e TASK-030 CP-B/CP-D; deve continuar sendo seguido em toda migração futura.
+Checklist validado na prática na TASK-025 CP-A, reaplicado na TASK-027 CP-B/CP-D, TASK-028 CP-B/CP-D, TASK-029 CP-B/CP-D, TASK-030 CP-B/CP-D e TASK-031 CP-B; deve continuar sendo seguido em toda migração futura.
 
 ---
 
@@ -451,6 +466,26 @@ Services (Vehicle / VehicleType / QuoteVehicle / Availability)
 - Disponibilidade = elegibilidade operacional + overlap de períodos logísticos (`draft`/`sent`/`approved`); resultado **nunca** persistido.
 - Detalhes em `docs/business-rules/logistics.md` e `docs/tasks/TASK-030.md`.
 
+### Contratos & Assinaturas — ciclo de vida (TASK-031)
+
+```text
+UI (ContractsScreen, templates, QuoteContractsScreen)
+      │
+      ▼
+Providers (contracts / templates / filters / quoteContract / workflow)
+      │
+      ▼
+Services (Contract / ContractTemplate / QuoteContract / Workflow)
+      │
+      └─► Drift repositories → DAOs → SQLite (v11)
+```
+
+- Modelos (`ContractTemplate`) e contratos (`Contract`) vinculados a orçamentos.
+- Fluxo interno: `draft → generated → sent → signed`, com `cancelled` / `expired` controlados por `ContractWorkflowService` (**única fonte** da matriz de `ContractStatus`).
+- `ContractService` persiste mudanças já autorizadas (`apply*`) — sem segunda matriz de transições.
+- **Não** gera PDF nem integra assinatura digital nesta task.
+- Detalhes em `docs/business-rules/contracts.md` e `docs/tasks/TASK-031.md`.
+
 ### Imagens e arquivos
 
 - Referências (`imageReference`, `logoReference`) ficam no SQLite.
@@ -486,23 +521,25 @@ lib/
     equipment/
     team/
     logistics/
+    contracts/
 
 test/                           # espelha lib/features/ e lib/core/
 docs/
   business-rules/               # regras por módulo
-  tasks/                        # histórico TASK-001 … TASK-030
+  tasks/                        # histórico TASK-001 … TASK-031
 ```
 
 ### Navegação (GoRouter)
 
 - Rotas nomeadas centralizadas em `lib/app/router/app_router.dart`.
-- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda, financeiro, estoque, equipe, logística) tem rota dedicada.
+- Cada fluxo principal (clientes, catálogo, orçamentos, settings, agenda, financeiro, estoque, equipe, logística, contratos) tem rota dedicada.
 - Deep links e parâmetros de rota seguem convenção snake_case nos paths.
 - Ocupações da Agenda originadas de orçamento **não** têm rota própria — abrem a rota já existente de detalhes do orçamento (`/quotes/:id`).
 - Financeiro: `/financial`, `/financial/new`, `/financial/categories`, `/financial/:id`, `/financial/:id/edit`.
 - Estoque: `/equipment`, `/equipment/new`, `/equipment/categories`, `/equipment/:id`, `/equipment/:id/edit`; associação: `/quotes/:id/equipment`.
 - Equipe: `/team`, `/team/new`, `/team/roles`, `/team/:id`, `/team/:id/edit`; associação: `/quotes/:id/team`.
 - Logística: `/vehicles`, `/vehicles/new`, `/vehicles/types`, `/vehicles/:id`, `/vehicles/:id/edit`; associação: `/quotes/:id/vehicles`.
+- Contratos: `/contracts`, `/contracts/templates`, `/contracts/:id`; associação: `/quotes/:id/contracts`.
 
 ---
 
@@ -534,7 +571,7 @@ Sempre executar `flutter analyze` e `flutter test` após implementação (ver `C
 - Novas features → nova pasta em `lib/features/`.
 - Nova persistência → seguir padrão Repository + DAO + Mapper + Notifier async.
 - Dado que é **função** de outras entidades já persistidas (ex.: `AgendaOccupancy` a partir de Orçamentos + Agenda) → computar via `Provider`, não criar tabela própria.
-- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); migrações reais: TASK-025 CP-A (v1 → v2), TASK-027 CP-B (v2 → v3) e CP-D (v3 → v4), TASK-028 CP-B (v4 → v5) e CP-D (v5 → v6), TASK-029 CP-B (v6 → v7) e CP-D (v7 → v8), TASK-030 CP-B (v8 → v9) e CP-D (v9 → v10).
+- Migrações de schema → seguir a Política de Migrações Futuras (seção 6); migrações reais: TASK-025 CP-A (v1 → v2), TASK-027 CP-B (v2 → v3) e CP-D (v3 → v4), TASK-028 CP-B (v4 → v5) e CP-D (v5 → v6), TASK-029 CP-B (v6 → v7) e CP-D (v7 → v8), TASK-030 CP-B (v8 → v9) e CP-D (v9 → v10), TASK-031 CP-B (v10 → v11).
 - Integrações externas → encapsuladas em `data/services/`, sem acoplar telas ao provider concreto.
 - Evoluções previstas para a Agenda (IA/LLM na Agenda Inteligente, voz, Recursos, Contratos/Fornecedores/Evento 360°) — ver `docs/business-rules/agenda.md` e `docs/business-rules/agenda-inteligente.md` (seções "Fora de escopo") e `docs/roadmap.md`.
 - Evoluções do Financeiro (gráficos, exportações, multi-moeda, conciliação, fiscal, dashboards avançados) — ver `docs/business-rules/financial.md` e `docs/roadmap.md`.

@@ -555,3 +555,61 @@ class QuoteVehicles extends Table {
   @override
   Set<Column<Object>> get primaryKey => {id};
 }
+
+/// Contract templates (TASK-031 CP-B).
+@DataClassName('ContractTemplateRow')
+@TableIndex(name: 'idx_contract_templates_name', columns: {#name})
+class ContractTemplates extends Table {
+  @override
+  String get tableName => 'contract_templates';
+
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get description => text().nullable()();
+  BoolColumn get active => boolean()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+/// Contracts linked to quotes (TASK-031 CP-B).
+@DataClassName('ContractRow')
+@TableIndex(name: 'idx_contracts_quote_id', columns: {#quoteId})
+@TableIndex(name: 'idx_contracts_template_id', columns: {#templateId})
+@TableIndex(name: 'idx_contracts_status', columns: {#status})
+@TableIndex(name: 'idx_contracts_number', columns: {#contractNumber})
+class Contracts extends Table {
+  @override
+  String get tableName => 'contracts';
+
+  TextColumn get id => text()();
+  TextColumn get quoteId => text().references(
+        Quotes,
+        #id,
+        onDelete: KeyAction.restrict,
+        onUpdate: KeyAction.cascade,
+      )();
+  TextColumn get templateId => text().nullable().references(
+        ContractTemplates,
+        #id,
+        onDelete: KeyAction.setNull,
+        onUpdate: KeyAction.cascade,
+      )();
+  TextColumn get contractNumber => text()();
+
+  /// Serialized [ContractStatus] name.
+  TextColumn get status => text()();
+  IntColumn get generatedAt => integer().nullable()();
+  IntColumn get sentAt => integer().nullable()();
+  IntColumn get signedAt => integer().nullable()();
+  IntColumn get expiresAt => integer().nullable()();
+  TextColumn get filePath => text().nullable()();
+  TextColumn get notes => text()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}

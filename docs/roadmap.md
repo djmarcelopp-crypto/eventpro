@@ -143,3 +143,26 @@ Ao promover um item deste roadmap para desenvolvimento, ele deve receber uma `TA
 - Hidratação do módulo Logística no bootstrap do app.
 - UI dedicada de disponibilidade/conflitos (hoje o cálculo existe em domínio/providers).
 - Mutação automática de `VehicleStatus` a partir de orçamentos.
+
+---
+
+## Contratos & Assinaturas — evoluções avançadas
+
+**Status:** MVP do módulo entregue na `TASK-031` (implementada; commits pendentes de aprovação). Ver `docs/tasks/TASK-031.md` e `docs/business-rules/contracts.md`.
+
+### O que já foi entregue (TASK-031)
+
+- Modelos e contratos persistidos em Drift (`schemaVersion` 11).
+- Número automático `CTR-YYYY-####`; vínculo a orçamento com FK RESTRICT; template opcional com SET NULL.
+- UI de contratos/templates, seção no orçamento e resumo no dashboard.
+- Fluxo interno `draft → generated → sent → signed`, com cancelamento/expiração e bloqueios de regressão.
+
+### O que permanece futuro (fora do escopo da TASK-031)
+
+- Geração de PDF do contrato.
+- Assinatura digital / provedores externos.
+- Envio automático por e-mail/WhatsApp.
+- Persistência de `ContractSignatureStatus` no contrato.
+- Auditoria de eventos de assinatura.
+- Hidratação do módulo Contratos no bootstrap do app.
+- Notificações de envio/expiração.

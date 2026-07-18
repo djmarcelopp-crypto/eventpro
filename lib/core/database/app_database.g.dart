@@ -15513,6 +15513,1194 @@ class QuoteVehiclesCompanion extends UpdateCompanion<QuoteVehicleRow> {
   }
 }
 
+class $ContractTemplatesTable extends ContractTemplates
+    with TableInfo<$ContractTemplatesTable, ContractTemplateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContractTemplatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _activeMeta = const VerificationMeta('active');
+  @override
+  late final GeneratedColumn<bool> active = GeneratedColumn<bool>(
+    'active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    description,
+    active,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'contract_templates';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContractTemplateRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('active')) {
+      context.handle(
+        _activeMeta,
+        active.isAcceptableOrUnknown(data['active']!, _activeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_activeMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContractTemplateRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContractTemplateRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      active: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}active'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContractTemplatesTable createAlias(String alias) {
+    return $ContractTemplatesTable(attachedDatabase, alias);
+  }
+}
+
+class ContractTemplateRow extends DataClass
+    implements Insertable<ContractTemplateRow> {
+  final String id;
+  final String name;
+  final String? description;
+  final bool active;
+  final int createdAt;
+  final int updatedAt;
+  const ContractTemplateRow({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.active,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['active'] = Variable<bool>(active);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  ContractTemplatesCompanion toCompanion(bool nullToAbsent) {
+    return ContractTemplatesCompanion(
+      id: Value(id),
+      name: Value(name),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      active: Value(active),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ContractTemplateRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContractTemplateRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String?>(json['description']),
+      active: serializer.fromJson<bool>(json['active']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String?>(description),
+      'active': serializer.toJson<bool>(active),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  ContractTemplateRow copyWith({
+    String? id,
+    String? name,
+    Value<String?> description = const Value.absent(),
+    bool? active,
+    int? createdAt,
+    int? updatedAt,
+  }) => ContractTemplateRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    description: description.present ? description.value : this.description,
+    active: active ?? this.active,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ContractTemplateRow copyWithCompanion(ContractTemplatesCompanion data) {
+    return ContractTemplateRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      active: data.active.present ? data.active.value : this.active,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContractTemplateRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('active: $active, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, description, active, createdAt, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContractTemplateRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.active == this.active &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ContractTemplatesCompanion extends UpdateCompanion<ContractTemplateRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> description;
+  final Value<bool> active;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const ContractTemplatesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.active = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContractTemplatesCompanion.insert({
+    required String id,
+    required String name,
+    this.description = const Value.absent(),
+    required bool active,
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       active = Value(active),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ContractTemplateRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<bool>? active,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (active != null) 'active': active,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContractTemplatesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String?>? description,
+    Value<bool>? active,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ContractTemplatesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      active: active ?? this.active,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (active.present) {
+      map['active'] = Variable<bool>(active.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContractTemplatesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('active: $active, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ContractsTable extends Contracts
+    with TableInfo<$ContractsTable, ContractRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ContractsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quoteIdMeta = const VerificationMeta(
+    'quoteId',
+  );
+  @override
+  late final GeneratedColumn<String> quoteId = GeneratedColumn<String>(
+    'quote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES quotes (id) ON UPDATE CASCADE ON DELETE RESTRICT',
+    ),
+  );
+  static const VerificationMeta _templateIdMeta = const VerificationMeta(
+    'templateId',
+  );
+  @override
+  late final GeneratedColumn<String> templateId = GeneratedColumn<String>(
+    'template_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES contract_templates (id) ON UPDATE CASCADE ON DELETE SET NULL',
+    ),
+  );
+  static const VerificationMeta _contractNumberMeta = const VerificationMeta(
+    'contractNumber',
+  );
+  @override
+  late final GeneratedColumn<String> contractNumber = GeneratedColumn<String>(
+    'contract_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _generatedAtMeta = const VerificationMeta(
+    'generatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> generatedAt = GeneratedColumn<int>(
+    'generated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sentAtMeta = const VerificationMeta('sentAt');
+  @override
+  late final GeneratedColumn<int> sentAt = GeneratedColumn<int>(
+    'sent_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _signedAtMeta = const VerificationMeta(
+    'signedAt',
+  );
+  @override
+  late final GeneratedColumn<int> signedAt = GeneratedColumn<int>(
+    'signed_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expiresAtMeta = const VerificationMeta(
+    'expiresAt',
+  );
+  @override
+  late final GeneratedColumn<int> expiresAt = GeneratedColumn<int>(
+    'expires_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<int> updatedAt = GeneratedColumn<int>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    quoteId,
+    templateId,
+    contractNumber,
+    status,
+    generatedAt,
+    sentAt,
+    signedAt,
+    expiresAt,
+    filePath,
+    notes,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'contracts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ContractRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('quote_id')) {
+      context.handle(
+        _quoteIdMeta,
+        quoteId.isAcceptableOrUnknown(data['quote_id']!, _quoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quoteIdMeta);
+    }
+    if (data.containsKey('template_id')) {
+      context.handle(
+        _templateIdMeta,
+        templateId.isAcceptableOrUnknown(data['template_id']!, _templateIdMeta),
+      );
+    }
+    if (data.containsKey('contract_number')) {
+      context.handle(
+        _contractNumberMeta,
+        contractNumber.isAcceptableOrUnknown(
+          data['contract_number']!,
+          _contractNumberMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_contractNumberMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('generated_at')) {
+      context.handle(
+        _generatedAtMeta,
+        generatedAt.isAcceptableOrUnknown(
+          data['generated_at']!,
+          _generatedAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('sent_at')) {
+      context.handle(
+        _sentAtMeta,
+        sentAt.isAcceptableOrUnknown(data['sent_at']!, _sentAtMeta),
+      );
+    }
+    if (data.containsKey('signed_at')) {
+      context.handle(
+        _signedAtMeta,
+        signedAt.isAcceptableOrUnknown(data['signed_at']!, _signedAtMeta),
+      );
+    }
+    if (data.containsKey('expires_at')) {
+      context.handle(
+        _expiresAtMeta,
+        expiresAt.isAcceptableOrUnknown(data['expires_at']!, _expiresAtMeta),
+      );
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_notesMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ContractRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ContractRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      quoteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quote_id'],
+      )!,
+      templateId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}template_id'],
+      ),
+      contractNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contract_number'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      generatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}generated_at'],
+      ),
+      sentAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}sent_at'],
+      ),
+      signedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}signed_at'],
+      ),
+      expiresAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expires_at'],
+      ),
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $ContractsTable createAlias(String alias) {
+    return $ContractsTable(attachedDatabase, alias);
+  }
+}
+
+class ContractRow extends DataClass implements Insertable<ContractRow> {
+  final String id;
+  final String quoteId;
+  final String? templateId;
+  final String contractNumber;
+
+  /// Serialized [ContractStatus] name.
+  final String status;
+  final int? generatedAt;
+  final int? sentAt;
+  final int? signedAt;
+  final int? expiresAt;
+  final String? filePath;
+  final String notes;
+  final int createdAt;
+  final int updatedAt;
+  const ContractRow({
+    required this.id,
+    required this.quoteId,
+    this.templateId,
+    required this.contractNumber,
+    required this.status,
+    this.generatedAt,
+    this.sentAt,
+    this.signedAt,
+    this.expiresAt,
+    this.filePath,
+    required this.notes,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['quote_id'] = Variable<String>(quoteId);
+    if (!nullToAbsent || templateId != null) {
+      map['template_id'] = Variable<String>(templateId);
+    }
+    map['contract_number'] = Variable<String>(contractNumber);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || generatedAt != null) {
+      map['generated_at'] = Variable<int>(generatedAt);
+    }
+    if (!nullToAbsent || sentAt != null) {
+      map['sent_at'] = Variable<int>(sentAt);
+    }
+    if (!nullToAbsent || signedAt != null) {
+      map['signed_at'] = Variable<int>(signedAt);
+    }
+    if (!nullToAbsent || expiresAt != null) {
+      map['expires_at'] = Variable<int>(expiresAt);
+    }
+    if (!nullToAbsent || filePath != null) {
+      map['file_path'] = Variable<String>(filePath);
+    }
+    map['notes'] = Variable<String>(notes);
+    map['created_at'] = Variable<int>(createdAt);
+    map['updated_at'] = Variable<int>(updatedAt);
+    return map;
+  }
+
+  ContractsCompanion toCompanion(bool nullToAbsent) {
+    return ContractsCompanion(
+      id: Value(id),
+      quoteId: Value(quoteId),
+      templateId: templateId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(templateId),
+      contractNumber: Value(contractNumber),
+      status: Value(status),
+      generatedAt: generatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(generatedAt),
+      sentAt: sentAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sentAt),
+      signedAt: signedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(signedAt),
+      expiresAt: expiresAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expiresAt),
+      filePath: filePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filePath),
+      notes: Value(notes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory ContractRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ContractRow(
+      id: serializer.fromJson<String>(json['id']),
+      quoteId: serializer.fromJson<String>(json['quoteId']),
+      templateId: serializer.fromJson<String?>(json['templateId']),
+      contractNumber: serializer.fromJson<String>(json['contractNumber']),
+      status: serializer.fromJson<String>(json['status']),
+      generatedAt: serializer.fromJson<int?>(json['generatedAt']),
+      sentAt: serializer.fromJson<int?>(json['sentAt']),
+      signedAt: serializer.fromJson<int?>(json['signedAt']),
+      expiresAt: serializer.fromJson<int?>(json['expiresAt']),
+      filePath: serializer.fromJson<String?>(json['filePath']),
+      notes: serializer.fromJson<String>(json['notes']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      updatedAt: serializer.fromJson<int>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'quoteId': serializer.toJson<String>(quoteId),
+      'templateId': serializer.toJson<String?>(templateId),
+      'contractNumber': serializer.toJson<String>(contractNumber),
+      'status': serializer.toJson<String>(status),
+      'generatedAt': serializer.toJson<int?>(generatedAt),
+      'sentAt': serializer.toJson<int?>(sentAt),
+      'signedAt': serializer.toJson<int?>(signedAt),
+      'expiresAt': serializer.toJson<int?>(expiresAt),
+      'filePath': serializer.toJson<String?>(filePath),
+      'notes': serializer.toJson<String>(notes),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'updatedAt': serializer.toJson<int>(updatedAt),
+    };
+  }
+
+  ContractRow copyWith({
+    String? id,
+    String? quoteId,
+    Value<String?> templateId = const Value.absent(),
+    String? contractNumber,
+    String? status,
+    Value<int?> generatedAt = const Value.absent(),
+    Value<int?> sentAt = const Value.absent(),
+    Value<int?> signedAt = const Value.absent(),
+    Value<int?> expiresAt = const Value.absent(),
+    Value<String?> filePath = const Value.absent(),
+    String? notes,
+    int? createdAt,
+    int? updatedAt,
+  }) => ContractRow(
+    id: id ?? this.id,
+    quoteId: quoteId ?? this.quoteId,
+    templateId: templateId.present ? templateId.value : this.templateId,
+    contractNumber: contractNumber ?? this.contractNumber,
+    status: status ?? this.status,
+    generatedAt: generatedAt.present ? generatedAt.value : this.generatedAt,
+    sentAt: sentAt.present ? sentAt.value : this.sentAt,
+    signedAt: signedAt.present ? signedAt.value : this.signedAt,
+    expiresAt: expiresAt.present ? expiresAt.value : this.expiresAt,
+    filePath: filePath.present ? filePath.value : this.filePath,
+    notes: notes ?? this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  ContractRow copyWithCompanion(ContractsCompanion data) {
+    return ContractRow(
+      id: data.id.present ? data.id.value : this.id,
+      quoteId: data.quoteId.present ? data.quoteId.value : this.quoteId,
+      templateId: data.templateId.present
+          ? data.templateId.value
+          : this.templateId,
+      contractNumber: data.contractNumber.present
+          ? data.contractNumber.value
+          : this.contractNumber,
+      status: data.status.present ? data.status.value : this.status,
+      generatedAt: data.generatedAt.present
+          ? data.generatedAt.value
+          : this.generatedAt,
+      sentAt: data.sentAt.present ? data.sentAt.value : this.sentAt,
+      signedAt: data.signedAt.present ? data.signedAt.value : this.signedAt,
+      expiresAt: data.expiresAt.present ? data.expiresAt.value : this.expiresAt,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContractRow(')
+          ..write('id: $id, ')
+          ..write('quoteId: $quoteId, ')
+          ..write('templateId: $templateId, ')
+          ..write('contractNumber: $contractNumber, ')
+          ..write('status: $status, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('sentAt: $sentAt, ')
+          ..write('signedAt: $signedAt, ')
+          ..write('expiresAt: $expiresAt, ')
+          ..write('filePath: $filePath, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    quoteId,
+    templateId,
+    contractNumber,
+    status,
+    generatedAt,
+    sentAt,
+    signedAt,
+    expiresAt,
+    filePath,
+    notes,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ContractRow &&
+          other.id == this.id &&
+          other.quoteId == this.quoteId &&
+          other.templateId == this.templateId &&
+          other.contractNumber == this.contractNumber &&
+          other.status == this.status &&
+          other.generatedAt == this.generatedAt &&
+          other.sentAt == this.sentAt &&
+          other.signedAt == this.signedAt &&
+          other.expiresAt == this.expiresAt &&
+          other.filePath == this.filePath &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ContractsCompanion extends UpdateCompanion<ContractRow> {
+  final Value<String> id;
+  final Value<String> quoteId;
+  final Value<String?> templateId;
+  final Value<String> contractNumber;
+  final Value<String> status;
+  final Value<int?> generatedAt;
+  final Value<int?> sentAt;
+  final Value<int?> signedAt;
+  final Value<int?> expiresAt;
+  final Value<String?> filePath;
+  final Value<String> notes;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<int> rowid;
+  const ContractsCompanion({
+    this.id = const Value.absent(),
+    this.quoteId = const Value.absent(),
+    this.templateId = const Value.absent(),
+    this.contractNumber = const Value.absent(),
+    this.status = const Value.absent(),
+    this.generatedAt = const Value.absent(),
+    this.sentAt = const Value.absent(),
+    this.signedAt = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ContractsCompanion.insert({
+    required String id,
+    required String quoteId,
+    this.templateId = const Value.absent(),
+    required String contractNumber,
+    required String status,
+    this.generatedAt = const Value.absent(),
+    this.sentAt = const Value.absent(),
+    this.signedAt = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+    this.filePath = const Value.absent(),
+    required String notes,
+    required int createdAt,
+    required int updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       quoteId = Value(quoteId),
+       contractNumber = Value(contractNumber),
+       status = Value(status),
+       notes = Value(notes),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<ContractRow> custom({
+    Expression<String>? id,
+    Expression<String>? quoteId,
+    Expression<String>? templateId,
+    Expression<String>? contractNumber,
+    Expression<String>? status,
+    Expression<int>? generatedAt,
+    Expression<int>? sentAt,
+    Expression<int>? signedAt,
+    Expression<int>? expiresAt,
+    Expression<String>? filePath,
+    Expression<String>? notes,
+    Expression<int>? createdAt,
+    Expression<int>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (quoteId != null) 'quote_id': quoteId,
+      if (templateId != null) 'template_id': templateId,
+      if (contractNumber != null) 'contract_number': contractNumber,
+      if (status != null) 'status': status,
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (sentAt != null) 'sent_at': sentAt,
+      if (signedAt != null) 'signed_at': signedAt,
+      if (expiresAt != null) 'expires_at': expiresAt,
+      if (filePath != null) 'file_path': filePath,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ContractsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? quoteId,
+    Value<String?>? templateId,
+    Value<String>? contractNumber,
+    Value<String>? status,
+    Value<int?>? generatedAt,
+    Value<int?>? sentAt,
+    Value<int?>? signedAt,
+    Value<int?>? expiresAt,
+    Value<String?>? filePath,
+    Value<String>? notes,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return ContractsCompanion(
+      id: id ?? this.id,
+      quoteId: quoteId ?? this.quoteId,
+      templateId: templateId ?? this.templateId,
+      contractNumber: contractNumber ?? this.contractNumber,
+      status: status ?? this.status,
+      generatedAt: generatedAt ?? this.generatedAt,
+      sentAt: sentAt ?? this.sentAt,
+      signedAt: signedAt ?? this.signedAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+      filePath: filePath ?? this.filePath,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (quoteId.present) {
+      map['quote_id'] = Variable<String>(quoteId.value);
+    }
+    if (templateId.present) {
+      map['template_id'] = Variable<String>(templateId.value);
+    }
+    if (contractNumber.present) {
+      map['contract_number'] = Variable<String>(contractNumber.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<int>(generatedAt.value);
+    }
+    if (sentAt.present) {
+      map['sent_at'] = Variable<int>(sentAt.value);
+    }
+    if (signedAt.present) {
+      map['signed_at'] = Variable<int>(signedAt.value);
+    }
+    if (expiresAt.present) {
+      map['expires_at'] = Variable<int>(expiresAt.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<int>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ContractsCompanion(')
+          ..write('id: $id, ')
+          ..write('quoteId: $quoteId, ')
+          ..write('templateId: $templateId, ')
+          ..write('contractNumber: $contractNumber, ')
+          ..write('status: $status, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('sentAt: $sentAt, ')
+          ..write('signedAt: $signedAt, ')
+          ..write('expiresAt: $expiresAt, ')
+          ..write('filePath: $filePath, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -15556,6 +16744,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $VehicleTypesTable vehicleTypes = $VehicleTypesTable(this);
   late final $VehiclesTable vehicles = $VehiclesTable(this);
   late final $QuoteVehiclesTable quoteVehicles = $QuoteVehiclesTable(this);
+  late final $ContractTemplatesTable contractTemplates =
+      $ContractTemplatesTable(this);
+  late final $ContractsTable contracts = $ContractsTable(this);
   late final Index idxClientsCreatedAt = Index(
     'idx_clients_created_at',
     'CREATE INDEX idx_clients_created_at ON clients (created_at)',
@@ -15696,6 +16887,26 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_quote_vehicles_driver_id',
     'CREATE INDEX idx_quote_vehicles_driver_id ON quote_vehicles (driver_team_member_id)',
   );
+  late final Index idxContractTemplatesName = Index(
+    'idx_contract_templates_name',
+    'CREATE INDEX idx_contract_templates_name ON contract_templates (name)',
+  );
+  late final Index idxContractsQuoteId = Index(
+    'idx_contracts_quote_id',
+    'CREATE INDEX idx_contracts_quote_id ON contracts (quote_id)',
+  );
+  late final Index idxContractsTemplateId = Index(
+    'idx_contracts_template_id',
+    'CREATE INDEX idx_contracts_template_id ON contracts (template_id)',
+  );
+  late final Index idxContractsStatus = Index(
+    'idx_contracts_status',
+    'CREATE INDEX idx_contracts_status ON contracts (status)',
+  );
+  late final Index idxContractsNumber = Index(
+    'idx_contracts_number',
+    'CREATE INDEX idx_contracts_number ON contracts (contract_number)',
+  );
   late final ClientsDao clientsDao = ClientsDao(this as AppDatabase);
   late final CompanyProfilesDao companyProfilesDao = CompanyProfilesDao(
     this as AppDatabase,
@@ -15730,6 +16941,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final QuoteVehiclesDao quoteVehiclesDao = QuoteVehiclesDao(
     this as AppDatabase,
   );
+  late final ContractTemplatesDao contractTemplatesDao = ContractTemplatesDao(
+    this as AppDatabase,
+  );
+  late final ContractsDao contractsDao = ContractsDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -15759,6 +16974,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     vehicleTypes,
     vehicles,
     quoteVehicles,
+    contractTemplates,
+    contracts,
     idxClientsCreatedAt,
     idxCatalogItemsActive,
     idxCatalogItemsType,
@@ -15794,6 +17011,11 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxQuoteVehiclesQuoteId,
     idxQuoteVehiclesVehicleId,
     idxQuoteVehiclesDriverId,
+    idxContractTemplatesName,
+    idxContractsQuoteId,
+    idxContractsTemplateId,
+    idxContractsStatus,
+    idxContractsNumber,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -15891,6 +17113,27 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('quote_vehicles', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'quotes',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('contracts', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'contract_templates',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('contracts', kind: UpdateKind.update)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'contract_templates',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [TableUpdate('contracts', kind: UpdateKind.update)],
     ),
   ]);
 }
@@ -18292,6 +19535,24 @@ final class $$QuotesTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$ContractsTable, List<ContractRow>>
+  _contractsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.contracts,
+    aliasName: 'quotes__id__contracts__quote_id',
+  );
+
+  $$ContractsTableProcessedTableManager get contractsRefs {
+    final manager = $$ContractsTableTableManager(
+      $_db,
+      $_db.contracts,
+    ).filter((f) => f.quoteId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_contractsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$QuotesTableFilterComposer
@@ -18585,6 +19846,31 @@ class $$QuotesTableFilterComposer
           }) => $$QuoteVehiclesTableFilterComposer(
             $db: $db,
             $table: $db.quoteVehicles,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> contractsRefs(
+    Expression<bool> Function($$ContractsTableFilterComposer f) f,
+  ) {
+    final $$ContractsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.contracts,
+      getReferencedColumn: (t) => t.quoteId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContractsTableFilterComposer(
+            $db: $db,
+            $table: $db.contracts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -18961,6 +20247,31 @@ class $$QuotesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> contractsRefs<T extends Object>(
+    Expression<T> Function($$ContractsTableAnnotationComposer a) f,
+  ) {
+    final $$ContractsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.contracts,
+      getReferencedColumn: (t) => t.quoteId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContractsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contracts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$QuotesTableTableManager
@@ -18986,6 +20297,7 @@ class $$QuotesTableTableManager
             bool quoteEquipmentItemsRefs,
             bool quoteTeamMembersRefs,
             bool quoteVehiclesRefs,
+            bool contractsRefs,
           })
         > {
   $$QuotesTableTableManager(_$AppDatabase db, $QuotesTable table)
@@ -19080,6 +20392,7 @@ class $$QuotesTableTableManager
                 quoteEquipmentItemsRefs = false,
                 quoteTeamMembersRefs = false,
                 quoteVehiclesRefs = false,
+                contractsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -19093,6 +20406,7 @@ class $$QuotesTableTableManager
                     if (quoteEquipmentItemsRefs) db.quoteEquipmentItems,
                     if (quoteTeamMembersRefs) db.quoteTeamMembers,
                     if (quoteVehiclesRefs) db.quoteVehicles,
+                    if (contractsRefs) db.contracts,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -19286,6 +20600,27 @@ class $$QuotesTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (contractsRefs)
+                        await $_getPrefetchedData<
+                          QuoteRow,
+                          $QuotesTable,
+                          ContractRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$QuotesTableReferences
+                              ._contractsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$QuotesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).contractsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.quoteId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -19316,6 +20651,7 @@ typedef $$QuotesTableProcessedTableManager =
         bool quoteEquipmentItemsRefs,
         bool quoteTeamMembersRefs,
         bool quoteVehiclesRefs,
+        bool contractsRefs,
       })
     >;
 typedef $$QuoteClientSnapshotsTableCreateCompanionBuilder =
@@ -27915,6 +29251,903 @@ typedef $$QuoteVehiclesTableProcessedTableManager =
         bool driverTeamMemberId,
       })
     >;
+typedef $$ContractTemplatesTableCreateCompanionBuilder =
+    ContractTemplatesCompanion Function({
+      required String id,
+      required String name,
+      Value<String?> description,
+      required bool active,
+      required int createdAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ContractTemplatesTableUpdateCompanionBuilder =
+    ContractTemplatesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String?> description,
+      Value<bool> active,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ContractTemplatesTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $ContractTemplatesTable,
+          ContractTemplateRow
+        > {
+  $$ContractTemplatesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static MultiTypedResultKey<$ContractsTable, List<ContractRow>>
+  _contractsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.contracts,
+    aliasName: 'contract_templates__id__contracts__template_id',
+  );
+
+  $$ContractsTableProcessedTableManager get contractsRefs {
+    final manager = $$ContractsTableTableManager(
+      $_db,
+      $_db.contracts,
+    ).filter((f) => f.templateId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_contractsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$ContractTemplatesTableFilterComposer
+    extends Composer<_$AppDatabase, $ContractTemplatesTable> {
+  $$ContractTemplatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> contractsRefs(
+    Expression<bool> Function($$ContractsTableFilterComposer f) f,
+  ) {
+    final $$ContractsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.contracts,
+      getReferencedColumn: (t) => t.templateId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContractsTableFilterComposer(
+            $db: $db,
+            $table: $db.contracts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ContractTemplatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContractTemplatesTable> {
+  $$ContractTemplatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get active => $composableBuilder(
+    column: $table.active,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ContractTemplatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContractTemplatesTable> {
+  $$ContractTemplatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get active =>
+      $composableBuilder(column: $table.active, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  Expression<T> contractsRefs<T extends Object>(
+    Expression<T> Function($$ContractsTableAnnotationComposer a) f,
+  ) {
+    final $$ContractsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.contracts,
+      getReferencedColumn: (t) => t.templateId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContractsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.contracts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$ContractTemplatesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContractTemplatesTable,
+          ContractTemplateRow,
+          $$ContractTemplatesTableFilterComposer,
+          $$ContractTemplatesTableOrderingComposer,
+          $$ContractTemplatesTableAnnotationComposer,
+          $$ContractTemplatesTableCreateCompanionBuilder,
+          $$ContractTemplatesTableUpdateCompanionBuilder,
+          (ContractTemplateRow, $$ContractTemplatesTableReferences),
+          ContractTemplateRow,
+          PrefetchHooks Function({bool contractsRefs})
+        > {
+  $$ContractTemplatesTableTableManager(
+    _$AppDatabase db,
+    $ContractTemplatesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContractTemplatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContractTemplatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContractTemplatesTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<bool> active = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContractTemplatesCompanion(
+                id: id,
+                name: name,
+                description: description,
+                active: active,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String?> description = const Value.absent(),
+                required bool active,
+                required int createdAt,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContractTemplatesCompanion.insert(
+                id: id,
+                name: name,
+                description: description,
+                active: active,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ContractTemplatesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({contractsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (contractsRefs) db.contracts],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (contractsRefs)
+                    await $_getPrefetchedData<
+                      ContractTemplateRow,
+                      $ContractTemplatesTable,
+                      ContractRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$ContractTemplatesTableReferences
+                          ._contractsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$ContractTemplatesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).contractsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.templateId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ContractTemplatesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContractTemplatesTable,
+      ContractTemplateRow,
+      $$ContractTemplatesTableFilterComposer,
+      $$ContractTemplatesTableOrderingComposer,
+      $$ContractTemplatesTableAnnotationComposer,
+      $$ContractTemplatesTableCreateCompanionBuilder,
+      $$ContractTemplatesTableUpdateCompanionBuilder,
+      (ContractTemplateRow, $$ContractTemplatesTableReferences),
+      ContractTemplateRow,
+      PrefetchHooks Function({bool contractsRefs})
+    >;
+typedef $$ContractsTableCreateCompanionBuilder =
+    ContractsCompanion Function({
+      required String id,
+      required String quoteId,
+      Value<String?> templateId,
+      required String contractNumber,
+      required String status,
+      Value<int?> generatedAt,
+      Value<int?> sentAt,
+      Value<int?> signedAt,
+      Value<int?> expiresAt,
+      Value<String?> filePath,
+      required String notes,
+      required int createdAt,
+      required int updatedAt,
+      Value<int> rowid,
+    });
+typedef $$ContractsTableUpdateCompanionBuilder =
+    ContractsCompanion Function({
+      Value<String> id,
+      Value<String> quoteId,
+      Value<String?> templateId,
+      Value<String> contractNumber,
+      Value<String> status,
+      Value<int?> generatedAt,
+      Value<int?> sentAt,
+      Value<int?> signedAt,
+      Value<int?> expiresAt,
+      Value<String?> filePath,
+      Value<String> notes,
+      Value<int> createdAt,
+      Value<int> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$ContractsTableReferences
+    extends BaseReferences<_$AppDatabase, $ContractsTable, ContractRow> {
+  $$ContractsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $QuotesTable _quoteIdTable(_$AppDatabase db) =>
+      db.quotes.createAlias('contracts__quote_id__quotes__id');
+
+  $$QuotesTableProcessedTableManager get quoteId {
+    final $_column = $_itemColumn<String>('quote_id')!;
+
+    final manager = $$QuotesTableTableManager(
+      $_db,
+      $_db.quotes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_quoteIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ContractTemplatesTable _templateIdTable(_$AppDatabase db) => db
+      .contractTemplates
+      .createAlias('contracts__template_id__contract_templates__id');
+
+  $$ContractTemplatesTableProcessedTableManager? get templateId {
+    final $_column = $_itemColumn<String>('template_id');
+    if ($_column == null) return null;
+    final manager = $$ContractTemplatesTableTableManager(
+      $_db,
+      $_db.contractTemplates,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_templateIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ContractsTableFilterComposer
+    extends Composer<_$AppDatabase, $ContractsTable> {
+  $$ContractsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contractNumber => $composableBuilder(
+    column: $table.contractNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get signedAt => $composableBuilder(
+    column: $table.signedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$QuotesTableFilterComposer get quoteId {
+    final $$QuotesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.quoteId,
+      referencedTable: $db.quotes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$QuotesTableFilterComposer(
+            $db: $db,
+            $table: $db.quotes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContractTemplatesTableFilterComposer get templateId {
+    final $$ContractTemplatesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.templateId,
+      referencedTable: $db.contractTemplates,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContractTemplatesTableFilterComposer(
+            $db: $db,
+            $table: $db.contractTemplates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ContractsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ContractsTable> {
+  $$ContractsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contractNumber => $composableBuilder(
+    column: $table.contractNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sentAt => $composableBuilder(
+    column: $table.sentAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get signedAt => $composableBuilder(
+    column: $table.signedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expiresAt => $composableBuilder(
+    column: $table.expiresAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$QuotesTableOrderingComposer get quoteId {
+    final $$QuotesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.quoteId,
+      referencedTable: $db.quotes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$QuotesTableOrderingComposer(
+            $db: $db,
+            $table: $db.quotes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContractTemplatesTableOrderingComposer get templateId {
+    final $$ContractTemplatesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.templateId,
+      referencedTable: $db.contractTemplates,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ContractTemplatesTableOrderingComposer(
+            $db: $db,
+            $table: $db.contractTemplates,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ContractsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ContractsTable> {
+  $$ContractsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get contractNumber => $composableBuilder(
+    column: $table.contractNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sentAt =>
+      $composableBuilder(column: $table.sentAt, builder: (column) => column);
+
+  GeneratedColumn<int> get signedAt =>
+      $composableBuilder(column: $table.signedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get expiresAt =>
+      $composableBuilder(column: $table.expiresAt, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<int> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$QuotesTableAnnotationComposer get quoteId {
+    final $$QuotesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.quoteId,
+      referencedTable: $db.quotes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$QuotesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.quotes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ContractTemplatesTableAnnotationComposer get templateId {
+    final $$ContractTemplatesTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.templateId,
+          referencedTable: $db.contractTemplates,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$ContractTemplatesTableAnnotationComposer(
+                $db: $db,
+                $table: $db.contractTemplates,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$ContractsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ContractsTable,
+          ContractRow,
+          $$ContractsTableFilterComposer,
+          $$ContractsTableOrderingComposer,
+          $$ContractsTableAnnotationComposer,
+          $$ContractsTableCreateCompanionBuilder,
+          $$ContractsTableUpdateCompanionBuilder,
+          (ContractRow, $$ContractsTableReferences),
+          ContractRow,
+          PrefetchHooks Function({bool quoteId, bool templateId})
+        > {
+  $$ContractsTableTableManager(_$AppDatabase db, $ContractsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ContractsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ContractsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ContractsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> quoteId = const Value.absent(),
+                Value<String?> templateId = const Value.absent(),
+                Value<String> contractNumber = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<int?> generatedAt = const Value.absent(),
+                Value<int?> sentAt = const Value.absent(),
+                Value<int?> signedAt = const Value.absent(),
+                Value<int?> expiresAt = const Value.absent(),
+                Value<String?> filePath = const Value.absent(),
+                Value<String> notes = const Value.absent(),
+                Value<int> createdAt = const Value.absent(),
+                Value<int> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ContractsCompanion(
+                id: id,
+                quoteId: quoteId,
+                templateId: templateId,
+                contractNumber: contractNumber,
+                status: status,
+                generatedAt: generatedAt,
+                sentAt: sentAt,
+                signedAt: signedAt,
+                expiresAt: expiresAt,
+                filePath: filePath,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String quoteId,
+                Value<String?> templateId = const Value.absent(),
+                required String contractNumber,
+                required String status,
+                Value<int?> generatedAt = const Value.absent(),
+                Value<int?> sentAt = const Value.absent(),
+                Value<int?> signedAt = const Value.absent(),
+                Value<int?> expiresAt = const Value.absent(),
+                Value<String?> filePath = const Value.absent(),
+                required String notes,
+                required int createdAt,
+                required int updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => ContractsCompanion.insert(
+                id: id,
+                quoteId: quoteId,
+                templateId: templateId,
+                contractNumber: contractNumber,
+                status: status,
+                generatedAt: generatedAt,
+                sentAt: sentAt,
+                signedAt: signedAt,
+                expiresAt: expiresAt,
+                filePath: filePath,
+                notes: notes,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ContractsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({quoteId = false, templateId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (quoteId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.quoteId,
+                                referencedTable: $$ContractsTableReferences
+                                    ._quoteIdTable(db),
+                                referencedColumn: $$ContractsTableReferences
+                                    ._quoteIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (templateId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.templateId,
+                                referencedTable: $$ContractsTableReferences
+                                    ._templateIdTable(db),
+                                referencedColumn: $$ContractsTableReferences
+                                    ._templateIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ContractsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ContractsTable,
+      ContractRow,
+      $$ContractsTableFilterComposer,
+      $$ContractsTableOrderingComposer,
+      $$ContractsTableAnnotationComposer,
+      $$ContractsTableCreateCompanionBuilder,
+      $$ContractsTableUpdateCompanionBuilder,
+      (ContractRow, $$ContractsTableReferences),
+      ContractRow,
+      PrefetchHooks Function({bool quoteId, bool templateId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -27974,6 +30207,10 @@ class $AppDatabaseManager {
       $$VehiclesTableTableManager(_db, _db.vehicles);
   $$QuoteVehiclesTableTableManager get quoteVehicles =>
       $$QuoteVehiclesTableTableManager(_db, _db.quoteVehicles);
+  $$ContractTemplatesTableTableManager get contractTemplates =>
+      $$ContractTemplatesTableTableManager(_db, _db.contractTemplates);
+  $$ContractsTableTableManager get contracts =>
+      $$ContractsTableTableManager(_db, _db.contracts);
 }
 
 mixin _$ClientsDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -28307,4 +30544,42 @@ class QuoteVehiclesDaoManager {
       $$TeamMembersTableTableManager(_db.attachedDatabase, _db.teamMembers);
   $$QuoteVehiclesTableTableManager get quoteVehicles =>
       $$QuoteVehiclesTableTableManager(_db.attachedDatabase, _db.quoteVehicles);
+}
+
+mixin _$ContractTemplatesDaoMixin on DatabaseAccessor<AppDatabase> {
+  $ContractTemplatesTable get contractTemplates =>
+      attachedDatabase.contractTemplates;
+  ContractTemplatesDaoManager get managers => ContractTemplatesDaoManager(this);
+}
+
+class ContractTemplatesDaoManager {
+  final _$ContractTemplatesDaoMixin _db;
+  ContractTemplatesDaoManager(this._db);
+  $$ContractTemplatesTableTableManager get contractTemplates =>
+      $$ContractTemplatesTableTableManager(
+        _db.attachedDatabase,
+        _db.contractTemplates,
+      );
+}
+
+mixin _$ContractsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $QuotesTable get quotes => attachedDatabase.quotes;
+  $ContractTemplatesTable get contractTemplates =>
+      attachedDatabase.contractTemplates;
+  $ContractsTable get contracts => attachedDatabase.contracts;
+  ContractsDaoManager get managers => ContractsDaoManager(this);
+}
+
+class ContractsDaoManager {
+  final _$ContractsDaoMixin _db;
+  ContractsDaoManager(this._db);
+  $$QuotesTableTableManager get quotes =>
+      $$QuotesTableTableManager(_db.attachedDatabase, _db.quotes);
+  $$ContractTemplatesTableTableManager get contractTemplates =>
+      $$ContractTemplatesTableTableManager(
+        _db.attachedDatabase,
+        _db.contractTemplates,
+      );
+  $$ContractsTableTableManager get contracts =>
+      $$ContractsTableTableManager(_db.attachedDatabase, _db.contracts);
 }

@@ -24,6 +24,8 @@ part 'daos/quote_team_members_dao.dart';
 part 'daos/vehicle_types_dao.dart';
 part 'daos/vehicles_dao.dart';
 part 'daos/quote_vehicles_dao.dart';
+part 'daos/contract_templates_dao.dart';
+part 'daos/contracts_dao.dart';
 
 @DriftDatabase(
   tables: [
@@ -51,6 +53,8 @@ part 'daos/quote_vehicles_dao.dart';
     VehicleTypes,
     Vehicles,
     QuoteVehicles,
+    ContractTemplates,
+    Contracts,
   ],
   daos: [
     ClientsDao,
@@ -69,6 +73,8 @@ part 'daos/quote_vehicles_dao.dart';
     VehicleTypesDao,
     VehiclesDao,
     QuoteVehiclesDao,
+    ContractTemplatesDao,
+    ContractsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -83,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -154,6 +160,12 @@ class AppDatabase extends _$AppDatabase {
       // é alterada; apenas `quote_vehicles` é criada.
       if (from <= 9 && to >= 10) {
         await migrator.createTable(quoteVehicles);
+      }
+      // TASK-031 CP-B — domínio Contratos & Assinaturas. Nenhuma tabela
+      // existente é alterada; apenas `contract_templates` e `contracts`.
+      if (from <= 10 && to >= 11) {
+        await migrator.createTable(contractTemplates);
+        await migrator.createTable(contracts);
       }
     },
   );

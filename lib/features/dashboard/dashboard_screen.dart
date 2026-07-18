@@ -7,6 +7,9 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../settings/providers/company_profile_provider.dart';
 import '../settings/utils/company_profile_presenter.dart';
+import '../contracts/models/contract_list_summary.dart';
+import '../contracts/providers/contract_list_summary_provider.dart';
+import '../contracts/widgets/contract_summary_cards.dart';
 import '../logistics/models/vehicle_list_summary.dart';
 import '../logistics/providers/vehicle_list_summary_provider.dart';
 import '../logistics/widgets/vehicle_summary_cards.dart';
@@ -58,6 +61,8 @@ class DashboardScreen extends ConsumerWidget {
         context.push(AppRoutes.team);
       case DashboardModuleId.logistics:
         context.push(AppRoutes.vehicles);
+      case DashboardModuleId.contracts:
+        context.push(AppRoutes.contracts);
       case DashboardModuleId.settings:
         context.push(AppRoutes.settings);
     }
@@ -71,6 +76,7 @@ class DashboardScreen extends ConsumerWidget {
         : CompanyProfilePresenter.displayName(profile);
     final teamSummaryAsync = ref.watch(teamListSummaryProvider);
     final vehicleSummaryAsync = ref.watch(vehicleListSummaryProvider);
+    final contractSummaryAsync = ref.watch(contractListSummaryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -160,6 +166,21 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                       error: (_, _) => const VehicleSummaryCards(
                         summary: VehicleListSummary.empty,
+                      ),
+                    ),
+                    const SizedBox(height: _sectionSpacing),
+                    Text(
+                      'Contratos',
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    const SizedBox(height: _gridSpacing),
+                    contractSummaryAsync.when(
+                      data: (summary) => ContractSummaryCards(summary: summary),
+                      loading: () => const ContractSummaryCards(
+                        summary: ContractListSummary.empty,
+                      ),
+                      error: (_, _) => const ContractSummaryCards(
+                        summary: ContractListSummary.empty,
                       ),
                     ),
                   ],

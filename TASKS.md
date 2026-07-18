@@ -4,6 +4,109 @@ Registro da task ativa. Tasks concluídas permanecem documentadas em `docs/tasks
 
 ---
 
+## TASK-031 — Contratos & Assinaturas
+
+**Branch:** `cursor/task-031-contratos`
+
+**Objetivo:** Criar o módulo Contratos & Assinaturas — modelos (`ContractTemplate`), contratos vinculados a orçamentos (`Contract`), UI de gestão, integração com dashboard/orçamento e fluxo contratual interno — sem PDF, sem assinatura digital externa e sem integrações de terceiros.
+
+### Checkpoints
+
+| CP | Descrição | Commit | Status |
+|----|-----------|--------|--------|
+| A | Fundação do domínio (entidades, enums, validadores, contratos) | *(pendente)* | ✅ Concluído |
+| B | Persistência Drift — templates/contratos, migração v10→v11 | *(pendente)* | ✅ Concluído |
+| C | Casos de uso — ContractService / ContractTemplateService | *(pendente)* | ✅ Concluído |
+| D | QuoteContractSummary + QuoteContractService | *(pendente)* | ✅ Concluído |
+| E | UI, providers, dashboard e seção em orçamentos | *(pendente)* | ✅ Concluído |
+| F | Fluxo contratual interno (workflow + summary + providers) | *(pendente)* | ✅ Concluído |
+| G | Documentação final — `docs/tasks/TASK-031.md`, `docs/business-rules/contracts.md`, revisão de `ARCHITECTURE.md` | *(pendente)* | ✅ Concluído |
+
+**TASK-031 implementada.** Histórico completo consolidado em `docs/tasks/TASK-031.md`. Commits aguardam aprovação do PO/CTO.
+
+### CP-A — concluído
+
+**Escopo entregue:**
+
+- `Contract`, `ContractTemplate`, `ContractStatus`, `ContractSignatureStatus`, validators, contratos de repositório
+- Sem Drift, providers ou UI
+
+**Verificação:** `flutter analyze` (infos pré-existentes); `flutter test` com 1486 testes passando.
+
+**Fora de escopo do CP-A (mantido):** persistência, providers, telas, workflow UI, PDF.
+
+### CP-B — concluído
+
+**Escopo entregue:**
+
+- Tabelas `contract_templates` e `contracts`; DAOs; mappers; `Drift*Repository`
+- `schemaVersion` 10→11; FK quote RESTRICT; FK template SET NULL; migração real testada
+
+**Verificação:** `flutter test` com 1491 testes passando.
+
+**Fora de escopo do CP-B (mantido):** providers, telas, PDF.
+
+### CP-C — concluído
+
+**Escopo entregue:**
+
+- `ContractService` / `ContractTemplateService` com result objects
+- Número `CTR-YYYY-####`; transições básicas; relógio injetável
+- Schema, providers e UI inalterados
+
+**Verificação:** `flutter test` com 1504 testes passando.
+
+**Fora de escopo do CP-C (mantido):** providers, telas, PDF, assinatura externa.
+
+### CP-D — concluído
+
+**Escopo entregue:**
+
+- `QuoteContractSummary` / `QuoteContractService` (gerar, cancelar, status)
+- Sem UI
+
+**Verificação:** `flutter test` com 1508 testes passando.
+
+**Fora de escopo do CP-D (mantido):** providers/UI de contratos, PDF.
+
+### CP-E — concluído
+
+**Escopo entregue:**
+
+- Providers Riverpod, telas Contratos/templates/detalhe, associação a orçamentos
+- Módulo e resumo no Dashboard; filtros por status/número
+- Schema inalterado (permanece v11)
+
+**Verificação:** `flutter test` com 1522 testes passando.
+
+**Fora de escopo do CP-E (mantido):** PDF, assinatura digital, workflow dedicado (CP-F).
+
+### CP-F — concluído
+
+**Escopo entregue:**
+
+- `ContractWorkflowService` / `ContractWorkflowSummary` + providers
+- Happy path e bloqueios (cancelar/assinar/expirar/regressão)
+- Sem PDF, sem assinatura externa, sem schema novo
+
+**Verificação:** `flutter test` com 1536 testes passando.
+
+**Fora de escopo do CP-F (mantido):** PDF, assinatura digital, integrações externas.
+
+### CP-G — concluído
+
+**Escopo entregue:**
+
+- `docs/tasks/TASK-031.md` e `docs/business-rules/contracts.md` criados
+- `ARCHITECTURE.md`, `PROJECT.md`, este documento e `docs/roadmap.md` atualizados
+- Nenhuma alteração em `lib/`, `test/`, schema, providers ou UI — checkpoint exclusivamente documental
+
+**Verificação:** `flutter analyze` e `flutter test` com 1536 testes passando (suíte inalterada).
+
+**Commit:** *(pendente de aprovação/commit)*
+
+---
+
 ## TASK-030 — Logística & Transporte
 
 **Branch:** `cursor/task-030-logistica`

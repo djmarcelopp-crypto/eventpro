@@ -24,6 +24,10 @@ import '../../features/logistics/quote_vehicles_screen.dart';
 import '../../features/logistics/vehicle_detail_screen.dart';
 import '../../features/logistics/vehicle_types_screen.dart';
 import '../../features/logistics/vehicles_screen.dart';
+import '../../features/contracts/contract_detail_screen.dart';
+import '../../features/contracts/contract_templates_screen.dart';
+import '../../features/contracts/contracts_screen.dart';
+import '../../features/contracts/quote_contracts_screen.dart';
 import '../../features/financial/financial_categories_screen.dart';
 import '../../features/financial/financial_entry_detail_screen.dart';
 import '../../features/financial/financial_screen.dart';
@@ -56,6 +60,8 @@ abstract class AppRoutes {
   static String quotesTeam(String id) => '$quotes/$id/team';
 
   static String quotesVehicles(String id) => '$quotes/$id/vehicles';
+
+  static String quotesContracts(String id) => '$quotes/$id/contracts';
   static const catalogNew = '/catalog/new';
 
   static String catalogDetail(String id) => '$catalog/$id';
@@ -107,6 +113,11 @@ abstract class AppRoutes {
   static String vehicleDetail(String id) => '$vehicles/$id';
 
   static String vehicleEdit(String id) => '$vehicles/$id/edit';
+
+  static const contracts = '/contracts';
+  static const contractTemplates = '/contracts/templates';
+
+  static String contractDetail(String id) => '$contracts/$id';
 }
 
 abstract class AppRouter {
@@ -186,6 +197,12 @@ abstract class AppRouter {
               GoRoute(
                 path: 'vehicles',
                 builder: (context, state) => QuoteVehiclesScreen(
+                  quoteId: state.pathParameters['id']!,
+                ),
+              ),
+              GoRoute(
+                path: 'contracts',
+                builder: (context, state) => QuoteContractsScreen(
                   quoteId: state.pathParameters['id']!,
                 ),
               ),
@@ -360,6 +377,22 @@ abstract class AppRouter {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: AppRoutes.contracts,
+        builder: (context, state) => const ContractsScreen(),
+        routes: [
+          GoRoute(
+            path: 'templates',
+            builder: (context, state) => const ContractTemplatesScreen(),
+          ),
+          GoRoute(
+            path: ':id',
+            builder: (context, state) => ContractDetailScreen(
+              contractId: state.pathParameters['id']!,
+            ),
           ),
         ],
       ),

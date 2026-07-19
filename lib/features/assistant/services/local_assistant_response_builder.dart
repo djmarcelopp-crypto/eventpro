@@ -170,6 +170,10 @@ class LocalAssistantResponseBuilder implements AssistantResponseBuilder {
         'Ainda preciso esclarecer: ${questions.map((q) => q.prompt).join(' ')}',
       );
     }
+    parts.add(
+      'O assistente entendeu sua solicitação, mas ainda faltam informações '
+      'antes que qualquer operação possa ser realizada.',
+    );
     parts.add('Não criei nenhum registro no sistema — apenas um rascunho.');
     return parts.join(' ');
   }

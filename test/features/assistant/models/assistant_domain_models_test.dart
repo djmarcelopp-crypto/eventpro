@@ -121,6 +121,8 @@ void main() {
       );
 
       expect(response.actions.where((a) => a.available), hasLength(1));
+      expect(response.executionPlan, isNull);
+      expect(response.blockedSteps, isEmpty);
       expect(
         response.copyWith(friendlyMessage: 'ok').friendlyMessage,
         'ok',

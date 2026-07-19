@@ -1,8 +1,13 @@
+import 'package:eventpro/features/assistant/adapters/in_memory_client_gateway.dart';
+import 'package:eventpro/features/assistant/adapters/local_assistant_gateway.dart';
 import 'package:eventpro/features/assistant/models/assistant_action_type.dart';
 import 'package:eventpro/features/assistant/models/assistant_execution_status.dart';
 import 'package:eventpro/features/assistant/models/assistant_input_origin.dart';
 import 'package:eventpro/features/assistant/models/assistant_intent_type.dart';
+import 'package:eventpro/features/assistant/models/assistant_module_capability.dart';
+import 'package:eventpro/features/assistant/models/assistant_module_data_source.dart';
 import 'package:eventpro/features/assistant/models/assistant_request.dart';
+import 'package:eventpro/features/assistant/services/assistant_capabilities.dart';
 import 'package:eventpro/features/assistant/services/local_assistant_orchestrator.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -143,6 +148,81 @@ void main() {
       expect(response.executionPlan, isNotNull);
       expect(mutated.executionPlan, response.executionPlan);
       expect(response.readySteps, isEmpty);
+    });
+
+    test('read gateway enriches searchClient without mutating ERP data', () {
+      final wired = LocalAssistantOrchestrator(
+        clock: () => now,
+        capabilities: AssistantCapabilities.localReadIntegration(),
+        gateway: LocalAssistantGateway(
+          clients: InMemoryClientGateway(
+            seed: const [
+              InMemoryClientRecord(
+                identifier: 'cli-joao',
+                displayName: 'João Pereira',
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final response = wired.handle(
+        AssistantRequest(
+          id: 'req-client',
+          rawText: 'Procure o cliente João',
+          locale: 'pt_BR',
+          timezone: 'America/Sao_Paulo',
+          timestamp: now,
+          origin: AssistantInputOrigin.typedText,
+        ),
+      );
+
+      expect(response.primaryIntent.type, AssistantIntentType.searchClient);
+      expect(
+        response.consultedModules,
+        contains(AssistantModuleCapability.searchClient),
+      );
+      expect(response.moduleResults, isNotEmpty);
+      expect(response.moduleResults.single.result?.found, isTrue);
+      expect(response.moduleResults.single.result?.displayName, 'João Pereira');
+      expect(
+        response.moduleResults.single.dataSource,
+        AssistantModuleDataSource.inMemory,
+      );
+      expect(response.hasOnlySimulatedModuleData, isTrue);
+      expect(response.moduleDataSources, [AssistantModuleDataSource.inMemory]);
+      expect(response.friendlyMessage, contains('Cliente encontrado'));
+      expect(response.friendlyMessage, contains('Nenhum dado do ERP foi alterado'));
+      expect(response.eventDraft?.clientName, 'João');
+      expect(wired.capabilities.canExecuteCreateEvent, isFalse);
+      expect(wired.capabilities.canExecuteCreateQuote, isFalse);
+      expect(
+        response.executionPlan?.steps
+            .where((s) => s.intendedAction.startsWith('create'))
+            .every((s) => !s.isReady),
+        isTrue,
+      );
+    });
+
+    test('without read capability keeps module unavailable', () {
+      final response = orchestrator.handle(
+        AssistantRequest(
+          id: 'req-client-default',
+          rawText: 'Procure o cliente João',
+          locale: 'pt_BR',
+          timezone: 'America/Sao_Paulo',
+          timestamp: now,
+          origin: AssistantInputOrigin.typedText,
+        ),
+      );
+
+      expect(response.primaryIntent.type, AssistantIntentType.searchClient);
+      expect(response.moduleResults, isEmpty);
+      expect(
+        response.unavailableModules,
+        contains(AssistantModuleCapability.searchClient),
+      );
+      expect(response.integrationWarnings, isNotEmpty);
     });
   });
 }

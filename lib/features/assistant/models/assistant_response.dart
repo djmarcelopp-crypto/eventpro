@@ -5,7 +5,11 @@ import 'assistant_event_draft.dart';
 import 'assistant_execution_plan.dart';
 import 'assistant_execution_step.dart';
 import 'assistant_execution_warning.dart';
+import 'assistant_integration_warning.dart';
 import 'assistant_intent.dart';
+import 'assistant_module_capability.dart';
+import 'assistant_module_data_source.dart';
+import 'assistant_module_response.dart';
 import 'assistant_parse_issue.dart';
 import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
@@ -33,6 +37,10 @@ class AssistantResponse {
     this.readySteps = const [],
     this.warnings = const [],
     this.nextRecommendedAction,
+    this.moduleResults = const [],
+    this.consultedModules = const [],
+    this.unavailableModules = const [],
+    this.integrationWarnings = const [],
   });
 
   final String requestId;
@@ -49,7 +57,7 @@ class AssistantResponse {
   final List<AssistantAction> actions;
   final String friendlyMessage;
 
-  /// Explicit plan produced by AI-002 — never executed here.
+  /// Explicit plan produced by AI-002 — never executed for writes here.
   final AssistantExecutionPlan? executionPlan;
 
   /// Steps that would require user confirmation before any future execution.
@@ -61,6 +69,19 @@ class AssistantResponse {
 
   /// Suggested next human action (review / answer questions) — not ERP write.
   final AssistantAction? nextRecommendedAction;
+
+  /// AI-003 read-only module consultation outcomes.
+  final List<AssistantModuleResponse> moduleResults;
+  final List<AssistantModuleCapability> consultedModules;
+  final List<AssistantModuleCapability> unavailableModules;
+  final List<AssistantIntegrationWarning> integrationWarnings;
+
+  /// Distinct data sources present in [moduleResults] (for future UI).
+  List<AssistantModuleDataSource> get moduleDataSources =>
+      moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
+
+  bool get hasOnlySimulatedModuleData =>
+      moduleResults.isEmpty || moduleResults.every((r) => r.isSimulated);
 
   AssistantResponse copyWith({
     String? requestId,
@@ -82,6 +103,10 @@ class AssistantResponse {
     List<AssistantExecutionStep>? readySteps,
     List<AssistantExecutionWarning>? warnings,
     AssistantAction? nextRecommendedAction,
+    List<AssistantModuleResponse>? moduleResults,
+    List<AssistantModuleCapability>? consultedModules,
+    List<AssistantModuleCapability>? unavailableModules,
+    List<AssistantIntegrationWarning>? integrationWarnings,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -111,6 +136,10 @@ class AssistantResponse {
       nextRecommendedAction: clearNextRecommendedAction
           ? null
           : (nextRecommendedAction ?? this.nextRecommendedAction),
+      moduleResults: moduleResults ?? this.moduleResults,
+      consultedModules: consultedModules ?? this.consultedModules,
+      unavailableModules: unavailableModules ?? this.unavailableModules,
+      integrationWarnings: integrationWarnings ?? this.integrationWarnings,
     );
   }
 
@@ -136,7 +165,11 @@ class AssistantResponse {
             _listEquals(other.blockedSteps, blockedSteps) &&
             _listEquals(other.readySteps, readySteps) &&
             _listEquals(other.warnings, warnings) &&
-            other.nextRecommendedAction == nextRecommendedAction;
+            other.nextRecommendedAction == nextRecommendedAction &&
+            _listEquals(other.moduleResults, moduleResults) &&
+            _listEquals(other.consultedModules, consultedModules) &&
+            _listEquals(other.unavailableModules, unavailableModules) &&
+            _listEquals(other.integrationWarnings, integrationWarnings);
   }
 
   @override
@@ -144,22 +177,30 @@ class AssistantResponse {
         requestId,
         rawText,
         primaryIntent,
-        Object.hashAll(alternativeIntents),
-        Object.hashAll(entities),
-        eventDraft,
-        quoteDraft,
-        Object.hashAll(questions),
-        Object.hashAll(suggestions),
-        Object.hashAll(issues),
-        overallConfidence,
-        Object.hashAll(actions),
-        friendlyMessage,
-        executionPlan,
-        Object.hashAll(requiredConfirmations),
-        Object.hashAll(blockedSteps),
-        Object.hashAll(readySteps),
-        Object.hashAll(warnings),
-        nextRecommendedAction,
+        Object.hash(
+          Object.hashAll(alternativeIntents),
+          Object.hashAll(entities),
+          eventDraft,
+          quoteDraft,
+          Object.hashAll(questions),
+          Object.hashAll(suggestions),
+          Object.hashAll(issues),
+          overallConfidence,
+          Object.hashAll(actions),
+          friendlyMessage,
+        ),
+        Object.hash(
+          executionPlan,
+          Object.hashAll(requiredConfirmations),
+          Object.hashAll(blockedSteps),
+          Object.hashAll(readySteps),
+          Object.hashAll(warnings),
+          nextRecommendedAction,
+          Object.hashAll(moduleResults),
+          Object.hashAll(consultedModules),
+          Object.hashAll(unavailableModules),
+          Object.hashAll(integrationWarnings),
+        ),
       );
 
   static bool _listEquals<T>(List<T> a, List<T> b) {

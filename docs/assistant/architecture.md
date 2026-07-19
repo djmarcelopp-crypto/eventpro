@@ -12,10 +12,14 @@ Texto
   → ResponseBuilder
   → Execution Planner
   → Module Consultant
-  → Gateway (contratos)
-  → Adapter (somente leitura nesta fase)
+  → Gateway (contratos) / Adapter (leitura simulada)
+  → Execution Validator
+  → Confirmation Engine
+  → Execution Dispatcher (dryRun / simulation)
   → AssistantResponse enriquecida
 ```
+
+Ver também: [controlled-execution.md](controlled-execution.md), [module-integration.md](module-integration.md).
 
 O assistente **nunca** importa repositories, DAOs, Drift ou services concretos dos módulos ERP.
 
@@ -52,7 +56,7 @@ O nível de confiança/ambiente é dado por:
 
 ## Escrita
 
-Nenhuma sprint até AI-003 habilita escrita (`canExecuteCreateEvent` / `canExecuteCreateQuote` permanecem `false` por padrão). Confirmação de usuário **não** habilita executor.
+Nenhuma sprint até AI-004 habilita escrita real (`canExecuteCreateEvent` / `canExecuteCreateQuote` permanecem `false` por padrão). Confirmação de usuário **não** habilita executor nem despacha produção — apenas dry-run/simulation.
 
 ## Dependência
 

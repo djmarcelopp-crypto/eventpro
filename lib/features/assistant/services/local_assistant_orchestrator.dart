@@ -1,3 +1,4 @@
+import '../domain/assistant_execution_dispatcher.dart';
 import '../domain/assistant_execution_planner.dart';
 import '../domain/assistant_intent_classifier.dart';
 import '../domain/assistant_orchestrator.dart';
@@ -6,6 +7,10 @@ import '../domain/assistant_response_builder.dart';
 import '../domain/gateway/assistant_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_type.dart';
+import '../models/assistant_execution_context.dart';
+import '../models/assistant_execution_mode.dart';
+import '../models/assistant_execution_request.dart';
+import '../models/assistant_execution_token.dart';
 import '../models/assistant_intent.dart';
 import '../models/assistant_module_response.dart';
 import '../models/assistant_request.dart';
@@ -14,6 +19,7 @@ import '../parsers/local_assistant_parser.dart';
 import 'assistant_capabilities.dart';
 import 'assistant_draft_builder.dart';
 import 'assistant_module_consultant.dart';
+import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_response_builder.dart';
@@ -28,8 +34,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantCapabilities? capabilities,
     AssistantGateway? gateway,
     AssistantModuleConsultant? moduleConsultant,
+    AssistantExecutionDispatcher? executionDispatcher,
+    this._executionMode = AssistantExecutionMode.dryRun,
+    Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
   })  : _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
+        _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
+        _clock = clock ?? DateTime.now,
         _parser = parser ?? LocalAssistantParser(clock: clock),
         _intentClassifier =
             intentClassifier ?? LocalAssistantIntentClassifier(),
@@ -45,14 +56,23 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
               capabilities:
                   capabilities ?? AssistantCapabilities.localDefaults(),
               gateway: gateway,
+            ),
+        _executionDispatcher = executionDispatcher ??
+            LocalAssistantExecutionDispatcher(
+              capabilities:
+                  capabilities ?? AssistantCapabilities.localDefaults(),
             );
 
   final AssistantCapabilities _capabilities;
+  final AssistantExecutionMode _executionMode;
+  final Set<String> _confirmedStepIds;
+  final DateTime Function() _clock;
   final AssistantParser _parser;
   final AssistantIntentClassifier _intentClassifier;
   final AssistantResponseBuilder _responseBuilder;
   final AssistantExecutionPlanner _executionPlanner;
   final AssistantModuleConsultant _moduleConsultant;
+  final AssistantExecutionDispatcher _executionDispatcher;
 
   @override
   AssistantResponse handle(AssistantRequest request) {
@@ -90,10 +110,30 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       plan: plan,
     );
     final enrichedPlan = consultation.plan;
+
+    final executionRequest = AssistantExecutionRequest(
+      id: 'exec-${request.id}',
+      context: AssistantExecutionContext(
+        requestId: request.id,
+        token: AssistantExecutionToken('tok-${request.id}-${_clock().millisecondsSinceEpoch}'),
+        mode: _executionMode,
+        integrationMode: _capabilities.integrationMode,
+        timestamp: _clock(),
+        confirmedStepIds: _confirmedStepIds,
+      ),
+      plan: enrichedPlan,
+      consultedDataSources: consultation.results
+          .map((r) => r.dataSource)
+          .toSet()
+          .toList(growable: false),
+    );
+
+    final report = _executionDispatcher.dispatch(executionRequest);
     final nextAction = _nextRecommendedAction(interpreted);
     final friendlyMessage = _enrichFriendlyMessage(
       base: interpreted.friendlyMessage,
       moduleResults: consultation.results,
+      reportSummary: report.summary,
     );
 
     return interpreted.copyWith(
@@ -107,11 +147,17 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       consultedModules: consultation.consultedModules,
       unavailableModules: consultation.unavailableModules,
       integrationWarnings: consultation.warnings,
+      executionReport: report,
+      executionMode: report.mode,
+      executionAudit: report.audit,
+      executableSteps: report.eligibleSteps,
+      simulatedSteps: report.simulatedSteps,
+      skippedSteps: report.skippedSteps,
+      executionWarnings: report.warnings,
       friendlyMessage: friendlyMessage,
     );
   }
 
-  /// Exposed for tests — write execution must remain disabled by default.
   AssistantCapabilities get capabilities => _capabilities;
 
   static AssistantAction _nextRecommendedAction(AssistantResponse response) {
@@ -137,8 +183,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   static String _enrichFriendlyMessage({
     required String base,
     required List<AssistantModuleResponse> moduleResults,
+    required String reportSummary,
   }) {
-    if (moduleResults.isEmpty) return base;
     final parts = <String>[base];
     for (final result in moduleResults) {
       final payload = result.result;
@@ -152,7 +198,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    parts.add('Nenhum dado do ERP foi alterado.');
+    parts.add(reportSummary);
+    parts.add(
+      'O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.',
+    );
     return parts.join(' ');
   }
 }

@@ -16,6 +16,7 @@ import 'assistant_module_response.dart';
 import 'assistant_parse_issue.dart';
 import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
+import 'assistant_read_result.dart';
 import 'assistant_suggestion.dart';
 import 'assistant_write_authorization_status.dart';
 import 'assistant_write_result.dart';
@@ -58,6 +59,7 @@ class AssistantResponse {
     this.writeValidation,
     this.writeAuthorization,
     this.writeWarnings = const [],
+    this.readResult,
   });
 
   final String requestId;
@@ -101,6 +103,9 @@ class AssistantResponse {
   final AssistantWriteAuthorizationStatus? writeAuthorization;
   final List<String> writeWarnings;
 
+  /// AI-008 structured ERP read result (orthogonal to [moduleResults]).
+  final AssistantReadResult? readResult;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -142,6 +147,7 @@ class AssistantResponse {
     AssistantWriteValidationResult? writeValidation,
     AssistantWriteAuthorizationStatus? writeAuthorization,
     List<String>? writeWarnings,
+    AssistantReadResult? readResult,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -152,6 +158,7 @@ class AssistantResponse {
     bool clearWriteResult = false,
     bool clearWriteValidation = false,
     bool clearWriteAuthorization = false,
+    bool clearReadResult = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -201,6 +208,7 @@ class AssistantResponse {
           ? null
           : (writeAuthorization ?? this.writeAuthorization),
       writeWarnings: writeWarnings ?? this.writeWarnings,
+      readResult: clearReadResult ? null : (readResult ?? this.readResult),
     );
   }
 
@@ -241,7 +249,8 @@ class AssistantResponse {
             other.writeResult == writeResult &&
             other.writeValidation == writeValidation &&
             other.writeAuthorization == writeAuthorization &&
-            _listEquals(other.writeWarnings, writeWarnings);
+            _listEquals(other.writeWarnings, writeWarnings) &&
+            other.readResult == readResult;
   }
 
   @override
@@ -285,6 +294,7 @@ class AssistantResponse {
           writeValidation,
           writeAuthorization,
           Object.hashAll(writeWarnings),
+          readResult,
         ),
       );
 

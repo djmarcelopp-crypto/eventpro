@@ -8,6 +8,9 @@ import '../domain/assistant_write_coordinator.dart';
 import '../domain/conversation/assistant_conversation_planner.dart';
 import '../domain/gateway/assistant_gateway.dart';
 import '../domain/idempotency/assistant_idempotency_service.dart';
+import '../domain/insight/assistant_insight_formatter.dart';
+import '../domain/insight/assistant_insight_gateway.dart';
+import '../domain/insight/assistant_insight_planner.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/write/assistant_write_gateway.dart';
@@ -19,6 +22,8 @@ import '../models/assistant_execution_mode.dart';
 import '../models/assistant_execution_policy.dart';
 import '../models/assistant_execution_request.dart';
 import '../models/assistant_execution_token.dart';
+import '../models/assistant_insight_presentation.dart';
+import '../models/assistant_insight_result.dart';
 import '../models/assistant_intent.dart';
 import '../models/assistant_module_response.dart';
 import '../models/assistant_read_presentation.dart';
@@ -35,6 +40,9 @@ import 'local_assistant_conversation_planner.dart';
 import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
 import 'local_assistant_idempotency_service.dart';
+import 'local_assistant_insight_formatter.dart';
+import 'local_assistant_insight_intent_resolver.dart';
+import 'local_assistant_insight_planner.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_assistant_read_formatter.dart';
@@ -65,11 +73,16 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     LocalAssistantReadFormatter? readFormatter,
     AssistantConversationSessionRegistry? conversationSessions,
     AssistantConversationPlanner? conversationPlanner,
+    AssistantInsightGateway? insightGateway,
+    LocalAssistantInsightIntentResolver? insightIntentResolver,
+    AssistantInsightPlanner? insightPlanner,
+    AssistantInsightFormatter? insightFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
   })  : _writeGateway = writeGateway,
         _readGateway = readGateway,
+        _insightGateway = insightGateway,
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
@@ -111,7 +124,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _conversationSessions = conversationSessions ??
             AssistantConversationSessionRegistry(clock: clock),
         _conversationPlanner = conversationPlanner ??
-            const LocalAssistantConversationPlanner();
+            const LocalAssistantConversationPlanner(),
+        _insightIntentResolver = insightIntentResolver ??
+            const LocalAssistantInsightIntentResolver(),
+        _insightPlanner =
+            insightPlanner ?? const LocalAssistantInsightPlanner(),
+        _insightFormatter =
+            insightFormatter ?? const LocalAssistantInsightFormatter();
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
@@ -119,6 +138,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final DateTime Function() _clock;
   final AssistantWriteGateway? _writeGateway;
   final AssistantReadGateway? _readGateway;
+  final AssistantInsightGateway? _insightGateway;
   final AssistantParser _parser;
   final AssistantIntentClassifier _intentClassifier;
   final AssistantResponseBuilder _responseBuilder;
@@ -132,6 +152,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantReadFormatter _readFormatter;
   final AssistantConversationSessionRegistry _conversationSessions;
   final AssistantConversationPlanner _conversationPlanner;
+  final LocalAssistantInsightIntentResolver _insightIntentResolver;
+  final AssistantInsightPlanner _insightPlanner;
+  final AssistantInsightFormatter _insightFormatter;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -213,67 +236,89 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
 
+    // AI-011 insight pipeline (independent of read/conversation/write).
+    AssistantInsightResult? insightResult;
+    AssistantInsightPresentation? insightPresentation;
+    final insightIntent = _insightIntentResolver.resolve(
+      request: request,
+      capabilities: _capabilities,
+    );
+    if (insightIntent != null &&
+        _capabilities.canExecuteQuoteInsights &&
+        _insightGateway != null) {
+      final insightRequest = _insightPlanner.plan(
+        insightIntent,
+        requestId: request.id,
+        referenceTimestamp: _clock().toUtc(),
+      );
+      insightResult = await _insightGateway.execute(insightRequest);
+      insightPresentation = _insightFormatter.format(insightResult);
+    }
+
     final sessionId = request.context?.sessionId?.trim();
     final session = (sessionId != null && sessionId.isNotEmpty)
         ? _conversationSessions.getOrCreate(sessionId)
         : null;
 
-    final conversationPlan = _conversationPlanner.plan(
-      request: request,
-      session: session,
-      capabilities: _capabilities,
-    );
-
     AssistantReadResult? readResult;
     AssistantReadPresentation? readPresentation;
     AssistantConversationPresentation? conversationPresentation;
 
-    if (conversationPlan.missingContext) {
-      conversationPresentation = AssistantConversationPresentation(
-        naturalLanguage: conversationPlan.missingContextMessage ??
-            LocalAssistantConversationPlanner.missingContextMessage,
-        isFollowUp: true,
-        missingContext: true,
-        sessionId: session?.sessionId,
-        contextVersion: session?.context.version ?? 0,
-      );
-    } else if (conversationPlan.contextualAnswer != null) {
-      conversationPresentation = AssistantConversationPresentation(
-        naturalLanguage: conversationPlan.contextualAnswer!,
-        isFollowUp: true,
-        sessionId: session?.sessionId,
-        contextVersion: session?.context.version ?? 0,
-      );
-    } else if (conversationPlan.shouldExecuteRead) {
-      final readIntent = conversationPlan.intent!;
-      final readQuery = conversationPlan.query ??
-          _readQueryFactory.planIntent(
-            readIntent,
-            requestId: request.id,
-          );
-      readResult = await _readCoordinator.execute(
-        query: readQuery,
+    // Preserve AI-009/AI-010 when insights did not handle this turn.
+    if (insightPresentation == null) {
+      final conversationPlan = _conversationPlanner.plan(
+        request: request,
+        session: session,
         capabilities: _capabilities,
-        gateway: _readGateway,
       );
-      readPresentation = _readFormatter.format(
-        result: readResult,
-        intent: readIntent,
-      );
-      if (session != null && readResult.valid) {
-        session.rememberTurn(
-          intent: readIntent,
+
+      if (conversationPlan.missingContext) {
+        conversationPresentation = AssistantConversationPresentation(
+          naturalLanguage: conversationPlan.missingContextMessage ??
+              LocalAssistantConversationPlanner.missingContextMessage,
+          isFollowUp: true,
+          missingContext: true,
+          sessionId: session?.sessionId,
+          contextVersion: session?.context.version ?? 0,
+        );
+      } else if (conversationPlan.contextualAnswer != null) {
+        conversationPresentation = AssistantConversationPresentation(
+          naturalLanguage: conversationPlan.contextualAnswer!,
+          isFollowUp: true,
+          sessionId: session?.sessionId,
+          contextVersion: session?.context.version ?? 0,
+        );
+      } else if (conversationPlan.shouldExecuteRead) {
+        final readIntent = conversationPlan.intent!;
+        final readQuery = conversationPlan.query ??
+            _readQueryFactory.planIntent(
+              readIntent,
+              requestId: request.id,
+            );
+        readResult = await _readCoordinator.execute(
           query: readQuery,
+          capabilities: _capabilities,
+          gateway: _readGateway,
+        );
+        readPresentation = _readFormatter.format(
           result: readResult,
-          focusedIndex: conversationPlan.focusIndex,
+          intent: readIntent,
+        );
+        if (session != null && readResult.valid) {
+          session.rememberTurn(
+            intent: readIntent,
+            query: readQuery,
+            result: readResult,
+            focusedIndex: conversationPlan.focusIndex,
+          );
+        }
+        conversationPresentation = AssistantConversationPresentation(
+          naturalLanguage: readPresentation.naturalLanguage,
+          isFollowUp: conversationPlan.isFollowUp,
+          sessionId: session?.sessionId,
+          contextVersion: session?.context.version ?? 0,
         );
       }
-      conversationPresentation = AssistantConversationPresentation(
-        naturalLanguage: readPresentation.naturalLanguage,
-        isFollowUp: conversationPlan.isFollowUp,
-        sessionId: session?.sessionId,
-        contextVersion: session?.context.version ?? 0,
-      );
     }
 
     final mutated = writePreparation?.writeResult.mutatedErp ?? false;
@@ -296,6 +341,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       writePreparation: writePreparation,
       readPresentation: readPresentation,
       conversationPresentation: conversationPresentation,
+      insightPresentation: insightPresentation,
       mode: _executionMode,
     );
 
@@ -324,6 +370,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       readResult: readResult,
       readPresentation: readPresentation,
       conversationPresentation: conversationPresentation,
+      insightResult: insightResult,
+      insightPresentation: insightPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -360,6 +408,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantWritePreparation? writePreparation,
     AssistantReadPresentation? readPresentation,
     AssistantConversationPresentation? conversationPresentation,
+    AssistantInsightPresentation? insightPresentation,
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -375,7 +424,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    if (conversationPresentation != null) {
+    if (insightPresentation != null) {
+      parts.add(insightPresentation.naturalLanguage);
+    } else if (conversationPresentation != null) {
       parts.add(conversationPresentation.naturalLanguage);
     } else if (readPresentation != null) {
       parts.add(readPresentation.naturalLanguage);

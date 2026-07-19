@@ -17,6 +17,8 @@ import 'assistant_parse_issue.dart';
 import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
 import 'assistant_conversation_presentation.dart';
+import 'assistant_insight_presentation.dart';
+import 'assistant_insight_result.dart';
 import 'assistant_read_presentation.dart';
 import 'assistant_read_result.dart';
 import 'assistant_suggestion.dart';
@@ -64,6 +66,8 @@ class AssistantResponse {
     this.readResult,
     this.readPresentation,
     this.conversationPresentation,
+    this.insightResult,
+    this.insightPresentation,
   });
 
   final String requestId;
@@ -116,6 +120,12 @@ class AssistantResponse {
   /// AI-010 multi-turn conversation presentation.
   final AssistantConversationPresentation? conversationPresentation;
 
+  /// AI-011 deterministic insight computation.
+  final AssistantInsightResult? insightResult;
+
+  /// AI-011 insight presentation (NL + structured payload).
+  final AssistantInsightPresentation? insightPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -160,6 +170,8 @@ class AssistantResponse {
     AssistantReadResult? readResult,
     AssistantReadPresentation? readPresentation,
     AssistantConversationPresentation? conversationPresentation,
+    AssistantInsightResult? insightResult,
+    AssistantInsightPresentation? insightPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -173,6 +185,8 @@ class AssistantResponse {
     bool clearReadResult = false,
     bool clearReadPresentation = false,
     bool clearConversationPresentation = false,
+    bool clearInsightResult = false,
+    bool clearInsightPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -229,6 +243,12 @@ class AssistantResponse {
       conversationPresentation: clearConversationPresentation
           ? null
           : (conversationPresentation ?? this.conversationPresentation),
+      insightResult: clearInsightResult
+          ? null
+          : (insightResult ?? this.insightResult),
+      insightPresentation: clearInsightPresentation
+          ? null
+          : (insightPresentation ?? this.insightPresentation),
     );
   }
 
@@ -272,7 +292,9 @@ class AssistantResponse {
             _listEquals(other.writeWarnings, writeWarnings) &&
             other.readResult == readResult &&
             other.readPresentation == readPresentation &&
-            other.conversationPresentation == conversationPresentation;
+            other.conversationPresentation == conversationPresentation &&
+            other.insightResult == insightResult &&
+            other.insightPresentation == insightPresentation;
   }
 
   @override
@@ -319,6 +341,8 @@ class AssistantResponse {
           readResult,
           readPresentation,
           conversationPresentation,
+          insightResult,
+          insightPresentation,
         ),
       );
 

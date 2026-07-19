@@ -16,10 +16,12 @@ Texto
   → Execution Validator
   → Confirmation Engine
   → Execution Dispatcher (dryRun / simulation)
+  → WriteIntentFactory (intenções de escrita)
+  → Write Coordinator (Validator + Authorizer + ExecutionContext)
   → AssistantResponse enriquecida
 ```
 
-Ver também: [controlled-execution.md](controlled-execution.md), [module-integration.md](module-integration.md).
+Ver também: [controlled-execution.md](controlled-execution.md), [module-integration.md](module-integration.md), [write-pipeline.md](write-pipeline.md).
 
 O assistente **nunca** importa repositories, DAOs, Drift ou services concretos dos módulos ERP.
 
@@ -56,7 +58,12 @@ O nível de confiança/ambiente é dado por:
 
 ## Escrita
 
-Nenhuma sprint até AI-004 habilita escrita real (`canExecuteCreateEvent` / `canExecuteCreateQuote` permanecem `false` por padrão). Confirmação de usuário **não** habilita executor nem despacha produção — apenas dry-run/simulation.
+AI-005 modela a **Write Pipeline** (intenção → validator → authorizer → coordinator → `WriteResult`) integrada ao Execution Context da AI-004.
+
+- `canExecuteCreateEvent` / `canExecuteCreateQuote` permanecem `false` por padrão.
+- Confirmação de usuário **não** habilita executor nem despacha produção.
+- `AssistantWriteResult.executed` é sempre `false` nesta sprint.
+- Detalhes: [write-pipeline.md](write-pipeline.md).
 
 ## Dependência
 

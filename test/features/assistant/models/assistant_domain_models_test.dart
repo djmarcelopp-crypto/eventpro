@@ -127,6 +127,10 @@ void main() {
       expect(response.consultedModules, isEmpty);
       expect(response.unavailableModules, isEmpty);
       expect(response.integrationWarnings, isEmpty);
+      expect(response.writeResult, isNull);
+      expect(response.writeValidation, isNull);
+      expect(response.writeAuthorization, isNull);
+      expect(response.writeWarnings, isEmpty);
       expect(
         response.copyWith(friendlyMessage: 'ok').friendlyMessage,
         'ok',

@@ -4,6 +4,7 @@ import '../domain/assistant_intent_classifier.dart';
 import '../domain/assistant_orchestrator.dart';
 import '../domain/assistant_parser.dart';
 import '../domain/assistant_response_builder.dart';
+import '../domain/assistant_write_coordinator.dart';
 import '../domain/gateway/assistant_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_type.dart';
@@ -15,6 +16,7 @@ import '../models/assistant_intent.dart';
 import '../models/assistant_module_response.dart';
 import '../models/assistant_request.dart';
 import '../models/assistant_response.dart';
+import '../models/assistant_write_preparation.dart';
 import '../parsers/local_assistant_parser.dart';
 import 'assistant_capabilities.dart';
 import 'assistant_draft_builder.dart';
@@ -23,6 +25,8 @@ import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_response_builder.dart';
+import 'local_assistant_write_coordinator.dart';
+import 'local_assistant_write_intent_factory.dart';
 
 /// Local orchestration pipeline with no persistence and no ERP writes.
 class LocalAssistantOrchestrator implements AssistantOrchestrator {
@@ -35,6 +39,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantGateway? gateway,
     AssistantModuleConsultant? moduleConsultant,
     AssistantExecutionDispatcher? executionDispatcher,
+    AssistantWriteCoordinator? writeCoordinator,
+    LocalAssistantWriteIntentFactory? writeIntentFactory,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -61,7 +67,11 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             LocalAssistantExecutionDispatcher(
               capabilities:
                   capabilities ?? AssistantCapabilities.localDefaults(),
-            );
+            ),
+        _writeCoordinator =
+            writeCoordinator ?? LocalAssistantWriteCoordinator(),
+        _writeIntentFactory =
+            writeIntentFactory ?? const LocalAssistantWriteIntentFactory();
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
@@ -73,6 +83,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantExecutionPlanner _executionPlanner;
   final AssistantModuleConsultant _moduleConsultant;
   final AssistantExecutionDispatcher _executionDispatcher;
+  final AssistantWriteCoordinator _writeCoordinator;
+  final LocalAssistantWriteIntentFactory _writeIntentFactory;
 
   @override
   AssistantResponse handle(AssistantRequest request) {
@@ -129,11 +141,24 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     );
 
     final report = _executionDispatcher.dispatch(executionRequest);
+
+    final writeRequest = _writeIntentFactory.fromPipeline(
+      response: interpreted,
+      plan: enrichedPlan,
+    );
+    final AssistantWritePreparation? writePreparation = writeRequest == null
+        ? null
+        : _writeCoordinator.prepare(
+            request: writeRequest,
+            context: executionRequest.context,
+          );
+
     final nextAction = _nextRecommendedAction(interpreted);
     final friendlyMessage = _enrichFriendlyMessage(
       base: interpreted.friendlyMessage,
       moduleResults: consultation.results,
       reportSummary: report.summary,
+      writePreparation: writePreparation,
     );
 
     return interpreted.copyWith(
@@ -154,6 +179,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       simulatedSteps: report.simulatedSteps,
       skippedSteps: report.skippedSteps,
       executionWarnings: report.warnings,
+      writeResult: writePreparation?.writeResult,
+      writeValidation: writePreparation?.writeValidation,
+      writeAuthorization: writePreparation?.writeAuthorization,
+      writeWarnings: writePreparation?.writeWarnings ?? const [],
       friendlyMessage: friendlyMessage,
     );
   }
@@ -184,6 +213,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     required String base,
     required List<AssistantModuleResponse> moduleResults,
     required String reportSummary,
+    AssistantWritePreparation? writePreparation,
   }) {
     final parts = <String>[base];
     for (final result in moduleResults) {
@@ -202,6 +232,12 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     parts.add(
       'O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.',
     );
+    if (writePreparation != null) {
+      parts.add(
+        'A operação foi apenas preparada. '
+        'Nenhuma alteração foi realizada no EventPRO.',
+      );
+    }
     return parts.join(' ');
   }
 }

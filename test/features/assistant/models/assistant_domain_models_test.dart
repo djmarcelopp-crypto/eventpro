@@ -123,6 +123,10 @@ void main() {
       expect(response.actions.where((a) => a.available), hasLength(1));
       expect(response.executionPlan, isNull);
       expect(response.blockedSteps, isEmpty);
+      expect(response.moduleResults, isEmpty);
+      expect(response.consultedModules, isEmpty);
+      expect(response.unavailableModules, isEmpty);
+      expect(response.integrationWarnings, isEmpty);
       expect(
         response.copyWith(friendlyMessage: 'ok').friendlyMessage,
         'ok',

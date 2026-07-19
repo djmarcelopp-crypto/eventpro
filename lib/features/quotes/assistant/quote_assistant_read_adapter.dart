@@ -40,14 +40,46 @@ class QuoteAssistantReadAdapter implements AssistantReadAdapter {
     final pagination = query.pagination.clampToMax();
     final warnings = <String>[];
 
-    final id = _filterValue(query.filters, 'id');
-    final number = _filterValue(query.filters, 'number');
-    final statusRaw = _filterValue(query.filters, 'status');
-    final status = _parseStatus(statusRaw);
+    final id = _filterValue(query.filters, 'id', operators: const {'eq'});
+    final numberEq =
+        _filterValue(query.filters, 'number', operators: const {'eq'});
+    final numberContains = _filterValue(
+      query.filters,
+      'number',
+      operators: const {'contains'},
+    );
+    final number = numberEq ?? numberContains;
+    final numberIsContains = numberEq == null && numberContains != null;
 
-    if (statusRaw != null && status == null) {
-      warnings.add('status desconhecido ignorado: $statusRaw');
+    final statusEq =
+        _filterValue(query.filters, 'status', operators: const {'eq'});
+    final statusIn =
+        _filterValue(query.filters, 'status', operators: const {'in'});
+    final statuses = <QuoteStatus>{};
+    if (statusEq != null) {
+      final parsed = _parseStatus(statusEq);
+      if (parsed == null) {
+        warnings.add('status desconhecido ignorado: $statusEq');
+      } else {
+        statuses.add(parsed);
+      }
     }
+    if (statusIn != null) {
+      for (final part in statusIn.split(',')) {
+        final parsed = _parseStatus(part.trim());
+        if (parsed == null) {
+          warnings.add('status desconhecido ignorado: ${part.trim()}');
+        } else {
+          statuses.add(parsed);
+        }
+      }
+    }
+
+    final clientName = _filterValue(
+      query.filters,
+      'clientdisplayname',
+      operators: const {'eq', 'contains'},
+    );
 
     final sort = query.sorting.isEmpty ? null : query.sorting.first;
     final sortField = sort?.field.trim().isNotEmpty == true
@@ -58,7 +90,9 @@ class QuoteAssistantReadAdapter implements AssistantReadAdapter {
     final page = await _service.query(
       id: id,
       number: number,
-      status: status,
+      numberContains: numberIsContains,
+      statuses: statuses,
+      clientDisplayNameContains: clientName,
       offset: pagination.offset,
       limit: pagination.limit,
       sortField: sortField,
@@ -77,16 +111,7 @@ class QuoteAssistantReadAdapter implements AssistantReadAdapter {
 
     final finished = _clock();
     final applied = <AssistantReadFilter>[
-      if (id != null)
-        AssistantReadFilter(field: 'id', operator: 'eq', value: id),
-      if (number != null)
-        AssistantReadFilter(field: 'number', operator: 'eq', value: number),
-      if (status != null)
-        AssistantReadFilter(
-          field: 'status',
-          operator: 'eq',
-          value: status.name,
-        ),
+      ...query.filters.where((f) => f.isValid),
     ];
 
     return AssistantReadResult(
@@ -105,11 +130,14 @@ class QuoteAssistantReadAdapter implements AssistantReadAdapter {
     );
   }
 
-  static String? _filterValue(List<AssistantReadFilter> filters, String field) {
+  static String? _filterValue(
+    List<AssistantReadFilter> filters,
+    String field, {
+    required Set<String> operators,
+  }) {
     for (final filter in filters) {
       if (filter.field.trim().toLowerCase() != field) continue;
-      if (filter.operator.trim().toLowerCase() != 'eq' &&
-          filter.operator.trim().toLowerCase() != 'contains') {
+      if (!operators.contains(filter.operator.trim().toLowerCase())) {
         continue;
       }
       final value = filter.value.trim();

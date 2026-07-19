@@ -127,9 +127,10 @@ void main() {
       );
       expect(response.readResult, isNotNull);
       expect(response.readResult!.records, isNotEmpty);
+      expect(response.readPresentation, isNotNull);
       expect(response.moduleResults, isEmpty);
       expect(response.writeResult?.executed ?? false, isFalse);
-      expect(response.friendlyMessage, contains('Leitura estruturada'));
+      expect(response.friendlyMessage, contains('Encontrei'));
     });
 
     test('dry path sem capability não consulta ERP', () async {

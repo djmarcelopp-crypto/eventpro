@@ -19,6 +19,7 @@ import '../models/assistant_execution_request.dart';
 import '../models/assistant_execution_token.dart';
 import '../models/assistant_intent.dart';
 import '../models/assistant_module_response.dart';
+import '../models/assistant_read_presentation.dart';
 import '../models/assistant_read_result.dart';
 import '../models/assistant_request.dart';
 import '../models/assistant_response.dart';
@@ -32,6 +33,7 @@ import 'local_assistant_execution_planner.dart';
 import 'local_assistant_idempotency_service.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_read_coordinator.dart';
+import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
 import 'local_assistant_write_coordinator.dart';
@@ -56,6 +58,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantReadGateway? readGateway,
     LocalAssistantReadCoordinator? readCoordinator,
     LocalAssistantReadQueryFactory? readQueryFactory,
+    LocalAssistantReadFormatter? readFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -97,7 +100,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _readCoordinator = readCoordinator ??
             LocalAssistantReadCoordinator(clock: clock),
         _readQueryFactory =
-            readQueryFactory ?? const LocalAssistantReadQueryFactory();
+            readQueryFactory ?? const LocalAssistantReadQueryFactory(),
+        _readFormatter = readFormatter ?? const LocalAssistantReadFormatter();
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
@@ -115,6 +119,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantWriteIntentFactory _writeIntentFactory;
   final LocalAssistantReadCoordinator _readCoordinator;
   final LocalAssistantReadQueryFactory _readQueryFactory;
+  final LocalAssistantReadFormatter _readFormatter;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -196,17 +201,25 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
 
-    final readQuery = _readQueryFactory.fromPipeline(
+    final readIntent = _readQueryFactory.resolveIntent(
       request: request,
-      response: interpreted,
       capabilities: _capabilities,
     );
     AssistantReadResult? readResult;
-    if (readQuery != null) {
+    AssistantReadPresentation? readPresentation;
+    if (readIntent != null) {
+      final readQuery = _readQueryFactory.planIntent(
+        readIntent,
+        requestId: request.id,
+      );
       readResult = await _readCoordinator.execute(
         query: readQuery,
         capabilities: _capabilities,
         gateway: _readGateway,
+      );
+      readPresentation = _readFormatter.format(
+        result: readResult,
+        intent: readIntent,
       );
     }
 
@@ -228,7 +241,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       moduleResults: consultation.results,
       reportSummary: enrichedReport.summary,
       writePreparation: writePreparation,
-      readResult: readResult,
+      readPresentation: readPresentation,
       mode: _executionMode,
     );
 
@@ -255,6 +268,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       writeAuthorization: writePreparation?.writeAuthorization,
       writeWarnings: writePreparation?.writeWarnings ?? const [],
       readResult: readResult,
+      readPresentation: readPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -286,7 +300,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     required List<AssistantModuleResponse> moduleResults,
     required String reportSummary,
     AssistantWritePreparation? writePreparation,
-    AssistantReadResult? readResult,
+    AssistantReadPresentation? readPresentation,
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -302,19 +316,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    if (readResult != null) {
-      if (readResult.isEmpty) {
-        parts.add('Leitura estruturada: nenhum orçamento encontrado.');
-      } else if (readResult.isSingle) {
-        parts.add(
-          'Leitura estruturada: ${readResult.singleOrNull!.displayName} '
-          '(${readResult.records.single.id}).',
-        );
-      } else {
-        parts.add(
-          'Leitura estruturada: ${readResult.records.length} orçamentos.',
-        );
-      }
+    if (readPresentation != null) {
+      parts.add(readPresentation.naturalLanguage);
     }
     parts.add(reportSummary);
 

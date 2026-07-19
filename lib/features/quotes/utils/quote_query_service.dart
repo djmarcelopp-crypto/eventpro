@@ -25,7 +25,10 @@ class QuoteQueryService {
   Future<QuoteQueryPage> query({
     String? id,
     String? number,
+    bool numberContains = false,
     QuoteStatus? status,
+    Set<QuoteStatus>? statuses,
+    String? clientDisplayNameContains,
     required int offset,
     required int limit,
     String sortField = 'createdAt',
@@ -33,12 +36,22 @@ class QuoteQueryService {
   }) async {
     final safeOffset = offset < 0 ? 0 : offset;
     final safeLimit = limit < 1 ? 1 : limit;
+    final statusSet = {
+      ?status,
+      ...?statuses,
+    };
 
     if (id != null && id.trim().isNotEmpty) {
       final quote = await _repository.findById(id.trim());
       final matched = quote == null
           ? const <Quote>[]
-          : _matches(quote, number: number, status: status)
+          : _matches(
+              quote,
+              number: number,
+              numberContains: numberContains,
+              statusSet: statusSet,
+              clientDisplayNameContains: clientDisplayNameContains,
+            )
               ? [quote]
               : const <Quote>[];
       return QuoteQueryPage(
@@ -53,11 +66,21 @@ class QuoteQueryService {
     final scanCapped = all.length > maxScan;
     final scan = scanCapped ? all.take(maxScan).toList(growable: false) : all;
 
-    var filtered = scan.where((q) => _matches(q, number: number, status: status));
-    final matched = filtered.toList(growable: false);
+    final matched = scan
+        .where(
+          (q) => _matches(
+            q,
+            number: number,
+            numberContains: numberContains,
+            statusSet: statusSet,
+            clientDisplayNameContains: clientDisplayNameContains,
+          ),
+        )
+        .toList(growable: false);
     _sortInPlace(matched, sortField: sortField, ascending: ascending);
 
-    final page = matched.skip(safeOffset).take(safeLimit).toList(growable: false);
+    final page =
+        matched.skip(safeOffset).take(safeLimit).toList(growable: false);
     return QuoteQueryPage(
       items: page,
       totalMatched: matched.length,
@@ -69,15 +92,28 @@ class QuoteQueryService {
   static bool _matches(
     Quote quote, {
     String? number,
-    QuoteStatus? status,
+    bool numberContains = false,
+    required Set<QuoteStatus> statusSet,
+    String? clientDisplayNameContains,
   }) {
-    if (number != null &&
-        number.trim().isNotEmpty &&
-        quote.number.toLowerCase() != number.trim().toLowerCase()) {
+    if (number != null && number.trim().isNotEmpty) {
+      final needle = number.trim().toLowerCase();
+      final hay = quote.number.toLowerCase();
+      if (numberContains) {
+        if (!hay.contains(needle)) return false;
+      } else if (hay != needle) {
+        return false;
+      }
+    }
+    if (statusSet.isNotEmpty && !statusSet.contains(quote.status)) {
       return false;
     }
-    if (status != null && quote.status != status) {
-      return false;
+    if (clientDisplayNameContains != null &&
+        clientDisplayNameContains.trim().isNotEmpty) {
+      final needle = clientDisplayNameContains.trim().toLowerCase();
+      if (!quote.clientSnapshot.displayName.toLowerCase().contains(needle)) {
+        return false;
+      }
     }
     return true;
   }

@@ -1,6 +1,6 @@
 # Assistente EventPRO — Arquitetura
 
-Documentação mínima da fronteira do assistente (EPIC-001 / EPIC-002 / EPIC-003). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
+Documentação mínima da fronteira do assistente (EPIC-001…004). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
 
 ## Pipeline
 
@@ -14,16 +14,21 @@ Texto
     → Module Consultant (leituras AI-003 / fixtures)
     → Execution Validator / Confirmation / Dispatcher
     → WriteIntentFactory + Write Coordinator (AI-005…007, isolado)
+    → Action Intent Resolver + Planner (AI-012, isolado)
+         → ActionRequest → Gateway → LocalActionAdapter
+         → ActionResult → Formatter → actionPresentation
     → Insight Intent Resolver + Planner (AI-011, isolado)
          → InsightRequest → Gateway → Quote Insight Adapter → QuoteInsightService
          → InsightResult → Formatter → insightPresentation
+         (pulado quando o turno já foi atendido por actions)
     → Conversation Planner (AI-010) + Read Intent Resolver / Read Planner (AI-009)
          → (session context) → ReadQuery → Gateway → Quote Read Adapter → QuoteQueryService
          → ReadResult → Formatter → Presentation / Conversation Presentation
-         (pulado quando o turno já foi atendido por insights)
+         (pulado quando action/insight já atendeu o turno)
   → AssistantResponse
        (moduleResults | readResult | readPresentation |
-        conversationPresentation | insightResult | insightPresentation | writeResult)
+        conversationPresentation | insightResult | insightPresentation |
+        actionResult | actionPresentation | writeResult)
 ```
 
 Ver também:
@@ -38,6 +43,7 @@ Ver também:
 - [conversational-reads.md](conversational-reads.md)
 - [conversation-context.md](conversation-context.md)
 - [insights.md](insights.md)
+- [actions.md](actions.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -45,30 +51,32 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 
 | Camada | Responsabilidade |
 |--------|------------------|
-| Models | DTOs (intent, plan, write, read, presentation, conversation, insight) |
-| Domain contracts | Gateways, Idempotency, Policy, Read/Insight Planner/Formatter, Conversation Planner |
+| Models | DTOs (intent, plan, write, read, presentation, conversation, insight, action) |
+| Domain contracts | Gateways, Idempotency, Policy, Read/Insight/Action Planner/Formatter, Conversation Planner |
 | Services | Implementações locais determinísticas |
-| Adapters | In-memory (AI-003) / Quote write (AI-006) / Quote read (AI-008) / Quote insight (AI-011) |
+| Adapters | In-memory / Quote write / Quote read / Quote insight / Local action |
 
-## Escrita vs leitura vs insights
+## Escrita vs leitura vs insights vs actions
 
 | Sprint | Escopo |
 |--------|--------|
 | AI-003 | Leituras fixture via Module Consultant |
 | AI-005…007 | Write hardening; única mutação = create quote draft |
 | AI-008 | Structured ERP reads (query object + adapter) |
-| AI-009 | **Conversational quote intelligence** — intents + planner + formatter |
-| AI-010 | **Conversation context engine** — sessão in-memory + follow-ups determinísticos |
-| AI-011 | **Quote insights engine** — agregações determinísticas (count/distribution/top/last/month) |
+| AI-009 | Conversational quote intelligence |
+| AI-010 | Conversation context engine |
+| AI-011 | Quote insights engine |
+| AI-012 | **Smart action engine** — navegação segura (open screen / focus) |
 
-Production write continua **default deny**. AI-009…011 não alteram write coordinator, gateway, policies, idempotency ou audit.
+Production write continua **default deny**. AI-009…012 não alteram write coordinator, gateway, policies, idempotency ou audit.
 
 ## Defaults
 
 - `localDefaults()` → sem executores
 - `localReadIntegration()` → client/agenda in-memory
-- `localStructuredQuoteRead()` → leitura estruturada/conversacional de orçamentos (opt-in)
-- `localQuoteInsights()` → insights + reads estruturados (opt-in)
+- `localStructuredQuoteRead()` → leitura estruturada/conversacional
+- `localQuoteInsights()` → insights + reads estruturados
+- `localSmartActions()` → actions + insights + reads (opt-in)
 
 ## Dependência
 

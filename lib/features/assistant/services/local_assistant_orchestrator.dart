@@ -1,3 +1,6 @@
+import '../domain/action/assistant_action_formatter.dart';
+import '../domain/action/assistant_action_gateway.dart';
+import '../domain/action/assistant_action_planner.dart';
 import '../domain/assistant_execution_dispatcher.dart';
 import '../domain/assistant_execution_planner.dart';
 import '../domain/assistant_intent_classifier.dart';
@@ -15,6 +18,8 @@ import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/write/assistant_write_gateway.dart';
 import '../models/assistant_action.dart';
+import '../models/assistant_action_presentation.dart';
+import '../models/assistant_action_result.dart';
 import '../models/assistant_action_type.dart';
 import '../models/assistant_conversation_presentation.dart';
 import '../models/assistant_execution_context.dart';
@@ -36,6 +41,10 @@ import 'assistant_capabilities.dart';
 import 'assistant_conversation_session_registry.dart';
 import 'assistant_draft_builder.dart';
 import 'assistant_module_consultant.dart';
+import 'local_assistant_action_formatter.dart';
+import 'local_assistant_action_gateway.dart';
+import 'local_assistant_action_intent_resolver.dart';
+import 'local_assistant_action_planner.dart';
 import 'local_assistant_conversation_planner.dart';
 import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
@@ -77,12 +86,18 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     LocalAssistantInsightIntentResolver? insightIntentResolver,
     AssistantInsightPlanner? insightPlanner,
     AssistantInsightFormatter? insightFormatter,
+    AssistantActionGateway? actionGateway,
+    LocalAssistantActionIntentResolver? actionIntentResolver,
+    AssistantActionPlanner? actionPlanner,
+    AssistantActionFormatter? actionFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
   })  : _writeGateway = writeGateway,
         _readGateway = readGateway,
         _insightGateway = insightGateway,
+        _actionGateway = actionGateway ??
+            LocalAssistantActionGateway(clock: clock),
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
@@ -130,7 +145,12 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _insightPlanner =
             insightPlanner ?? const LocalAssistantInsightPlanner(),
         _insightFormatter =
-            insightFormatter ?? const LocalAssistantInsightFormatter();
+            insightFormatter ?? const LocalAssistantInsightFormatter(),
+        _actionIntentResolver = actionIntentResolver ??
+            const LocalAssistantActionIntentResolver(),
+        _actionPlanner = actionPlanner ?? const LocalAssistantActionPlanner(),
+        _actionFormatter =
+            actionFormatter ?? const LocalAssistantActionFormatter();
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
@@ -139,6 +159,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantWriteGateway? _writeGateway;
   final AssistantReadGateway? _readGateway;
   final AssistantInsightGateway? _insightGateway;
+  final AssistantActionGateway _actionGateway;
   final AssistantParser _parser;
   final AssistantIntentClassifier _intentClassifier;
   final AssistantResponseBuilder _responseBuilder;
@@ -155,6 +176,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantInsightIntentResolver _insightIntentResolver;
   final AssistantInsightPlanner _insightPlanner;
   final AssistantInsightFormatter _insightFormatter;
+  final LocalAssistantActionIntentResolver _actionIntentResolver;
+  final AssistantActionPlanner _actionPlanner;
+  final AssistantActionFormatter _actionFormatter;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -236,36 +260,55 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
 
-    // AI-011 insight pipeline (independent of read/conversation/write).
-    AssistantInsightResult? insightResult;
-    AssistantInsightPresentation? insightPresentation;
-    final insightIntent = _insightIntentResolver.resolve(
-      request: request,
-      capabilities: _capabilities,
-    );
-    if (insightIntent != null &&
-        _capabilities.canExecuteQuoteInsights &&
-        _insightGateway != null) {
-      final insightRequest = _insightPlanner.plan(
-        insightIntent,
-        requestId: request.id,
-        referenceTimestamp: _clock().toUtc(),
-      );
-      insightResult = await _insightGateway.execute(insightRequest);
-      insightPresentation = _insightFormatter.format(insightResult);
-    }
-
     final sessionId = request.context?.sessionId?.trim();
     final session = (sessionId != null && sessionId.isNotEmpty)
         ? _conversationSessions.getOrCreate(sessionId)
         : null;
 
+    // AI-012 smart-action pipeline (independent of write/read/conversation/insight).
+    AssistantActionResult? actionResult;
+    AssistantActionPresentation? actionPresentation;
+    final actionIntent = _actionIntentResolver.resolve(
+      request: request,
+      capabilities: _capabilities,
+      session: session,
+    );
+    if (actionIntent != null && _capabilities.canExecuteSmartActions) {
+      final actionRequest = _actionPlanner.plan(
+        actionIntent,
+        request: request,
+      );
+      actionResult = await _actionGateway.execute(actionRequest);
+      actionPresentation = _actionFormatter.format(actionResult);
+    }
+
+    // AI-011 insight pipeline (independent of read/conversation/write).
+    AssistantInsightResult? insightResult;
+    AssistantInsightPresentation? insightPresentation;
+    if (actionPresentation == null) {
+      final insightIntent = _insightIntentResolver.resolve(
+        request: request,
+        capabilities: _capabilities,
+      );
+      if (insightIntent != null &&
+          _capabilities.canExecuteQuoteInsights &&
+          _insightGateway != null) {
+        final insightRequest = _insightPlanner.plan(
+          insightIntent,
+          requestId: request.id,
+          referenceTimestamp: _clock().toUtc(),
+        );
+        insightResult = await _insightGateway.execute(insightRequest);
+        insightPresentation = _insightFormatter.format(insightResult);
+      }
+    }
+
     AssistantReadResult? readResult;
     AssistantReadPresentation? readPresentation;
     AssistantConversationPresentation? conversationPresentation;
 
-    // Preserve AI-009/AI-010 when insights did not handle this turn.
-    if (insightPresentation == null) {
+    // Preserve AI-009/AI-010 when action/insight did not handle this turn.
+    if (actionPresentation == null && insightPresentation == null) {
       final conversationPlan = _conversationPlanner.plan(
         request: request,
         session: session,
@@ -342,6 +385,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       readPresentation: readPresentation,
       conversationPresentation: conversationPresentation,
       insightPresentation: insightPresentation,
+      actionPresentation: actionPresentation,
       mode: _executionMode,
     );
 
@@ -372,6 +416,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       conversationPresentation: conversationPresentation,
       insightResult: insightResult,
       insightPresentation: insightPresentation,
+      actionResult: actionResult,
+      actionPresentation: actionPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -409,6 +455,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantReadPresentation? readPresentation,
     AssistantConversationPresentation? conversationPresentation,
     AssistantInsightPresentation? insightPresentation,
+    AssistantActionPresentation? actionPresentation,
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -424,7 +471,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    if (insightPresentation != null) {
+    if (actionPresentation != null) {
+      parts.add(actionPresentation.naturalLanguage);
+    } else if (insightPresentation != null) {
       parts.add(insightPresentation.naturalLanguage);
     } else if (conversationPresentation != null) {
       parts.add(conversationPresentation.naturalLanguage);

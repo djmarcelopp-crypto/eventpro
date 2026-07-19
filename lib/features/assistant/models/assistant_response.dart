@@ -16,6 +16,8 @@ import 'assistant_module_response.dart';
 import 'assistant_parse_issue.dart';
 import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
+import 'assistant_action_presentation.dart';
+import 'assistant_action_result.dart';
 import 'assistant_conversation_presentation.dart';
 import 'assistant_insight_presentation.dart';
 import 'assistant_insight_result.dart';
@@ -68,6 +70,8 @@ class AssistantResponse {
     this.conversationPresentation,
     this.insightResult,
     this.insightPresentation,
+    this.actionResult,
+    this.actionPresentation,
   });
 
   final String requestId;
@@ -126,6 +130,12 @@ class AssistantResponse {
   /// AI-011 insight presentation (NL + structured payload).
   final AssistantInsightPresentation? insightPresentation;
 
+  /// AI-012 smart-action execution result (navigation directive).
+  final AssistantActionResult? actionResult;
+
+  /// AI-012 smart-action presentation (NL + structured payload).
+  final AssistantActionPresentation? actionPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -172,6 +182,8 @@ class AssistantResponse {
     AssistantConversationPresentation? conversationPresentation,
     AssistantInsightResult? insightResult,
     AssistantInsightPresentation? insightPresentation,
+    AssistantActionResult? actionResult,
+    AssistantActionPresentation? actionPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -187,6 +199,8 @@ class AssistantResponse {
     bool clearConversationPresentation = false,
     bool clearInsightResult = false,
     bool clearInsightPresentation = false,
+    bool clearActionResult = false,
+    bool clearActionPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -249,6 +263,11 @@ class AssistantResponse {
       insightPresentation: clearInsightPresentation
           ? null
           : (insightPresentation ?? this.insightPresentation),
+      actionResult:
+          clearActionResult ? null : (actionResult ?? this.actionResult),
+      actionPresentation: clearActionPresentation
+          ? null
+          : (actionPresentation ?? this.actionPresentation),
     );
   }
 
@@ -294,7 +313,9 @@ class AssistantResponse {
             other.readPresentation == readPresentation &&
             other.conversationPresentation == conversationPresentation &&
             other.insightResult == insightResult &&
-            other.insightPresentation == insightPresentation;
+            other.insightPresentation == insightPresentation &&
+            other.actionResult == actionResult &&
+            other.actionPresentation == actionPresentation;
   }
 
   @override
@@ -343,6 +364,8 @@ class AssistantResponse {
           conversationPresentation,
           insightResult,
           insightPresentation,
+          actionResult,
+          actionPresentation,
         ),
       );
 

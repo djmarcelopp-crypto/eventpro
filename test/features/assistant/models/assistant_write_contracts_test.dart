@@ -40,7 +40,18 @@ void main() {
     test('contratos e invariantes AI-006 quote draft', () {
       final payload = quoteDraftPayload();
       expect(payload.isSupportedAi006QuoteDraft, isTrue);
-      expect(AssistantWriteEntityState.values, [AssistantWriteEntityState.draft]);
+      expect(
+        AssistantWriteEntityState.values,
+        contains(AssistantWriteEntityState.draft),
+      );
+      expect(
+        AssistantWriteEntityState.values,
+        containsAll([
+          AssistantWriteEntityState.sent,
+          AssistantWriteEntityState.approved,
+          AssistantWriteEntityState.cancelled,
+        ]),
+      );
       expect(
         AssistantWriteFailureCode.values,
         containsAll([

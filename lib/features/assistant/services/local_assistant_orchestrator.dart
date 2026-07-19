@@ -6,6 +6,8 @@ import '../domain/assistant_parser.dart';
 import '../domain/assistant_response_builder.dart';
 import '../domain/assistant_write_coordinator.dart';
 import '../domain/gateway/assistant_gateway.dart';
+import '../domain/idempotency/assistant_idempotency_service.dart';
+import '../domain/observability/assistant_write_observer.dart';
 import '../domain/write/assistant_write_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_type.dart';
@@ -25,6 +27,7 @@ import 'assistant_draft_builder.dart';
 import 'assistant_module_consultant.dart';
 import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
+import 'local_assistant_idempotency_service.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_response_builder.dart';
 import 'local_assistant_write_coordinator.dart';
@@ -44,6 +47,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantWriteCoordinator? writeCoordinator,
     LocalAssistantWriteIntentFactory? writeIntentFactory,
     AssistantWriteGateway? writeGateway,
+    AssistantIdempotencyService? idempotencyService,
+    AssistantWriteObserver? writeObserver,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -72,8 +77,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
               capabilities:
                   capabilities ?? AssistantCapabilities.localDefaults(),
             ),
-        _writeCoordinator =
-            writeCoordinator ?? LocalAssistantWriteCoordinator(),
+        _writeCoordinator = writeCoordinator ??
+            LocalAssistantWriteCoordinator(
+              idempotencyService:
+                  idempotencyService ?? LocalAssistantIdempotencyService(),
+              observer: writeObserver,
+              clock: clock,
+            ),
         _writeIntentFactory =
             writeIntentFactory ?? const LocalAssistantWriteIntentFactory();
 

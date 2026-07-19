@@ -1,6 +1,6 @@
 # Assistente EventPRO — Arquitetura
 
-Documentação mínima da fronteira do assistente (EPIC-001). Escopo restrito ao feature `lib/features/assistant/**`.
+Documentação mínima da fronteira do assistente (EPIC-001). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
 
 ## Pipeline
 
@@ -16,57 +16,59 @@ Texto
   → Execution Validator
   → Confirmation Engine
   → Execution Dispatcher (dryRun / simulation)
-  → WriteIntentFactory (intenções de escrita)
-  → Write Coordinator (Validator + Authorizer + ExecutionContext)
-  → Write Gateway / Quote Draft Adapter (AI-006, production restrita)
-  → AssistantResponse enriquecida
+  → WriteIntentFactory
+  → Write Coordinator
+       → Validator / Authorizer
+       → Production Write Policy Registry (default deny)
+       → Idempotency Service
+       → Write Gateway → Quote Adapter → QuoteDraftCreationService
+  → Audit + Observation
+  → AssistantResponse
 ```
 
-Ver também: [controlled-execution.md](controlled-execution.md), [module-integration.md](module-integration.md), [write-pipeline.md](write-pipeline.md), [write-integration.md](write-integration.md).
+Ver também:
 
-O assistente **nunca** importa repositories, DAOs, Drift ou services concretos dos módulos ERP (exceto via adapter hexagonal no módulo quotes).
+- [controlled-execution.md](controlled-execution.md)
+- [module-integration.md](module-integration.md)
+- [write-pipeline.md](write-pipeline.md)
+- [write-integration.md](write-integration.md)
+- [idempotency.md](idempotency.md)
+- [observability.md](observability.md)
+
+O assistente **não** importa DAOs/Drift. O adapter de escrita vive em `lib/features/quotes/assistant/` e depende dos contratos do assistente.
 
 ## Camadas
 
 | Camada | Responsabilidade |
 |--------|------------------|
-| Models | DTOs imutáveis (intent, plan, module result, data source) |
-| Domain contracts | Parser, Classifier, Planner, Gateways |
+| Models | DTOs imutáveis (intent, plan, write, idempotency, audit, observation) |
+| Domain contracts | Parser, Classifier, Planner, Gateways, Idempotency, Policy, Observer |
 | Services | Implementações locais determinísticas |
-| Adapters | Fixtures in-memory (AI-003) / futuros adapters ERP |
+| Policies | `QuoteDraftProductionPolicy` (única ativa) + placeholders bloqueados |
+| Adapters | Fixtures in-memory (AI-003) / Quote write adapter (AI-006) |
 
 ## Planning vs Execution
 
 - **Planning (`canPlan*`)** — o passo pode aparecer no `ExecutionPlan`.
 - **Execution (`canExecute*`)** — um executor registrado **pode ser invocado** na configuração atual.
+- **Capabilities ≠ permissão de production** — production exige policy explícita + gates.
 
-`canExecuteClientSearch` / `canExecuteScheduleRead` / `canExecuteAvailabilityRead` **não** significam, sozinhas:
+## Escrita
 
-- acesso ao banco do ERP;
-- dado produtivo;
-- integração real aprovada;
-- resultado confiável para operação.
+| Sprint | Escopo |
+|--------|--------|
+| AI-005 | Preparação segura (sem mutação) |
+| AI-006 | Única escrita real: **create quote draft** |
+| AI-007 | Hardening: idempotência, observabilidade, policies, audit — **sem novos casos de uso** |
 
-O nível de confiança/ambiente é dado por:
-
-- `AssistantCapabilities.integrationMode` (`none` | `inMemory` | `erp`);
-- `AssistantModuleDataSource` em cada resultado (`inMemory`, `demo`, `test`, `erp`, `remote`).
+Placeholders `EventProductionPolicy` / `CustomerProductionPolicy` **não** representam funcionalidade disponível (`isActive=false`).
 
 ## Defaults
 
 - `localDefaults()` → `integrationMode=none`, nenhuma leitura/escrita executável.
-- `localReadIntegration()` → `integrationMode=inMemory`, leituras de cliente/agenda opt-in; writes `false`.
-
-## Escrita
-
-AI-005 modela a **Write Pipeline** (intenção → validator → authorizer → coordinator → `WriteResult`).
-
-AI-006 habilita **somente** `create quote draft` em `production` restrita, via `QuoteAssistantWriteAdapter` + `QuoteDraftCreationService`.
-
-- `canExecuteCreateQuote` **não** significa acesso irrestrito ao ERP.
-- A única escrita real permitida: **create quote draft**.
-- Detalhes: [write-pipeline.md](write-pipeline.md), [write-integration.md](write-integration.md).
+- Production: **default deny** via registry; única policy ativa = Quote Draft.
+- Relógios e geradores de ID injetáveis nos serviços de escrita/audit.
 
 ## Dependência
 
-Módulos ERP futuros devem **depender dos contratos do assistente** (ou de ports compartilhados), nunca o inverso: o assistente não aponta para implementações concretas do ERP.
+Módulos ERP dependem dos contratos do assistente (ports), nunca o inverso para DAOs concretos.

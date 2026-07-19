@@ -1,4 +1,5 @@
 import 'package:eventpro/features/assistant/models/assistant_action_type.dart';
+import 'package:eventpro/features/assistant/models/assistant_execution_status.dart';
 import 'package:eventpro/features/assistant/models/assistant_input_origin.dart';
 import 'package:eventpro/features/assistant/models/assistant_intent_type.dart';
 import 'package:eventpro/features/assistant/models/assistant_request.dart';
@@ -55,6 +56,49 @@ void main() {
         isTrue,
       );
       expect(response.friendlyMessage, contains('Não criei nenhum registro'));
+      expect(
+        response.friendlyMessage,
+        contains(
+          'ainda faltam informações antes que qualquer operação possa ser realizada',
+        ),
+      );
+    });
+
+    test('attaches blocked execution plan and next recommended action', () {
+      final response = orchestrator.handle(
+        AssistantRequest(
+          id: 'req-plan',
+          rawText: 'Preciso de um casamento para 300 pessoas em Uberlândia.',
+          locale: 'pt_BR',
+          timezone: 'America/Sao_Paulo',
+          timestamp: now,
+          origin: AssistantInputOrigin.typedText,
+        ),
+      );
+
+      expect(response.executionPlan, isNotNull);
+      expect(response.executionPlan!.steps, hasLength(3));
+      expect(response.blockedSteps, hasLength(3));
+      expect(response.readySteps, isEmpty);
+      expect(response.executionPlan!.hasExecutableReadySteps, isFalse);
+      expect(response.requiredConfirmations, isNotEmpty);
+      expect(response.warnings, isNotEmpty);
+      expect(
+        response.executionPlan!.overallStatus,
+        AssistantExecutionStatus.blocked,
+      );
+      expect(
+        response.nextRecommendedAction?.type,
+        AssistantActionType.askQuestion,
+      );
+      expect(
+        response.warnings.any(
+          (w) => w.message.contains(
+            'ainda faltam informações antes que qualquer operação possa ser realizada',
+          ),
+        ),
+        isTrue,
+      );
     });
 
     test('keeps original text and explainable confidence', () {
@@ -74,6 +118,31 @@ void main() {
       expect(response.primaryIntent.type, AssistantIntentType.checkAvailability);
       expect(response.overallConfidence.score, greaterThan(0));
       expect(response.overallConfidence.evidences, isNotEmpty);
+      expect(response.executionPlan, isNotNull);
+      expect(response.readySteps, isEmpty);
+      expect(
+        response.executionPlan!.steps.single.status,
+        AssistantExecutionStatus.unavailable,
+      );
+    });
+
+    test('final response is immutable via copyWith attachment of plan', () {
+      final response = orchestrator.handle(
+        AssistantRequest(
+          id: 'req-immut',
+          rawText: 'Criar evento corporativo em Goiânia',
+          locale: 'pt_BR',
+          timezone: 'America/Sao_Paulo',
+          timestamp: now,
+          origin: AssistantInputOrigin.typedText,
+        ),
+      );
+      final mutated = response.copyWith(friendlyMessage: 'outro');
+      expect(identical(response, mutated), isFalse);
+      expect(response.friendlyMessage, isNot(mutated.friendlyMessage));
+      expect(response.executionPlan, isNotNull);
+      expect(mutated.executionPlan, response.executionPlan);
+      expect(response.readySteps, isEmpty);
     });
   });
 }

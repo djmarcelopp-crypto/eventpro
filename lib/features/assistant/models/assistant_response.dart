@@ -2,7 +2,10 @@ import 'assistant_action.dart';
 import 'assistant_confidence.dart';
 import 'assistant_entity.dart';
 import 'assistant_event_draft.dart';
+import 'assistant_execution_audit.dart';
+import 'assistant_execution_mode.dart';
 import 'assistant_execution_plan.dart';
+import 'assistant_execution_report.dart';
 import 'assistant_execution_step.dart';
 import 'assistant_execution_warning.dart';
 import 'assistant_integration_warning.dart';
@@ -41,6 +44,13 @@ class AssistantResponse {
     this.consultedModules = const [],
     this.unavailableModules = const [],
     this.integrationWarnings = const [],
+    this.executionReport,
+    this.executionMode,
+    this.executionAudit,
+    this.executableSteps = const [],
+    this.simulatedSteps = const [],
+    this.skippedSteps = const [],
+    this.executionWarnings = const [],
   });
 
   final String requestId;
@@ -57,26 +67,27 @@ class AssistantResponse {
   final List<AssistantAction> actions;
   final String friendlyMessage;
 
-  /// Explicit plan produced by AI-002 — never executed for writes here.
   final AssistantExecutionPlan? executionPlan;
-
-  /// Steps that would require user confirmation before any future execution.
   final List<AssistantExecutionStep> requiredConfirmations;
-
   final List<AssistantExecutionStep> blockedSteps;
   final List<AssistantExecutionStep> readySteps;
   final List<AssistantExecutionWarning> warnings;
-
-  /// Suggested next human action (review / answer questions) — not ERP write.
   final AssistantAction? nextRecommendedAction;
 
-  /// AI-003 read-only module consultation outcomes.
   final List<AssistantModuleResponse> moduleResults;
   final List<AssistantModuleCapability> consultedModules;
   final List<AssistantModuleCapability> unavailableModules;
   final List<AssistantIntegrationWarning> integrationWarnings;
 
-  /// Distinct data sources present in [moduleResults] (for future UI).
+  /// AI-004 controlled execution dry-run/simulation report.
+  final AssistantExecutionReport? executionReport;
+  final AssistantExecutionMode? executionMode;
+  final AssistantExecutionAudit? executionAudit;
+  final List<AssistantExecutionStep> executableSteps;
+  final List<AssistantExecutionStep> simulatedSteps;
+  final List<AssistantExecutionStep> skippedSteps;
+  final List<String> executionWarnings;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -107,10 +118,20 @@ class AssistantResponse {
     List<AssistantModuleCapability>? consultedModules,
     List<AssistantModuleCapability>? unavailableModules,
     List<AssistantIntegrationWarning>? integrationWarnings,
+    AssistantExecutionReport? executionReport,
+    AssistantExecutionMode? executionMode,
+    AssistantExecutionAudit? executionAudit,
+    List<AssistantExecutionStep>? executableSteps,
+    List<AssistantExecutionStep>? simulatedSteps,
+    List<AssistantExecutionStep>? skippedSteps,
+    List<String>? executionWarnings,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
     bool clearNextRecommendedAction = false,
+    bool clearExecutionReport = false,
+    bool clearExecutionMode = false,
+    bool clearExecutionAudit = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -140,6 +161,17 @@ class AssistantResponse {
       consultedModules: consultedModules ?? this.consultedModules,
       unavailableModules: unavailableModules ?? this.unavailableModules,
       integrationWarnings: integrationWarnings ?? this.integrationWarnings,
+      executionReport: clearExecutionReport
+          ? null
+          : (executionReport ?? this.executionReport),
+      executionMode:
+          clearExecutionMode ? null : (executionMode ?? this.executionMode),
+      executionAudit:
+          clearExecutionAudit ? null : (executionAudit ?? this.executionAudit),
+      executableSteps: executableSteps ?? this.executableSteps,
+      simulatedSteps: simulatedSteps ?? this.simulatedSteps,
+      skippedSteps: skippedSteps ?? this.skippedSteps,
+      executionWarnings: executionWarnings ?? this.executionWarnings,
     );
   }
 
@@ -169,7 +201,14 @@ class AssistantResponse {
             _listEquals(other.moduleResults, moduleResults) &&
             _listEquals(other.consultedModules, consultedModules) &&
             _listEquals(other.unavailableModules, unavailableModules) &&
-            _listEquals(other.integrationWarnings, integrationWarnings);
+            _listEquals(other.integrationWarnings, integrationWarnings) &&
+            other.executionReport == executionReport &&
+            other.executionMode == executionMode &&
+            other.executionAudit == executionAudit &&
+            _listEquals(other.executableSteps, executableSteps) &&
+            _listEquals(other.simulatedSteps, simulatedSteps) &&
+            _listEquals(other.skippedSteps, skippedSteps) &&
+            _listEquals(other.executionWarnings, executionWarnings);
   }
 
   @override
@@ -200,6 +239,15 @@ class AssistantResponse {
           Object.hashAll(consultedModules),
           Object.hashAll(unavailableModules),
           Object.hashAll(integrationWarnings),
+        ),
+        Object.hash(
+          executionReport,
+          executionMode,
+          executionAudit,
+          Object.hashAll(executableSteps),
+          Object.hashAll(simulatedSteps),
+          Object.hashAll(skippedSteps),
+          Object.hashAll(executionWarnings),
         ),
       );
 

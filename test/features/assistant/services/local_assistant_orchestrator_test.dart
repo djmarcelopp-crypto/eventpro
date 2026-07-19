@@ -4,6 +4,7 @@ import 'package:eventpro/features/assistant/models/assistant_action_type.dart';
 import 'package:eventpro/features/assistant/models/assistant_execution_status.dart';
 import 'package:eventpro/features/assistant/models/assistant_input_origin.dart';
 import 'package:eventpro/features/assistant/models/assistant_intent_type.dart';
+import 'package:eventpro/features/assistant/models/assistant_execution_mode.dart';
 import 'package:eventpro/features/assistant/models/assistant_module_capability.dart';
 import 'package:eventpro/features/assistant/models/assistant_module_data_source.dart';
 import 'package:eventpro/features/assistant/models/assistant_request.dart';
@@ -66,6 +67,12 @@ void main() {
         contains(
           'ainda faltam informações antes que qualquer operação possa ser realizada',
         ),
+      );
+      expect(response.executionReport, isNotNull);
+      expect(response.executionMode, AssistantExecutionMode.dryRun);
+      expect(
+        response.friendlyMessage,
+        contains('Nenhuma alteração foi realizada no EventPRO'),
       );
     });
 
@@ -192,7 +199,12 @@ void main() {
       expect(response.hasOnlySimulatedModuleData, isTrue);
       expect(response.moduleDataSources, [AssistantModuleDataSource.inMemory]);
       expect(response.friendlyMessage, contains('Cliente encontrado'));
-      expect(response.friendlyMessage, contains('Nenhum dado do ERP foi alterado'));
+      expect(
+        response.friendlyMessage,
+        contains('Nenhuma alteração foi realizada no EventPRO'),
+      );
+      expect(response.executionReport, isNotNull);
+      expect(response.executionAudit, isNotNull);
       expect(response.eventDraft?.clientName, 'João');
       expect(wired.capabilities.canExecuteCreateEvent, isFalse);
       expect(wired.capabilities.canExecuteCreateQuote, isFalse);

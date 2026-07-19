@@ -17,6 +17,9 @@ import 'assistant_parse_issue.dart';
 import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
 import 'assistant_suggestion.dart';
+import 'assistant_write_authorization_status.dart';
+import 'assistant_write_result.dart';
+import 'assistant_write_validation_result.dart';
 
 /// Structured, explainable assistant output. Never mutates the ERP.
 class AssistantResponse {
@@ -51,6 +54,10 @@ class AssistantResponse {
     this.simulatedSteps = const [],
     this.skippedSteps = const [],
     this.executionWarnings = const [],
+    this.writeResult,
+    this.writeValidation,
+    this.writeAuthorization,
+    this.writeWarnings = const [],
   });
 
   final String requestId;
@@ -87,6 +94,12 @@ class AssistantResponse {
   final List<AssistantExecutionStep> simulatedSteps;
   final List<AssistantExecutionStep> skippedSteps;
   final List<String> executionWarnings;
+
+  /// AI-005 write-intent preparation (never an ERP mutation).
+  final AssistantWriteResult? writeResult;
+  final AssistantWriteValidationResult? writeValidation;
+  final AssistantWriteAuthorizationStatus? writeAuthorization;
+  final List<String> writeWarnings;
 
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
@@ -125,6 +138,10 @@ class AssistantResponse {
     List<AssistantExecutionStep>? simulatedSteps,
     List<AssistantExecutionStep>? skippedSteps,
     List<String>? executionWarnings,
+    AssistantWriteResult? writeResult,
+    AssistantWriteValidationResult? writeValidation,
+    AssistantWriteAuthorizationStatus? writeAuthorization,
+    List<String>? writeWarnings,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -132,6 +149,9 @@ class AssistantResponse {
     bool clearExecutionReport = false,
     bool clearExecutionMode = false,
     bool clearExecutionAudit = false,
+    bool clearWriteResult = false,
+    bool clearWriteValidation = false,
+    bool clearWriteAuthorization = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -172,6 +192,15 @@ class AssistantResponse {
       simulatedSteps: simulatedSteps ?? this.simulatedSteps,
       skippedSteps: skippedSteps ?? this.skippedSteps,
       executionWarnings: executionWarnings ?? this.executionWarnings,
+      writeResult:
+          clearWriteResult ? null : (writeResult ?? this.writeResult),
+      writeValidation: clearWriteValidation
+          ? null
+          : (writeValidation ?? this.writeValidation),
+      writeAuthorization: clearWriteAuthorization
+          ? null
+          : (writeAuthorization ?? this.writeAuthorization),
+      writeWarnings: writeWarnings ?? this.writeWarnings,
     );
   }
 
@@ -208,7 +237,11 @@ class AssistantResponse {
             _listEquals(other.executableSteps, executableSteps) &&
             _listEquals(other.simulatedSteps, simulatedSteps) &&
             _listEquals(other.skippedSteps, skippedSteps) &&
-            _listEquals(other.executionWarnings, executionWarnings);
+            _listEquals(other.executionWarnings, executionWarnings) &&
+            other.writeResult == writeResult &&
+            other.writeValidation == writeValidation &&
+            other.writeAuthorization == writeAuthorization &&
+            _listEquals(other.writeWarnings, writeWarnings);
   }
 
   @override
@@ -248,6 +281,10 @@ class AssistantResponse {
           Object.hashAll(simulatedSteps),
           Object.hashAll(skippedSteps),
           Object.hashAll(executionWarnings),
+          writeResult,
+          writeValidation,
+          writeAuthorization,
+          Object.hashAll(writeWarnings),
         ),
       );
 

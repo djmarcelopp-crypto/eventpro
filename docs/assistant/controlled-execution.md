@@ -48,3 +48,5 @@ Campos AI-004: `executionReport`, `executionMode`, `executionAudit`, `executable
 Mensagem padrão:
 
 > O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.
+
+Integração com preparação de escrita (AI-005): ver [write-pipeline.md](write-pipeline.md).

@@ -17,6 +17,7 @@ class AssistantExecutionReport {
     this.skippedSteps = const [],
     this.results = const [],
     this.warnings = const [],
+    this.mutatedErp = false,
   });
 
   final AssistantExecutionMode mode;
@@ -31,7 +32,8 @@ class AssistantExecutionReport {
   final List<AssistantExecutionResult> results;
   final List<String> warnings;
 
-  bool get mutatedErp => false;
+  /// True only when a restricted AI-006 production write mutated the ERP.
+  final bool mutatedErp;
 
   AssistantExecutionReport copyWith({
     AssistantExecutionMode? mode,
@@ -45,6 +47,7 @@ class AssistantExecutionReport {
     List<AssistantExecutionStep>? skippedSteps,
     List<AssistantExecutionResult>? results,
     List<String>? warnings,
+    bool? mutatedErp,
   }) {
     return AssistantExecutionReport(
       mode: mode ?? this.mode,
@@ -59,6 +62,7 @@ class AssistantExecutionReport {
       skippedSteps: skippedSteps ?? this.skippedSteps,
       results: results ?? this.results,
       warnings: warnings ?? this.warnings,
+      mutatedErp: mutatedErp ?? this.mutatedErp,
     );
   }
 
@@ -79,7 +83,8 @@ class AssistantExecutionReport {
             _listEquals(other.simulatedSteps, simulatedSteps) &&
             _listEquals(other.skippedSteps, skippedSteps) &&
             _listEquals(other.results, results) &&
-            _listEquals(other.warnings, warnings);
+            _listEquals(other.warnings, warnings) &&
+            other.mutatedErp == mutatedErp;
   }
 
   @override
@@ -95,6 +100,7 @@ class AssistantExecutionReport {
         Object.hashAll(skippedSteps),
         Object.hashAll(results),
         Object.hashAll(warnings),
+        mutatedErp,
       );
 
   static bool _listEquals<T>(List<T> a, List<T> b) {

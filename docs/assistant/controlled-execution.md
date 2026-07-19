@@ -50,3 +50,7 @@ Mensagem padrão:
 > O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.
 
 Integração com preparação de escrita (AI-005): ver [write-pipeline.md](write-pipeline.md).
+
+Primeira escrita real (AI-006 quote draft): ver [write-integration.md](write-integration.md).
+
+Production continua bloqueada por padrão; a única exceção aprovada é create quote draft com policy `ai006QuoteDraftProduction`.

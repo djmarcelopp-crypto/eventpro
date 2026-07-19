@@ -5,12 +5,18 @@ import '../models/quote.dart';
 import '../models/quote_status.dart';
 import '../models/quote_status_history_entry.dart';
 import '../utils/quote_calculator.dart';
+import '../utils/quote_draft_creation_service.dart';
 import '../utils/quote_status_transitions.dart';
 import 'quote_clock_provider.dart';
 import 'quote_repository_provider.dart';
 
 class QuotesNotifier extends Notifier<List<Quote>> {
   QuoteRepository get _repository => ref.read(quoteRepositoryProvider);
+
+  QuoteDraftCreationService get _draftCreation => QuoteDraftCreationService(
+        _repository,
+        clock: _now,
+      );
 
   @override
   List<Quote> build() => [];
@@ -22,52 +28,16 @@ class QuotesNotifier extends Notifier<List<Quote>> {
   DateTime _now() => ref.read(quoteClockProvider)();
 
   Future<bool> addQuote(Quote draft) async {
-    final now = _now();
-    final items = [
-      for (final item in draft.items)
-        QuoteCalculator.withCalculatedLineTotal(item),
-    ];
-    final subtotalCents = QuoteCalculator.subtotalCents(items);
-    final totalCents = QuoteCalculator.totalCents(
-      subtotalCents: subtotalCents,
-      discountCents: draft.discountCents,
-      freightCents: draft.freightCents,
-    );
-
-    final quote = Quote(
-      id: draft.id,
-      number: draft.number,
-      status: QuoteStatus.draft,
-      clientSnapshot: draft.clientSnapshot,
-      eventSnapshot: draft.eventSnapshot,
-      items: items,
-      subtotalCents: subtotalCents,
-      discountCents: draft.discountCents,
-      freightCents: draft.freightCents,
-      totalCents: totalCents,
-      statusHistory: [
-        QuoteStatusHistoryEntry(
-          previousStatus: null,
-          newStatus: QuoteStatus.draft,
-          changedAt: now,
-        ),
-      ],
-      validUntil: draft.validUntil,
-      notes: draft.notes,
-      internalNotes: draft.internalNotes,
-      companySnapshot: draft.companySnapshot,
-      createdAt: now,
-      updatedAt: now,
-      approvedAt: null,
-    );
-
-    try {
-      final persisted = await _repository.insert(quote);
-      state = [...state, persisted];
-      return true;
-    } catch (_) {
+    final outcome = await _draftCreation.createDraft(draft);
+    if (!outcome.success || outcome.quote == null) {
       return false;
     }
+    if (!outcome.idempotentReplay) {
+      state = [...state, outcome.quote!];
+    } else if (findById(outcome.quote!.id) == null) {
+      state = [...state, outcome.quote!];
+    }
+    return true;
   }
 
   Quote? findById(String id) {

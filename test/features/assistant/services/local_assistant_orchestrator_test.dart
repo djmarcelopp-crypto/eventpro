@@ -21,8 +21,8 @@ void main() {
       orchestrator = LocalAssistantOrchestrator(clock: () => now);
     });
 
-    test('builds structured response without creating ERP records', () {
-      final response = orchestrator.handle(
+    test('builds structured response without creating ERP records', () async {
+      final response = await orchestrator.handle(
         AssistantRequest(
           id: 'req-demo',
           rawText:
@@ -76,8 +76,8 @@ void main() {
       );
     });
 
-    test('attaches blocked execution plan and next recommended action', () {
-      final response = orchestrator.handle(
+    test('attaches blocked execution plan and next recommended action', () async {
+      final response = await orchestrator.handle(
         AssistantRequest(
           id: 'req-plan',
           rawText: 'Preciso de um casamento para 300 pessoas em Uberlândia.',
@@ -113,9 +113,9 @@ void main() {
       );
     });
 
-    test('keeps original text and explainable confidence', () {
+    test('keeps original text and explainable confidence', () async {
       const text = 'Tem equipamento disponível dia 18/09/2026?';
-      final response = orchestrator.handle(
+      final response = await orchestrator.handle(
         AssistantRequest(
           id: 'req-2',
           rawText: text,
@@ -138,8 +138,8 @@ void main() {
       );
     });
 
-    test('final response is immutable via copyWith attachment of plan', () {
-      final response = orchestrator.handle(
+    test('final response is immutable via copyWith attachment of plan', () async {
+      final response = await orchestrator.handle(
         AssistantRequest(
           id: 'req-immut',
           rawText: 'Criar evento corporativo em Goiânia',
@@ -157,7 +157,7 @@ void main() {
       expect(response.readySteps, isEmpty);
     });
 
-    test('read gateway enriches searchClient without mutating ERP data', () {
+    test('read gateway enriches searchClient without mutating ERP data', () async {
       final wired = LocalAssistantOrchestrator(
         clock: () => now,
         capabilities: AssistantCapabilities.localReadIntegration(),
@@ -173,7 +173,7 @@ void main() {
         ),
       );
 
-      final response = wired.handle(
+      final response = await wired.handle(
         AssistantRequest(
           id: 'req-client',
           rawText: 'Procure o cliente João',
@@ -216,8 +216,8 @@ void main() {
       );
     });
 
-    test('without read capability keeps module unavailable', () {
-      final response = orchestrator.handle(
+    test('without read capability keeps module unavailable', () async {
+      final response = await orchestrator.handle(
         AssistantRequest(
           id: 'req-client-default',
           rawText: 'Procure o cliente João',

@@ -58,8 +58,7 @@ void main() {
           endTime: '23:00',
         );
 
-    test('wedding without date yields blocked create event quote availability',
-        () {
+    test('wedding without date yields blocked create event quote availability', () async {
       final response = baseResponse(
         intent: AssistantIntentType.createQuote,
         eventDraft: const AssistantEventDraft(
@@ -94,7 +93,7 @@ void main() {
       expect(plan.readySteps, isEmpty);
     });
 
-    test('complete data without executor yields unavailable not ready', () {
+    test('complete data without executor yields unavailable not ready', () async {
       final plan = planner.plan(
         baseResponse(
           intent: AssistantIntentType.createQuote,
@@ -119,10 +118,10 @@ void main() {
       );
     });
 
-    test('end-to-end text produces blocked plan for missing date', () {
+    test('end-to-end text produces blocked plan for missing date', () async {
       final now = DateTime(2026, 7, 18, 12);
       final orchestrator = LocalAssistantOrchestrator(clock: () => now);
-      final interpreted = orchestrator.handle(
+      final interpreted = await orchestrator.handle(
         AssistantRequest(
           id: 'req-demo',
           rawText: 'Preciso de um casamento para 300 pessoas em Uberlândia.',
@@ -149,7 +148,7 @@ void main() {
       );
     });
 
-    test('disabled planning capability marks step unavailable', () {
+    test('disabled planning capability marks step unavailable', () async {
       final gated = LocalAssistantExecutionPlanner(
         capabilities: const AssistantCapabilities(canPlanCreateEvent: false),
       );
@@ -165,7 +164,7 @@ void main() {
       expect(plan.readySteps, isEmpty);
     });
 
-    test('confirmation does not enable execution without executor', () {
+    test('confirmation does not enable execution without executor', () async {
       const caps = AssistantCapabilities();
       final before = LocalAssistantExecutionPlanner(capabilities: caps).plan(
         baseResponse(
@@ -191,8 +190,7 @@ void main() {
       expect(identical(caps, caps), isTrue);
     });
 
-    test('confirmation with simulated executor only reaches awaiting then ready',
-        () {
+    test('confirmation with simulated executor only reaches awaiting then ready', () async {
       const caps = AssistantCapabilities(canExecuteCreateEvent: true);
       final pending = LocalAssistantExecutionPlanner(capabilities: caps).plan(
         baseResponse(
@@ -220,7 +218,7 @@ void main() {
       expect(caps.canExecuteCreateQuote, isFalse);
     });
 
-    test('searchClient uses explicit plan/execute capabilities', () {
+    test('searchClient uses explicit plan/execute capabilities', () async {
       final withName = planner.plan(
         baseResponse(
           intent: AssistantIntentType.searchClient,
@@ -263,7 +261,7 @@ void main() {
       expect(missingName.steps.single.blockReason, 'Nome do cliente ausente');
     });
 
-    test('unknown intent yields empty non-executable plan', () {
+    test('unknown intent yields empty non-executable plan', () async {
       final plan = planner.plan(
         baseResponse(intent: AssistantIntentType.unknown),
       );
@@ -273,7 +271,7 @@ void main() {
       expect(plan.summary, contains('Nenhuma ação executável'));
     });
 
-    test('planner ignores friendlyMessage and stays deterministic', () {
+    test('planner ignores friendlyMessage and stays deterministic', () async {
       final a = planner.plan(
         baseResponse(
           intent: AssistantIntentType.createQuote,
@@ -301,7 +299,7 @@ void main() {
       expect(a.steps.first.blockReason, isNot(contains('18/09')));
     });
 
-    test('plan invariants hold for create flow', () {
+    test('plan invariants hold for create flow', () async {
       final plan = planner.plan(
         baseResponse(
           intent: AssistantIntentType.createQuote,
@@ -338,7 +336,7 @@ void main() {
       expect(plan.readySteps, isEmpty);
     });
 
-    test('dependent step is not ready when dependency is unavailable', () {
+    test('dependent step is not ready when dependency is unavailable', () async {
       final plan = planner.plan(
         baseResponse(
           intent: AssistantIntentType.createQuote,

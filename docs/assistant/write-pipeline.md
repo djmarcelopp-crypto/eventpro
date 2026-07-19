@@ -108,11 +108,8 @@ Mensagem explícita quando há preparação:
 
 ## Futura ligação com ERP
 
-Quando aprovado em sprint futura:
+AI-006 implementou a primeira ligação real: **create quote draft**.
 
-1. Adapter de escrita atrás de port hexagonal (nunca o inverso).
-2. Habilitação explícita de capabilities de execução.
-3. Confirmação obrigatória + auditoria persistente.
-4. Dispatcher de escrita separado, ainda atrás de Validator/Authorizer.
+Ver [write-integration.md](write-integration.md).
 
-Até lá, a Write Pipeline permanece **somente preparação**.
+Escritas adicionais (evento, update, delete, financeiro) permanecem **proibidas** até nova sprint aprovada.

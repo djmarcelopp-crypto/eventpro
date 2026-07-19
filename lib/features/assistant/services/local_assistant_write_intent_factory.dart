@@ -5,6 +5,8 @@ import '../models/assistant_response.dart';
 import '../models/assistant_write_authorization.dart';
 import '../models/assistant_write_capability.dart';
 import '../models/assistant_write_constraint.dart';
+import '../models/assistant_write_entity_state.dart';
+import '../models/assistant_write_idempotency_key.dart';
 import '../models/assistant_write_operation.dart';
 import '../models/assistant_write_request.dart';
 import '../models/assistant_write_target.dart';
@@ -34,12 +36,15 @@ class LocalAssistantWriteIntentFactory {
       constraints: constraints,
       attributes: attributes,
       relatedStepId: step?.id,
+      requestedState: AssistantWriteEntityState.draft,
+      idempotencyKey: AssistantWriteIdempotencyKey(
+        'asst-${response.requestId}-${shape.capability.name}',
+      ),
       authorization: AssistantWriteAuthorization(
         granted: true,
         requiresUserConfirmation: true,
         allowedCapabilities: {shape.capability},
-        reason:
-            'Intenção de escrita preparada para revisão — execução desabilitada',
+        reason: 'Intenção de escrita preparada — execução condicionada ao pipeline',
       ),
     );
   }
@@ -128,7 +133,12 @@ class LocalAssistantWriteIntentFactory {
     final attributes = <String, String>{};
     final event = response.eventDraft;
     if (event != null) {
+      if (event.clientName != null) {
+        attributes['clientDisplayName'] = event.clientName!;
+        attributes['clientName'] = event.clientName!;
+      }
       if (event.eventType != null) attributes['eventType'] = event.eventType!;
+      if (event.eventName != null) attributes['eventName'] = event.eventName!;
       if (event.city != null) attributes['city'] = event.city!;
       if (event.guestCount != null) {
         attributes['guestCount'] = '${event.guestCount}';

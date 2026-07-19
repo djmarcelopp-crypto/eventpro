@@ -1,6 +1,6 @@
 # Assistente EventPRO — Arquitetura
 
-Documentação mínima da fronteira do assistente (EPIC-001). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
+Documentação mínima da fronteira do assistente (EPIC-001 / EPIC-002). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
 
 ## Pipeline
 
@@ -11,19 +11,16 @@ Texto
   → Drafts (event/quote)
   → ResponseBuilder
   → Execution Planner
-  → Module Consultant
+  → Module Consultant (leituras AI-003 / fixtures)
   → Gateway (contratos) / Adapter (leitura simulada)
   → Execution Validator
   → Confirmation Engine
   → Execution Dispatcher (dryRun / simulation)
-  → WriteIntentFactory
-  → Write Coordinator
-       → Validator / Authorizer
-       → Production Write Policy Registry (default deny)
-       → Idempotency Service
-       → Write Gateway → Quote Adapter → QuoteDraftCreationService
-  → Audit + Observation
+  → WriteIntentFactory + Write Coordinator (AI-005…007, isolado)
+  → ReadQueryFactory + Read Coordinator (AI-008, somente leitura)
+       → Read Gateway → Quote Read Adapter → QuoteQueryService
   → AssistantResponse
+       (moduleResults | readResult | writeResult)
 ```
 
 Ver também:
@@ -34,40 +31,35 @@ Ver também:
 - [write-integration.md](write-integration.md)
 - [idempotency.md](idempotency.md)
 - [observability.md](observability.md)
+- [structured-reads.md](structured-reads.md)
 
-O assistente **não** importa DAOs/Drift. O adapter de escrita vive em `lib/features/quotes/assistant/` e depende dos contratos do assistente.
+O assistente **não** importa DAOs/Drift. Adapters de leitura/escrita vivem no módulo ERP e dependem dos contratos do assistente.
 
 ## Camadas
 
 | Camada | Responsabilidade |
 |--------|------------------|
-| Models | DTOs imutáveis (intent, plan, write, idempotency, audit, observation) |
-| Domain contracts | Parser, Classifier, Planner, Gateways, Idempotency, Policy, Observer |
+| Models | DTOs imutáveis (intent, plan, write, read, audit, observation) |
+| Domain contracts | Parser, Classifier, Planner, Gateways, Idempotency, Policy, Read |
 | Services | Implementações locais determinísticas |
-| Policies | `QuoteDraftProductionPolicy` (única ativa) + placeholders bloqueados |
-| Adapters | Fixtures in-memory (AI-003) / Quote write adapter (AI-006) |
+| Policies | Production write (AI-007) — isoladas da leitura |
+| Adapters | In-memory (AI-003) / Quote write (AI-006) / Quote read (AI-008) |
 
-## Planning vs Execution
-
-- **Planning (`canPlan*`)** — o passo pode aparecer no `ExecutionPlan`.
-- **Execution (`canExecute*`)** — um executor registrado **pode ser invocado** na configuração atual.
-- **Capabilities ≠ permissão de production** — production exige policy explícita + gates.
-
-## Escrita
+## Escrita vs leitura
 
 | Sprint | Escopo |
 |--------|--------|
-| AI-005 | Preparação segura (sem mutação) |
-| AI-006 | Única escrita real: **create quote draft** |
-| AI-007 | Hardening: idempotência, observabilidade, policies, audit — **sem novos casos de uso** |
+| AI-003 | Leituras fixture via Module Consultant |
+| AI-005…007 | Preparação + write hardening; única mutação = create quote draft |
+| AI-008 | **Structured ERP reads** — contratos genéricos + Quote adapter; **zero escrita** |
 
-Placeholders `EventProductionPolicy` / `CustomerProductionPolicy` **não** representam funcionalidade disponível (`isActive=false`).
+Production write continua **default deny** (única policy ativa: Quote Draft). AI-008 não altera write coordinator, gateway, policies, idempotency ou audit.
 
 ## Defaults
 
-- `localDefaults()` → `integrationMode=none`, nenhuma leitura/escrita executável.
-- Production: **default deny** via registry; única policy ativa = Quote Draft.
-- Relógios e geradores de ID injetáveis nos serviços de escrita/audit.
+- `localDefaults()` → sem executores de leitura/escrita.
+- `localReadIntegration()` → client/agenda in-memory (AI-003).
+- `localStructuredQuoteRead()` → leitura estruturada de orçamentos (AI-008).
 
 ## Dependência
 

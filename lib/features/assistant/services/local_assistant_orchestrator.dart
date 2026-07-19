@@ -8,6 +8,7 @@ import '../domain/assistant_write_coordinator.dart';
 import '../domain/gateway/assistant_gateway.dart';
 import '../domain/idempotency/assistant_idempotency_service.dart';
 import '../domain/observability/assistant_write_observer.dart';
+import '../domain/read/assistant_read_gateway.dart';
 import '../domain/write/assistant_write_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_type.dart';
@@ -18,6 +19,7 @@ import '../models/assistant_execution_request.dart';
 import '../models/assistant_execution_token.dart';
 import '../models/assistant_intent.dart';
 import '../models/assistant_module_response.dart';
+import '../models/assistant_read_result.dart';
 import '../models/assistant_request.dart';
 import '../models/assistant_response.dart';
 import '../models/assistant_write_preparation.dart';
@@ -29,6 +31,8 @@ import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
 import 'local_assistant_idempotency_service.dart';
 import 'local_assistant_intent_classifier.dart';
+import 'local_assistant_read_coordinator.dart';
+import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
 import 'local_assistant_write_coordinator.dart';
 import 'local_assistant_write_intent_factory.dart';
@@ -49,10 +53,14 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantWriteGateway? writeGateway,
     AssistantIdempotencyService? idempotencyService,
     AssistantWriteObserver? writeObserver,
+    AssistantReadGateway? readGateway,
+    LocalAssistantReadCoordinator? readCoordinator,
+    LocalAssistantReadQueryFactory? readQueryFactory,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
   })  : _writeGateway = writeGateway,
+        _readGateway = readGateway,
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
@@ -85,13 +93,18 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
               clock: clock,
             ),
         _writeIntentFactory =
-            writeIntentFactory ?? const LocalAssistantWriteIntentFactory();
+            writeIntentFactory ?? const LocalAssistantWriteIntentFactory(),
+        _readCoordinator = readCoordinator ??
+            LocalAssistantReadCoordinator(clock: clock),
+        _readQueryFactory =
+            readQueryFactory ?? const LocalAssistantReadQueryFactory();
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
   final Set<String> _confirmedStepIds;
   final DateTime Function() _clock;
   final AssistantWriteGateway? _writeGateway;
+  final AssistantReadGateway? _readGateway;
   final AssistantParser _parser;
   final AssistantIntentClassifier _intentClassifier;
   final AssistantResponseBuilder _responseBuilder;
@@ -100,6 +113,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantExecutionDispatcher _executionDispatcher;
   final AssistantWriteCoordinator _writeCoordinator;
   final LocalAssistantWriteIntentFactory _writeIntentFactory;
+  final LocalAssistantReadCoordinator _readCoordinator;
+  final LocalAssistantReadQueryFactory _readQueryFactory;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -181,6 +196,20 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
 
+    final readQuery = _readQueryFactory.fromPipeline(
+      request: request,
+      response: interpreted,
+      capabilities: _capabilities,
+    );
+    AssistantReadResult? readResult;
+    if (readQuery != null) {
+      readResult = await _readCoordinator.execute(
+        query: readQuery,
+        capabilities: _capabilities,
+        gateway: _readGateway,
+      );
+    }
+
     final mutated = writePreparation?.writeResult.mutatedErp ?? false;
     final enrichedReport = report.copyWith(
       mutatedErp: mutated,
@@ -199,6 +228,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       moduleResults: consultation.results,
       reportSummary: enrichedReport.summary,
       writePreparation: writePreparation,
+      readResult: readResult,
       mode: _executionMode,
     );
 
@@ -224,6 +254,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       writeValidation: writePreparation?.writeValidation,
       writeAuthorization: writePreparation?.writeAuthorization,
       writeWarnings: writePreparation?.writeWarnings ?? const [],
+      readResult: readResult,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -255,6 +286,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     required List<AssistantModuleResponse> moduleResults,
     required String reportSummary,
     AssistantWritePreparation? writePreparation,
+    AssistantReadResult? readResult,
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -268,6 +300,20 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         );
       } else {
         parts.add('Consulta: ${payload.summary}.');
+      }
+    }
+    if (readResult != null) {
+      if (readResult.isEmpty) {
+        parts.add('Leitura estruturada: nenhum orçamento encontrado.');
+      } else if (readResult.isSingle) {
+        parts.add(
+          'Leitura estruturada: ${readResult.singleOrNull!.displayName} '
+          '(${readResult.records.single.id}).',
+        );
+      } else {
+        parts.add(
+          'Leitura estruturada: ${readResult.records.length} orçamentos.',
+        );
       }
     }
     parts.add(reportSummary);

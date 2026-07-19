@@ -1,7 +1,7 @@
 import '../models/assistant_request.dart';
 import '../models/assistant_response.dart';
 
-/// Coordinates parse → intent → drafts → response without ERP side effects.
+/// Coordinates parse → intent → plan → controlled execution → optional write.
 abstract class AssistantOrchestrator {
-  AssistantResponse handle(AssistantRequest request);
+  Future<AssistantResponse> handle(AssistantRequest request);
 }

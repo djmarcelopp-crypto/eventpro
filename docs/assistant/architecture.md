@@ -18,12 +18,13 @@ Texto
   → Execution Dispatcher (dryRun / simulation)
   → WriteIntentFactory (intenções de escrita)
   → Write Coordinator (Validator + Authorizer + ExecutionContext)
+  → Write Gateway / Quote Draft Adapter (AI-006, production restrita)
   → AssistantResponse enriquecida
 ```
 
-Ver também: [controlled-execution.md](controlled-execution.md), [module-integration.md](module-integration.md), [write-pipeline.md](write-pipeline.md).
+Ver também: [controlled-execution.md](controlled-execution.md), [module-integration.md](module-integration.md), [write-pipeline.md](write-pipeline.md), [write-integration.md](write-integration.md).
 
-O assistente **nunca** importa repositories, DAOs, Drift ou services concretos dos módulos ERP.
+O assistente **nunca** importa repositories, DAOs, Drift ou services concretos dos módulos ERP (exceto via adapter hexagonal no módulo quotes).
 
 ## Camadas
 
@@ -58,12 +59,13 @@ O nível de confiança/ambiente é dado por:
 
 ## Escrita
 
-AI-005 modela a **Write Pipeline** (intenção → validator → authorizer → coordinator → `WriteResult`) integrada ao Execution Context da AI-004.
+AI-005 modela a **Write Pipeline** (intenção → validator → authorizer → coordinator → `WriteResult`).
 
-- `canExecuteCreateEvent` / `canExecuteCreateQuote` permanecem `false` por padrão.
-- Confirmação de usuário **não** habilita executor nem despacha produção.
-- `AssistantWriteResult.executed` é sempre `false` nesta sprint.
-- Detalhes: [write-pipeline.md](write-pipeline.md).
+AI-006 habilita **somente** `create quote draft` em `production` restrita, via `QuoteAssistantWriteAdapter` + `QuoteDraftCreationService`.
+
+- `canExecuteCreateQuote` **não** significa acesso irrestrito ao ERP.
+- A única escrita real permitida: **create quote draft**.
+- Detalhes: [write-pipeline.md](write-pipeline.md), [write-integration.md](write-integration.md).
 
 ## Dependência
 

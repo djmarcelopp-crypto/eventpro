@@ -6,10 +6,12 @@ import '../domain/assistant_parser.dart';
 import '../domain/assistant_response_builder.dart';
 import '../domain/assistant_write_coordinator.dart';
 import '../domain/gateway/assistant_gateway.dart';
+import '../domain/write/assistant_write_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_type.dart';
 import '../models/assistant_execution_context.dart';
 import '../models/assistant_execution_mode.dart';
+import '../models/assistant_execution_policy.dart';
 import '../models/assistant_execution_request.dart';
 import '../models/assistant_execution_token.dart';
 import '../models/assistant_intent.dart';
@@ -28,7 +30,7 @@ import 'local_assistant_response_builder.dart';
 import 'local_assistant_write_coordinator.dart';
 import 'local_assistant_write_intent_factory.dart';
 
-/// Local orchestration pipeline with no persistence and no ERP writes.
+/// Local orchestration pipeline with controlled optional ERP quote-draft write.
 class LocalAssistantOrchestrator implements AssistantOrchestrator {
   LocalAssistantOrchestrator({
     AssistantParser? parser,
@@ -41,10 +43,12 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantExecutionDispatcher? executionDispatcher,
     AssistantWriteCoordinator? writeCoordinator,
     LocalAssistantWriteIntentFactory? writeIntentFactory,
+    AssistantWriteGateway? writeGateway,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
-  })  : _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
+  })  : _writeGateway = writeGateway,
+        _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
         _parser = parser ?? LocalAssistantParser(clock: clock),
@@ -77,6 +81,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantExecutionMode _executionMode;
   final Set<String> _confirmedStepIds;
   final DateTime Function() _clock;
+  final AssistantWriteGateway? _writeGateway;
   final AssistantParser _parser;
   final AssistantIntentClassifier _intentClassifier;
   final AssistantResponseBuilder _responseBuilder;
@@ -87,7 +92,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantWriteIntentFactory _writeIntentFactory;
 
   @override
-  AssistantResponse handle(AssistantRequest request) {
+  Future<AssistantResponse> handle(AssistantRequest request) async {
     final parseResult = _parser.parse(request);
     final intents = _intentClassifier.classify(
       request: request,
@@ -123,15 +128,22 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     );
     final enrichedPlan = consultation.plan;
 
+    final policy = _executionMode == AssistantExecutionMode.production
+        ? AssistantExecutionPolicy.ai006QuoteDraftProduction
+        : AssistantExecutionPolicy.ai004Defaults;
+
     final executionRequest = AssistantExecutionRequest(
       id: 'exec-${request.id}',
       context: AssistantExecutionContext(
         requestId: request.id,
-        token: AssistantExecutionToken('tok-${request.id}-${_clock().millisecondsSinceEpoch}'),
+        token: AssistantExecutionToken(
+          'tok-${request.id}-${_clock().millisecondsSinceEpoch}',
+        ),
         mode: _executionMode,
         integrationMode: _capabilities.integrationMode,
         timestamp: _clock(),
         confirmedStepIds: _confirmedStepIds,
+        policy: policy,
       ),
       plan: enrichedPlan,
       consultedDataSources: consultation.results
@@ -146,19 +158,38 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       response: interpreted,
       plan: enrichedPlan,
     );
-    final AssistantWritePreparation? writePreparation = writeRequest == null
-        ? null
-        : _writeCoordinator.prepare(
-            request: writeRequest,
-            context: executionRequest.context,
-          );
+
+    AssistantWritePreparation? writePreparation;
+    if (writeRequest != null) {
+      final confirmationSatisfied = writeRequest.relatedStepId != null &&
+          _confirmedStepIds.contains(writeRequest.relatedStepId);
+      writePreparation = await _writeCoordinator.prepareAndMaybeExecute(
+        request: writeRequest,
+        context: executionRequest.context,
+        confirmationSatisfied: confirmationSatisfied,
+        writeGateway: _writeGateway,
+      );
+    }
+
+    final mutated = writePreparation?.writeResult.mutatedErp ?? false;
+    final enrichedReport = report.copyWith(
+      mutatedErp: mutated,
+      warnings: [
+        ...report.warnings,
+        if (writePreparation != null) ...writePreparation.writeWarnings,
+      ],
+      summary: mutated
+          ? '${report.summary} Escrita real: quote draft criado.'
+          : report.summary,
+    );
 
     final nextAction = _nextRecommendedAction(interpreted);
     final friendlyMessage = _enrichFriendlyMessage(
       base: interpreted.friendlyMessage,
       moduleResults: consultation.results,
-      reportSummary: report.summary,
+      reportSummary: enrichedReport.summary,
       writePreparation: writePreparation,
+      mode: _executionMode,
     );
 
     return interpreted.copyWith(
@@ -172,13 +203,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       consultedModules: consultation.consultedModules,
       unavailableModules: consultation.unavailableModules,
       integrationWarnings: consultation.warnings,
-      executionReport: report,
-      executionMode: report.mode,
-      executionAudit: report.audit,
-      executableSteps: report.eligibleSteps,
-      simulatedSteps: report.simulatedSteps,
-      skippedSteps: report.skippedSteps,
-      executionWarnings: report.warnings,
+      executionReport: enrichedReport,
+      executionMode: enrichedReport.mode,
+      executionAudit: enrichedReport.audit,
+      executableSteps: enrichedReport.eligibleSteps,
+      simulatedSteps: enrichedReport.simulatedSteps,
+      skippedSteps: enrichedReport.skippedSteps,
+      executionWarnings: enrichedReport.warnings,
       writeResult: writePreparation?.writeResult,
       writeValidation: writePreparation?.writeValidation,
       writeAuthorization: writePreparation?.writeAuthorization,
@@ -214,6 +245,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     required List<AssistantModuleResponse> moduleResults,
     required String reportSummary,
     AssistantWritePreparation? writePreparation,
+    required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
     for (final result in moduleResults) {
@@ -229,13 +261,28 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       }
     }
     parts.add(reportSummary);
-    parts.add(
-      'O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.',
-    );
-    if (writePreparation != null) {
+
+    final write = writePreparation?.writeResult;
+    if (write?.executed == true && write?.draftId != null) {
       parts.add(
-        'A operação foi apenas preparada. '
-        'Nenhuma alteração foi realizada no EventPRO.',
+        'O orçamento ${write!.draftNumber ?? write.draftId} foi criado '
+        'em estado Draft. Nenhuma aprovação, envio ou faturamento ocorreu.',
+      );
+    } else if (mode == AssistantExecutionMode.dryRun ||
+        mode == AssistantExecutionMode.simulation) {
+      parts.add(
+        'O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.',
+      );
+      if (writePreparation != null) {
+        parts.add(
+          'A operação foi apenas preparada. '
+          'Nenhuma alteração foi realizada no EventPRO.',
+        );
+      }
+    } else {
+      parts.add(
+        writePreparation?.writeResult.summary ??
+            'Nenhuma alteração foi realizada no EventPRO.',
       );
     }
     return parts.join(' ');

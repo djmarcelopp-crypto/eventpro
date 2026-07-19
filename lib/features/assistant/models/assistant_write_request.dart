@@ -1,12 +1,14 @@
 import 'assistant_write_authorization.dart';
 import 'assistant_write_capability.dart';
 import 'assistant_write_constraint.dart';
+import 'assistant_write_entity_state.dart';
+import 'assistant_write_idempotency_key.dart';
 import 'assistant_write_operation.dart';
 import 'assistant_write_target.dart';
 
-/// Immutable write *intent* — never dispatched to the ERP in AI-005.
+/// Immutable write *intent*.
 ///
-/// Carries only abstract attributes; no repository/DAO/SQLite knowledge.
+/// [executed] remains false until a gateway adapter performs a real write.
 class AssistantWriteRequest {
   const AssistantWriteRequest({
     required this.id,
@@ -18,6 +20,8 @@ class AssistantWriteRequest {
     this.authorization,
     this.attributes = const {},
     this.relatedStepId,
+    this.idempotencyKey,
+    this.requestedState = AssistantWriteEntityState.draft,
   });
 
   final String id;
@@ -34,12 +38,21 @@ class AssistantWriteRequest {
   /// Optional link to an [AssistantExecutionStep.id] from the plan.
   final String? relatedStepId;
 
+  final AssistantWriteIdempotencyKey? idempotencyKey;
+  final AssistantWriteEntityState requestedState;
+
   bool get allConstraintsSatisfied =>
       constraints.every((c) => c.satisfied);
 
   bool get isReservedOperation =>
       operation == AssistantWriteOperation.delete ||
       operation == AssistantWriteOperation.cancel;
+
+  bool get isAi006QuoteDraft =>
+      operation == AssistantWriteOperation.create &&
+      target == AssistantWriteTarget.quote &&
+      capability == AssistantWriteCapability.createQuote &&
+      requestedState == AssistantWriteEntityState.draft;
 
   AssistantWriteRequest copyWith({
     String? id,
@@ -51,8 +64,11 @@ class AssistantWriteRequest {
     AssistantWriteAuthorization? authorization,
     Map<String, String>? attributes,
     String? relatedStepId,
+    AssistantWriteIdempotencyKey? idempotencyKey,
+    AssistantWriteEntityState? requestedState,
     bool clearAuthorization = false,
     bool clearRelatedStepId = false,
+    bool clearIdempotencyKey = false,
   }) {
     return AssistantWriteRequest(
       id: id ?? this.id,
@@ -68,6 +84,10 @@ class AssistantWriteRequest {
       relatedStepId: clearRelatedStepId
           ? null
           : (relatedStepId ?? this.relatedStepId),
+      idempotencyKey: clearIdempotencyKey
+          ? null
+          : (idempotencyKey ?? this.idempotencyKey),
+      requestedState: requestedState ?? this.requestedState,
     );
   }
 
@@ -83,7 +103,9 @@ class AssistantWriteRequest {
             _listEquals(other.constraints, constraints) &&
             other.authorization == authorization &&
             _mapEquals(other.attributes, attributes) &&
-            other.relatedStepId == relatedStepId;
+            other.relatedStepId == relatedStepId &&
+            other.idempotencyKey == idempotencyKey &&
+            other.requestedState == requestedState;
   }
 
   @override
@@ -97,6 +119,8 @@ class AssistantWriteRequest {
         authorization,
         Object.hashAll(attributes.entries),
         relatedStepId,
+        idempotencyKey,
+        requestedState,
       );
 
   static bool _listEquals(

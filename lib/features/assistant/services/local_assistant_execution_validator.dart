@@ -3,7 +3,7 @@ import '../models/assistant_execution_mode.dart';
 import '../models/assistant_execution_request.dart';
 import 'assistant_capabilities.dart';
 
-/// Deterministic validator for the AI-004 controlled pipeline.
+/// Deterministic validator for the controlled execution pipeline.
 class LocalAssistantExecutionValidator implements AssistantExecutionValidator {
   const LocalAssistantExecutionValidator({
     required this.capabilities,
@@ -16,21 +16,33 @@ class LocalAssistantExecutionValidator implements AssistantExecutionValidator {
     final issues = <String>[];
     final context = request.context;
     final plan = request.plan;
+    final policy = context.policy;
 
-    if (plan.steps.isEmpty) {
-      // Empty plan is valid but non-executable — not a hard failure.
-    }
-    if (!context.policy.allows(context.mode)) {
+    if (!policy.allows(context.mode)) {
       issues.add('Modo ${context.mode.name} não permitido pela policy');
     }
+
     if (context.mode == AssistantExecutionMode.production) {
-      issues.add('Modo production é reservado e bloqueado em AI-004');
+      if (!policy.allowRestrictedQuoteDraftProduction) {
+        issues.add('Modo production é reservado e bloqueado fora da exceção AI-006');
+      } else if (!capabilities.canExecuteCreateQuote) {
+        issues.add(
+          'Production restrita exige canExecuteCreateQuote=true',
+        );
+      } else if (capabilities.canExecuteCreateEvent) {
+        issues.add(
+          'Production restrita não permite canExecuteCreateEvent',
+        );
+      }
     }
-    if (capabilities.anyWriteExecutionEnabled) {
+
+    if (capabilities.anyWriteExecutionEnabled &&
+        context.mode != AssistantExecutionMode.production) {
       issues.add(
-        'Escrita habilitada nas capabilities — AI-004 exige writes desligadas',
+        'Escrita habilitada nas capabilities — dryRun/simulation exigem writes off',
       );
     }
+
     if (context.integrationMode != capabilities.integrationMode) {
       issues.add('integrationMode do contexto diverge das capabilities');
     }

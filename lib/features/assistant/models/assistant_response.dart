@@ -16,6 +16,7 @@ import 'assistant_module_response.dart';
 import 'assistant_parse_issue.dart';
 import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
+import 'assistant_conversation_presentation.dart';
 import 'assistant_read_presentation.dart';
 import 'assistant_read_result.dart';
 import 'assistant_suggestion.dart';
@@ -62,6 +63,7 @@ class AssistantResponse {
     this.writeWarnings = const [],
     this.readResult,
     this.readPresentation,
+    this.conversationPresentation,
   });
 
   final String requestId;
@@ -111,6 +113,9 @@ class AssistantResponse {
   /// AI-009 conversational presentation (NL + structured payload).
   final AssistantReadPresentation? readPresentation;
 
+  /// AI-010 multi-turn conversation presentation.
+  final AssistantConversationPresentation? conversationPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -154,6 +159,7 @@ class AssistantResponse {
     List<String>? writeWarnings,
     AssistantReadResult? readResult,
     AssistantReadPresentation? readPresentation,
+    AssistantConversationPresentation? conversationPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -166,6 +172,7 @@ class AssistantResponse {
     bool clearWriteAuthorization = false,
     bool clearReadResult = false,
     bool clearReadPresentation = false,
+    bool clearConversationPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -219,6 +226,9 @@ class AssistantResponse {
       readPresentation: clearReadPresentation
           ? null
           : (readPresentation ?? this.readPresentation),
+      conversationPresentation: clearConversationPresentation
+          ? null
+          : (conversationPresentation ?? this.conversationPresentation),
     );
   }
 
@@ -261,7 +271,8 @@ class AssistantResponse {
             other.writeAuthorization == writeAuthorization &&
             _listEquals(other.writeWarnings, writeWarnings) &&
             other.readResult == readResult &&
-            other.readPresentation == readPresentation;
+            other.readPresentation == readPresentation &&
+            other.conversationPresentation == conversationPresentation;
   }
 
   @override
@@ -307,6 +318,7 @@ class AssistantResponse {
           Object.hashAll(writeWarnings),
           readResult,
           readPresentation,
+          conversationPresentation,
         ),
       );
 

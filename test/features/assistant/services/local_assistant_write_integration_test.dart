@@ -14,10 +14,12 @@ import 'package:eventpro/features/assistant/models/assistant_write_operation.dar
 import 'package:eventpro/features/assistant/models/assistant_write_request.dart';
 import 'package:eventpro/features/assistant/models/assistant_write_target.dart';
 import 'package:eventpro/features/assistant/services/assistant_capabilities.dart';
+import 'package:eventpro/features/assistant/services/local_assistant_idempotency_service.dart';
 import 'package:eventpro/features/assistant/services/local_assistant_orchestrator.dart';
 import 'package:eventpro/features/assistant/services/local_assistant_write_coordinator.dart';
 import 'package:eventpro/features/assistant/services/local_assistant_write_gateway.dart';
 import 'package:eventpro/features/quotes/assistant/quote_assistant_write_adapter.dart';
+import 'package:eventpro/features/quotes/assistant/quote_idempotency_completed_lookup.dart';
 import 'package:eventpro/features/quotes/models/quote_status.dart';
 import 'package:eventpro/features/quotes/utils/quote_draft_creation_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +39,14 @@ void main() {
       gateway = LocalAssistantWriteGateway(
         quoteDraftAdapter: QuoteAssistantWriteAdapter(service),
       );
-      coordinator = LocalAssistantWriteCoordinator();
+      coordinator = LocalAssistantWriteCoordinator(
+        idempotencyService: LocalAssistantIdempotencyService(
+          completedLookup:
+              quoteIdempotencyCompletedLookup(repository, clock: () => now),
+          clock: () => now,
+        ),
+        clock: () => now,
+      );
     });
 
     AssistantExecutionContext ctx() {
@@ -147,7 +156,7 @@ void main() {
       expect(badTarget.writeResult.executed, isFalse);
       expect(
         badTarget.writeResult.failure?.code,
-        AssistantWriteFailureCode.unsupportedOperation,
+        AssistantWriteFailureCode.productionNotAllowed,
       );
 
       expect(await repository.listAll(), isEmpty);

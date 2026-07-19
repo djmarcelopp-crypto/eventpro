@@ -45,15 +45,19 @@ Avalia apenas autorização:
 
 ### Coordinator (`LocalAssistantWriteCoordinator`)
 
-Fluxo:
+Fluxo (AI-007):
 
 ```
 WriteRequest
   → WriteValidator
   → WriteAuthorizer
-  → ExecutionContext
-  → WriteResult (executed = false)
+  → Production Write Policy Registry (production)
+  → Idempotency Service
+  → Write Gateway (somente create quote draft)
+  → WriteResult + Audit + Observation
 ```
+
+Em `prepare()` isolado / dryRun / simulation: **não** muta o ERP.
 
 Produz `AssistantWritePreparation` com:
 
@@ -62,6 +66,7 @@ Produz `AssistantWritePreparation` com:
 - `writeAuthorization`
 - `writeWarnings`
 - `context` (eco do `AssistantExecutionContext`)
+- `writeAudit` (quando aplicável)
 
 ## Integração com Execution Pipeline (AI-004)
 
@@ -106,10 +111,12 @@ Mensagem explícita quando há preparação:
 - `delete` / `cancel` e capabilities reservadas ficam bloqueados.
 - Targets `contract` / `invoice` sem capability mapeada.
 
-## Futura ligação com ERP
+## Ligação com ERP
 
 AI-006 implementou a primeira ligação real: **create quote draft**.
 
-Ver [write-integration.md](write-integration.md).
+AI-007 fortalece a infraestrutura (idempotência, observabilidade, production policies, audit) **sem** novos casos de uso.
+
+Ver [write-integration.md](write-integration.md), [idempotency.md](idempotency.md), [observability.md](observability.md).
 
 Escritas adicionais (evento, update, delete, financeiro) permanecem **proibidas** até nova sprint aprovada.

@@ -1,4 +1,4 @@
-# Write Integration — Quote Draft (AI-006)
+# Write Integration — Quote Draft (AI-006 / AI-007)
 
 ## Objetivo
 
@@ -8,27 +8,40 @@ Operação única permitida:
 
 > **create quote draft**
 
+**AI-007 não adiciona novos casos de uso.** Fortalece idempotência, observabilidade, policies e auditoria.
+
 ## Por que Quote Draft?
 
 - fluxo comercial frequente;
 - estado Draft é seguro (editável, sem envio/aprovação/financeiro);
 - serviço oficial já possui criação atômica via Drift transaction.
 
-## Fronteira hexagonal
+## Fronteira hexagonal (AI-007)
 
 ```
 AssistantWriteRequest
   → Validator / Authorizer
   → Execution Validator / Confirmation
+  → Production Write Policy Registry
+  → Idempotency Service
   → Write Coordinator
   → AssistantWriteGateway
   → QuoteAssistantWriteAdapter (módulo quotes)
   → QuoteDraftCreationService
   → QuoteRepository.insert → QuotesDao.insertQuoteGraph (transaction)
-  → AssistantWriteResult / ExecutionReport / Audit
+  → WriteResult
+  → Audit + Observation
+  → AssistantResponse
 ```
 
-O assistente **não** importa DAO/repository. O adapter vive em `lib/features/quotes/assistant/` e depende dos contratos do assistente.
+Invariantes:
+
+- policy validada **antes** da mutação;
+- idempotência protege **antes** do adapter;
+- `completed` somente após sucesso confirmado;
+- timeout incerto **não** vira `failed` automaticamente;
+- observer não controla a decisão;
+- audit reflete o que realmente ocorreu.
 
 ## Serviço reutilizado
 
@@ -48,48 +61,51 @@ O assistente **não** importa DAO/repository. O adapter vive em `lib/features/qu
 | simulation | Não | false | false |
 | production | Somente create quote Draft com todos os gates | true se criou/replay | true só na 1ª criação |
 
-## Autorização restrita de production
+## Production Write Policies (AI-007)
 
-AI-004 continua bloqueando production por padrão.
+Default **deny**. Registry resolve **uma** policy ativa por `operation/target/state`.
 
-Exceção AI-006 (`AssistantExecutionPolicy.ai006QuoteDraftProduction`):
+| Policy | Ativa? | Efeito |
+|--------|--------|--------|
+| `QuoteDraftProductionPolicy` | sim | permite só create quote draft |
+| `EventProductionPolicy` | não | placeholder bloqueado |
+| `CustomerProductionPolicy` | não | placeholder bloqueado |
 
-- `operation=create`
-- `target=quote`
-- `requestedState=draft`
-- `canExecuteCreateQuote=true`
-- `canExecuteCreateEvent=false`
-- confirmação satisfeita
-- adapter disponível
-- idempotency key válida
+Gates obrigatórios (policy não os ignora): Validator, Authorizer, Confirmation, Idempotency, adapter aprovado, mode=production.
 
-Qualquer outro caso permanece rejeitado.
+`AssistantExecutionPolicy.ai006QuoteDraftProduction` continua no ExecutionContext; a autorização de escrita real é da **policy registry**, não de comparações hardcoded no orchestrator.
 
-## Idempotência (persistente)
+## Idempotência
 
-- Key obrigatória para escrita real.
-- Draft id = `asst-quote-{hash(key)}`.
-- `findById` antes do insert: se existir Draft, retorna replay (`mutatedErp=false`).
-- Persistente via UNIQUE de `quote.id` — sem nova tabela / sem mudança de `schemaVersion`.
+Ver [idempotency.md](idempotency.md).
+
+- Serviço dedicado + store local + lookup complementar do Draft AI-006.
+- ID determinístico permanece proteção complementar (UNIQUE `quote.id`).
+- Sem nova tabela / `schemaVersion` = 12.
+
+## Observabilidade
+
+Ver [observability.md](observability.md).
 
 ## Transação e rollback
 
 - `insertQuoteGraph` roda em `transaction()` Drift.
 - Falha ⇒ rollback automático do SQLite (sem Draft parcial).
-- `rollbackAttempted` / `rollbackSucceeded` registrados quando a falha ocorre após tentativa de persistência.
-- **Não** afirmamos rollback se a falha for anterior à persistência.
+- Audit **não** alega rollback quando ele não ocorreu.
 
-## Timeout
+## Timeout / uncertain
 
 - Adapter aplica `Future.timeout`.
-- Timeout ⇒ `uncertainOutcome` / `TimeoutException` estruturado.
-- **Não** repetir automaticamente — consultar idempotência (mesmo id) antes de nova tentativa.
+- Timeout ⇒ lifecycle `uncertain` + outcome distinto de `failed`.
+- Recovery: `completedLookup` / `findById(derivedDraftId)` antes de nova mutação.
 
 ## Auditoria
 
-`AssistantWriteAuditRecord` / campos em `WriteResult` + `ExecutionReport`:
+`AssistantWriteAuditRecord` (autoritativo):
 
-token, fingerprint da key (não a key crua), operation, target, mode, confirmation, authorization, adapter, outcome, draft id, executed, mutatedErp, rollback, warnings, erro estruturado.
+correlationId, requestId, executionId, execution token, idempotency fingerprint (não a key bruta), lifecycle + write idempotency status, operation, target, states, mode, policy, adapter, authorization, confirmation, timestamps, duration, outcome, failure code, created Draft ID (só se conhecido), executed, mutatedErp, rollback*, warnings ordenados.
+
+Serialização determinística via `toDeterministicMap()`; relógio/IDs injetáveis — sem IDs aleatórios na serialização.
 
 ## Erros estruturados
 
@@ -97,11 +113,12 @@ token, fingerprint da key (não a key crua), operation, target, mode, confirmati
 
 ## Limitações / proibições
 
-- sem create event;
-- sem update/delete/cancel;
-- sem aprovação/envio/conversão;
-- sem financeiro/faturamento/emissão;
-- sem HTTP externo.
+- sem create event / customer / contract;
+- sem update / delete / cancel;
+- sem aprovação / envio / emissão / financeiro;
+- sem HTTP externo;
+- placeholders de policy ≠ funcionalidade disponível;
+- idempotência dedicada ainda tem limitações sem armazenamento próprio (claim pending cross-process).
 
 **`canExecuteCreateQuote` não significa acesso irrestrito ao ERP.**  
 A única escrita real permitida nesta versão é: **create quote draft**.

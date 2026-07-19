@@ -1,38 +1,70 @@
 import '../domain/assistant_write_authorizer.dart';
 import '../domain/assistant_write_coordinator.dart';
 import '../domain/assistant_write_validator.dart';
+import '../domain/idempotency/assistant_idempotency_service.dart';
+import '../domain/observability/assistant_write_observer.dart';
+import '../domain/policy/assistant_production_write_policy_registry.dart';
 import '../domain/write/assistant_write_gateway.dart';
 import '../domain/write/assistant_write_transaction.dart';
+import '../models/assistant_confirmation_status.dart';
 import '../models/assistant_execution_context.dart';
 import '../models/assistant_execution_mode.dart';
+import '../models/assistant_idempotency_result.dart';
+import '../models/assistant_idempotency_status.dart';
+import '../models/assistant_production_write_policy_context.dart';
 import '../models/assistant_write_adapter_result.dart';
+import '../models/assistant_write_audit_record.dart';
 import '../models/assistant_write_authorization_status.dart';
 import '../models/assistant_write_entity_state.dart';
 import '../models/assistant_write_failure.dart';
 import '../models/assistant_write_failure_code.dart';
 import '../models/assistant_write_idempotency_status.dart';
+import '../models/assistant_write_observation.dart';
+import '../models/assistant_write_outcome_category.dart';
 import '../models/assistant_write_payload.dart';
 import '../models/assistant_write_preparation.dart';
 import '../models/assistant_write_request.dart';
 import '../models/assistant_write_result.dart';
 import '../models/assistant_write_transaction_status.dart';
 import '../models/assistant_write_validation_result.dart';
+import 'local_assistant_idempotency_service.dart';
 import 'local_assistant_write_authorizer.dart';
 import 'local_assistant_write_validator.dart';
+import 'policies/blocked_production_write_policies.dart';
+import 'policies/quote_draft_production_policy.dart';
 
-/// Prepares write intents and, when all gates pass, executes via gateway.
+/// Prepares write intents and executes via policy + idempotency + gateway.
 class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
   LocalAssistantWriteCoordinator({
     AssistantWriteValidator? validator,
     AssistantWriteAuthorizer? authorizer,
+    AssistantIdempotencyService? idempotencyService,
+    AssistantProductionWritePolicyRegistry? policyRegistry,
+    AssistantWriteObserver? observer,
+    DateTime Function()? clock,
   })  : _authorizer = authorizer ?? const LocalAssistantWriteAuthorizer(),
         _validator = validator ??
             LocalAssistantWriteValidator(
               authorizer: authorizer ?? const LocalAssistantWriteAuthorizer(),
-            );
+            ),
+        _idempotency = idempotencyService ?? LocalAssistantIdempotencyService(),
+        _policies = policyRegistry ??
+            AssistantProductionWritePolicyRegistry(const [
+              QuoteDraftProductionPolicy(),
+              EventProductionPolicy(),
+              CustomerProductionPolicy(),
+            ]),
+        _observer = SafeAssistantWriteObserver(
+          observer ?? const NoOpAssistantWriteObserver(),
+        ),
+        _clock = clock ?? DateTime.now;
 
   final AssistantWriteValidator _validator;
   final AssistantWriteAuthorizer _authorizer;
+  final AssistantIdempotencyService _idempotency;
+  final AssistantProductionWritePolicyRegistry _policies;
+  final AssistantWriteObserver _observer;
+  final DateTime Function() _clock;
 
   @override
   AssistantWritePreparation prepare({
@@ -54,7 +86,8 @@ class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
     required bool confirmationSatisfied,
     AssistantWriteGateway? writeGateway,
   }) async {
-    final preparation = _prepareInternal(
+    final startedAt = _clock();
+    var preparation = _prepareInternal(
       request: request,
       context: context,
       confirmationSatisfied: confirmationSatisfied,
@@ -63,7 +96,7 @@ class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
 
     if (context.mode == AssistantExecutionMode.dryRun ||
         context.mode == AssistantExecutionMode.simulation) {
-      return preparation.copyWith(
+      preparation = preparation.copyWith(
         writeResult: preparation.writeResult.copyWith(
           executed: false,
           mutatedErp: false,
@@ -75,31 +108,99 @@ class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
           'Modo ${context.mode.name}: escrita real não executada',
         ],
       );
+      final finishedAt = _clock();
+      final audit = _buildAudit(
+        request: request,
+        context: context,
+        preparation: preparation,
+        confirmationSatisfied: confirmationSatisfied,
+        startedAt: startedAt,
+        finishedAt: finishedAt,
+        policyName: 'none',
+        adapterName: writeGateway?.quoteDraftAdapter?.name ?? '',
+        outcome: context.mode == AssistantExecutionMode.dryRun
+            ? AssistantWriteOutcomeCategory.dryRun
+            : AssistantWriteOutcomeCategory.simulation,
+        transactionStatus: AssistantWriteTransactionStatus.skipped,
+        lifecycleStatus: null,
+      );
+      _emitObservation(audit);
+      return preparation.copyWith(writeAudit: audit);
     }
 
     if (context.mode != AssistantExecutionMode.production) {
       return preparation;
     }
 
-    final gate = _productionGate(
-      request: request,
-      context: context,
-      preparation: preparation,
-      confirmationSatisfied: confirmationSatisfied,
-      writeGateway: writeGateway,
+    final adapterName = writeGateway?.quoteDraftAdapter?.name ?? '';
+    final policyDecision = _policies.resolve(
+      AssistantProductionWritePolicyContext(
+        request: request,
+        executionContext: context,
+        preparation: preparation,
+        confirmationSatisfied: confirmationSatisfied,
+        adapterAvailable: writeGateway?.isAvailable == true,
+        adapterName: adapterName,
+      ),
     );
-    if (gate != null) {
-      return preparation.copyWith(
+
+    if (!policyDecision.allowed) {
+      final failure = policyDecision.failure ??
+          const AssistantWriteFailure(
+            code: AssistantWriteFailureCode.productionNotAllowed,
+            message: 'Production negada pela policy',
+          );
+      preparation = preparation.copyWith(
         writeResult: preparation.writeResult.copyWith(
           accepted: false,
           executed: false,
           mutatedErp: false,
-          failure: gate,
-          rejectionReason: gate.message,
-          summary: gate.message,
+          failure: failure,
+          rejectionReason: failure.message,
+          summary: failure.message,
         ),
-        writeWarnings: [...preparation.writeWarnings, gate.message],
+        writeWarnings: [...preparation.writeWarnings, failure.message],
       );
+      final finishedAt = _clock();
+      final audit = _buildAudit(
+        request: request,
+        context: context,
+        preparation: preparation,
+        confirmationSatisfied: confirmationSatisfied,
+        startedAt: startedAt,
+        finishedAt: finishedAt,
+        policyName: policyDecision.policyName,
+        adapterName: adapterName,
+        outcome: AssistantWriteOutcomeCategory.blocked,
+        transactionStatus: AssistantWriteTransactionStatus.skipped,
+        lifecycleStatus: null,
+      );
+      _emitObservation(audit);
+      return preparation.copyWith(writeAudit: audit);
+    }
+
+    final idemBegin = await _idempotency.begin(request.idempotencyKey!);
+    if (!idemBegin.mayMutate) {
+      preparation = _fromIdempotencyReplay(preparation, idemBegin);
+      final finishedAt = _clock();
+      final audit = _buildAudit(
+        request: request,
+        context: context,
+        preparation: preparation,
+        confirmationSatisfied: confirmationSatisfied,
+        startedAt: startedAt,
+        finishedAt: finishedAt,
+        policyName: policyDecision.policyName,
+        adapterName: adapterName,
+        outcome: idemBegin.decision ==
+                AssistantIdempotencyBeginDecision.replayCompleted
+            ? AssistantWriteOutcomeCategory.idempotentReplay
+            : AssistantWriteOutcomeCategory.blocked,
+        transactionStatus: AssistantWriteTransactionStatus.skipped,
+        lifecycleStatus: idemBegin.record.status,
+      );
+      _emitObservation(audit);
+      return preparation.copyWith(writeAudit: audit);
     }
 
     final payload = AssistantWritePayload(
@@ -128,10 +229,31 @@ class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
       context: context,
       idempotencyKey: request.idempotencyKey!,
       status: AssistantWriteTransactionStatus.prepared,
+      adapterName: adapterName,
     );
 
     final adapterResult = await writeGateway!.execute(transaction);
-    return _mergeAdapterResult(preparation, adapterResult);
+    await _finalizeIdempotency(request, adapterResult);
+    preparation = _mergeAdapterResult(preparation, adapterResult);
+
+    final finishedAt = _clock();
+    final outcome = _outcomeCategory(adapterResult);
+    final audit = _buildAudit(
+      request: request,
+      context: context,
+      preparation: preparation,
+      confirmationSatisfied: confirmationSatisfied,
+      startedAt: startedAt,
+      finishedAt: finishedAt,
+      policyName: policyDecision.policyName,
+      adapterName: adapterName,
+      outcome: outcome,
+      transactionStatus: adapterResult.transactionStatus,
+      lifecycleStatus: (await _idempotency.findByKey(request.idempotencyKey!))
+          ?.status,
+    );
+    _emitObservation(audit);
+    return preparation.copyWith(writeAudit: audit);
   }
 
   AssistantWritePreparation _prepareInternal({
@@ -220,65 +342,81 @@ class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
     );
   }
 
-  AssistantWriteFailure? _productionGate({
-    required AssistantWriteRequest request,
-    required AssistantExecutionContext context,
-    required AssistantWritePreparation preparation,
-    required bool confirmationSatisfied,
-    required AssistantWriteGateway? writeGateway,
-  }) {
-    if (!context.policy.allowRestrictedQuoteDraftProduction) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.productionNotAllowed,
-        message: 'Production sem exceção AI-006 de Quote Draft',
+  Future<void> _finalizeIdempotency(
+    AssistantWriteRequest request,
+    AssistantWriteAdapterResult adapterResult,
+  ) async {
+    final key = request.idempotencyKey!;
+    if (adapterResult.failure?.code == AssistantWriteFailureCode.timeout ||
+        adapterResult.failure?.uncertain == true) {
+      await _idempotency.markUncertain(
+        key,
+        message: adapterResult.failure?.message ?? 'Resultado incerto',
+      );
+      return;
+    }
+    if (adapterResult.executed && adapterResult.draftId != null) {
+      await _idempotency.complete(
+        key,
+        draftId: adapterResult.draftId!,
+        draftNumber: adapterResult.draftNumber,
+        mutatedErp: adapterResult.mutatedErp,
+      );
+      return;
+    }
+    await _idempotency.fail(
+      key,
+      code: adapterResult.failure?.code ??
+          AssistantWriteFailureCode.serviceFailure,
+      message: adapterResult.failure?.message ?? adapterResult.summary,
+    );
+  }
+
+  AssistantWritePreparation _fromIdempotencyReplay(
+    AssistantWritePreparation preparation,
+    AssistantIdempotencyResult idemBegin,
+  ) {
+    final record = idemBegin.record;
+    if (idemBegin.decision ==
+        AssistantIdempotencyBeginDecision.replayCompleted) {
+      return preparation.copyWith(
+        writeResult: preparation.writeResult.copyWith(
+          accepted: true,
+          executed: true,
+          mutatedErp: false,
+          draftId: record.resultDraftId,
+          draftNumber: record.resultDraftNumber,
+          resultingState: AssistantWriteEntityState.draft,
+          idempotencyStatus: AssistantWriteIdempotencyStatus.replayed,
+          summary:
+              'Rascunho recuperado por idempotência: ${record.resultDraftNumber ?? record.resultDraftId}. '
+              'Nenhuma aprovação, envio ou faturamento ocorreu.',
+        ),
+        writeWarnings: [
+          ...preparation.writeWarnings,
+          'Replay idempotente — nenhuma nova mutação',
+        ],
       );
     }
-    if (!request.isAi006QuoteDraft) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.unsupportedOperation,
-        message: 'Somente create quote Draft é permitido em production',
-      );
-    }
-    if (request.requestedState != AssistantWriteEntityState.draft) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.invalidDraftState,
-        message: 'Estado solicitado deve ser Draft',
-      );
-    }
-    if (request.idempotencyKey == null || !request.idempotencyKey!.isValid) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.missingIdempotencyKey,
-        message: 'Idempotency key obrigatória para escrita real',
-      );
-    }
-    if (preparation.writeAuthorization ==
-            AssistantWriteAuthorizationStatus.denied ||
-        preparation.writeAuthorization ==
-            AssistantWriteAuthorizationStatus.insufficientPrivileges) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.authorizationDenied,
-        message: 'Autorização negada para escrita',
-      );
-    }
-    if (!preparation.writeValidation.valid) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.validationDenied,
-        message: 'Validação da intenção de escrita negada',
-      );
-    }
-    if (context.policy.requireConfirmationForWrites && !confirmationSatisfied) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.confirmationRequired,
-        message: 'Confirmação obrigatória ausente',
-      );
-    }
-    if (writeGateway == null || !writeGateway.isAvailable) {
-      return const AssistantWriteFailure(
-        code: AssistantWriteFailureCode.adapterUnavailable,
-        message: 'Write gateway/adapter indisponível',
-      );
-    }
-    return null;
+    final code = idemBegin.decision ==
+            AssistantIdempotencyBeginDecision.blockedUncertain
+        ? AssistantWriteFailureCode.uncertainOutcome
+        : AssistantWriteFailureCode.duplicateOperation;
+    return preparation.copyWith(
+      writeResult: preparation.writeResult.copyWith(
+        accepted: false,
+        executed: false,
+        mutatedErp: false,
+        failure: AssistantWriteFailure(
+          code: code,
+          message: 'Idempotência bloqueou nova mutação (${record.status.name})',
+          uncertain: code == AssistantWriteFailureCode.uncertainOutcome,
+        ),
+        rejectionReason: 'Idempotência: ${record.status.name}',
+        summary: 'Escrita bloqueada por idempotência (${record.status.name})',
+        idempotencyStatus: AssistantWriteIdempotencyStatus.conflict,
+      ),
+    );
   }
 
   AssistantWritePreparation _mergeAdapterResult(
@@ -311,6 +449,103 @@ class LocalAssistantWriteCoordinator implements AssistantWriteCoordinator {
       ],
     );
   }
+
+  AssistantWriteAuditRecord _buildAudit({
+    required AssistantWriteRequest request,
+    required AssistantExecutionContext context,
+    required AssistantWritePreparation preparation,
+    required bool confirmationSatisfied,
+    required DateTime startedAt,
+    required DateTime finishedAt,
+    required String policyName,
+    required String adapterName,
+    required AssistantWriteOutcomeCategory outcome,
+    required AssistantWriteTransactionStatus transactionStatus,
+    required AssistantIdempotencyStatus? lifecycleStatus,
+  }) {
+    final result = preparation.writeResult;
+    final duration = finishedAt.difference(startedAt).inMilliseconds;
+    return AssistantWriteAuditRecord(
+      correlationId: context.requestId,
+      requestId: request.requestId,
+      executionId: context.token.value,
+      executionToken: context.token,
+      idempotencyFingerprint: request.idempotencyKey?.auditFingerprint ?? '',
+      lifecycleIdempotencyStatus: lifecycleStatus,
+      writeIdempotencyStatus: result.idempotencyStatus,
+      operation: request.operation,
+      target: request.target,
+      requestedState: request.requestedState,
+      resultingState: result.resultingState,
+      executionMode: context.mode,
+      policyName: policyName,
+      adapterName: adapterName,
+      authorizationStatus: preparation.writeAuthorization,
+      confirmationStatus: confirmationSatisfied
+          ? AssistantConfirmationStatus.providedValid
+          : (context.policy.requireConfirmationForWrites
+              ? AssistantConfirmationStatus.requiredMissing
+              : AssistantConfirmationStatus.notRequired),
+      startedAt: startedAt.toUtc(),
+      finishedAt: finishedAt.toUtc(),
+      durationMs: duration < 0 ? 0 : duration,
+      outcome: outcome,
+      transactionStatus: transactionStatus,
+      failureCode: result.failure?.code,
+      createdDraftId: result.draftId,
+      executed: result.executed,
+      mutatedErp: result.mutatedErp,
+      rollbackAttempted: result.rollbackAttempted,
+      rollbackSucceeded: result.rollbackAttempted && result.rollbackSucceeded,
+      warnings: [...preparation.writeWarnings]..sort(),
+    );
+  }
+
+  void _emitObservation(AssistantWriteAuditRecord audit) {
+    _observer.onObservation(
+      AssistantWriteObservation(
+        operation: audit.operation,
+        target: audit.target,
+        executionMode: audit.executionMode,
+        policyName: audit.policyName,
+        adapterName: audit.adapterName,
+        idempotencyStatus: audit.writeIdempotencyStatus,
+        startedAt: audit.startedAt,
+        finishedAt: audit.finishedAt,
+        durationMs: audit.durationMs,
+        confirmationStatus: audit.confirmationStatus,
+        authorizationStatus: audit.authorizationStatus,
+        outcome: audit.outcome,
+        executed: audit.executed,
+        mutatedErp: audit.mutatedErp,
+        timeout: audit.failureCode == AssistantWriteFailureCode.timeout,
+        rollbackAttempted: audit.rollbackAttempted,
+        rollbackSucceeded: audit.rollbackSucceeded,
+        warningCount: audit.warnings.length,
+        failureCode: audit.failureCode,
+      ),
+    );
+  }
+
+  static AssistantWriteOutcomeCategory _outcomeCategory(
+    AssistantWriteAdapterResult result,
+  ) {
+    if (result.failure?.code == AssistantWriteFailureCode.timeout) {
+      return AssistantWriteOutcomeCategory.timeout;
+    }
+    if (result.failure?.uncertain == true) {
+      return AssistantWriteOutcomeCategory.uncertain;
+    }
+    if (result.rollbackAttempted) {
+      return AssistantWriteOutcomeCategory.rollback;
+    }
+    if (result.idempotencyStatus == AssistantWriteIdempotencyStatus.replayed) {
+      return AssistantWriteOutcomeCategory.idempotentReplay;
+    }
+    if (result.executed) return AssistantWriteOutcomeCategory.success;
+    if (result.failure != null) return AssistantWriteOutcomeCategory.failed;
+    return AssistantWriteOutcomeCategory.blocked;
+  }
 }
 
 extension on AssistantWritePreparation {
@@ -319,6 +554,7 @@ extension on AssistantWritePreparation {
     AssistantWriteValidationResult? writeValidation,
     AssistantWriteAuthorizationStatus? writeAuthorization,
     List<String>? writeWarnings,
+    AssistantWriteAuditRecord? writeAudit,
   }) {
     return AssistantWritePreparation(
       writeResult: writeResult ?? this.writeResult,
@@ -326,6 +562,7 @@ extension on AssistantWritePreparation {
       writeAuthorization: writeAuthorization ?? this.writeAuthorization,
       writeWarnings: writeWarnings ?? this.writeWarnings,
       context: context,
+      writeAudit: writeAudit ?? this.writeAudit,
     );
   }
 }

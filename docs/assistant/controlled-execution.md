@@ -53,4 +53,6 @@ Integração com preparação de escrita (AI-005): ver [write-pipeline.md](write
 
 Primeira escrita real (AI-006 quote draft): ver [write-integration.md](write-integration.md).
 
-Production continua bloqueada por padrão; a única exceção aprovada é create quote draft com policy `ai006QuoteDraftProduction`.
+Hardening de escrita (AI-007): [idempotency.md](idempotency.md), [observability.md](observability.md).
+
+Production continua **default deny**. A única escrita real continua sendo **create quote draft**, autorizada por `QuoteDraftProductionPolicy` (registry) com gates de confirmação/autorização/idempotência. Placeholders de outras policies não habilitam fluxos.

@@ -1,9 +1,10 @@
 import 'assistant_execution_context.dart';
+import 'assistant_write_audit_record.dart';
 import 'assistant_write_authorization_status.dart';
 import 'assistant_write_result.dart';
 import 'assistant_write_validation_result.dart';
 
-/// Bundle produced by the write coordinator — preparation only, never execution.
+/// Bundle produced by the write coordinator.
 class AssistantWritePreparation {
   const AssistantWritePreparation({
     required this.writeResult,
@@ -11,15 +12,15 @@ class AssistantWritePreparation {
     required this.writeAuthorization,
     required this.context,
     this.writeWarnings = const [],
+    this.writeAudit,
   });
 
   final AssistantWriteResult writeResult;
   final AssistantWriteValidationResult writeValidation;
   final AssistantWriteAuthorizationStatus writeAuthorization;
   final List<String> writeWarnings;
-
-  /// Execution context used for preparation correlation (never mutated).
   final AssistantExecutionContext context;
+  final AssistantWriteAuditRecord? writeAudit;
 
   bool get executed => writeResult.executed;
 
@@ -31,7 +32,8 @@ class AssistantWritePreparation {
             other.writeValidation == writeValidation &&
             other.writeAuthorization == writeAuthorization &&
             _listEquals(other.writeWarnings, writeWarnings) &&
-            other.context == context;
+            other.context == context &&
+            other.writeAudit == writeAudit;
   }
 
   @override
@@ -41,6 +43,7 @@ class AssistantWritePreparation {
         writeAuthorization,
         Object.hashAll(writeWarnings),
         context,
+        writeAudit,
       );
 
   static bool _listEquals(List<String> a, List<String> b) {

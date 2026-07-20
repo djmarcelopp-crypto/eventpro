@@ -33,6 +33,10 @@ import '../domain/transaction_execution/assistant_transaction_execution_metadata
 import '../domain/transaction_execution/assistant_transaction_execution_outcome.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_planner.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
+import '../domain/workflow/assistant_workflow_executor.dart';
+import '../domain/workflow/assistant_workflow_formatter.dart';
+import '../domain/workflow/assistant_workflow_planner.dart';
+import '../domain/workflow/assistant_workflow_result.dart';
 import '../domain/write/assistant_write_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_presentation.dart';
@@ -60,6 +64,7 @@ import '../models/assistant_response.dart';
 import '../models/assistant_safe_confirmation_intent.dart';
 import '../models/assistant_transaction_execution_presentation.dart';
 import '../models/assistant_transaction_plan_fingerprint.dart';
+import '../models/assistant_workflow_presentation.dart';
 import '../models/assistant_write_preparation.dart';
 import '../models/assistant_write_result.dart';
 import '../parsers/local_assistant_parser.dart';
@@ -97,6 +102,11 @@ import 'local_assistant_transaction_execution_formatter.dart';
 import 'local_assistant_transaction_execution_gateway.dart';
 import 'local_assistant_transaction_execution_intent_resolver.dart';
 import 'local_assistant_transaction_execution_planner.dart';
+import 'local_assistant_workflow_bridge.dart';
+import 'local_assistant_workflow_executor.dart';
+import 'local_assistant_workflow_formatter.dart';
+import 'local_assistant_workflow_intent_resolver.dart';
+import 'local_assistant_workflow_planner.dart';
 import 'local_assistant_write_coordinator.dart';
 import 'local_assistant_write_intent_factory.dart';
 
@@ -146,6 +156,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     LocalAssistantAuditIntentResolver? auditIntentResolver,
     AssistantAuditQueryService? auditQueryService,
     AssistantAuditFormatter? auditFormatter,
+    LocalAssistantWorkflowIntentResolver? workflowIntentResolver,
+    AssistantWorkflowPlanner? workflowPlanner,
+    AssistantWorkflowExecutor? workflowExecutor,
+    AssistantWorkflowFormatter? workflowFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -232,7 +246,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _auditIntentResolver =
             auditIntentResolver ?? const LocalAssistantAuditIntentResolver(),
         _auditFormatter =
-            auditFormatter ?? const LocalAssistantAuditFormatter() {
+            auditFormatter ?? const LocalAssistantAuditFormatter(),
+        _workflowIntentResolver = workflowIntentResolver ??
+            const LocalAssistantWorkflowIntentResolver(),
+        _workflowPlanner =
+            workflowPlanner ?? LocalAssistantWorkflowPlanner(clock: clock),
+        _workflowFormatter =
+            workflowFormatter ?? const LocalAssistantWorkflowFormatter() {
     _resolvedTransactionExecutionGateway = transactionExecutionGateway ??
         LocalAssistantTransactionExecutionGateway(
           writeCoordinator: _writeCoordinator,
@@ -245,6 +265,18 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         );
     _auditQueryService = auditQueryService ??
         LocalAssistantAuditQueryService(gateway: _auditGateway);
+    _workflowExecutor = workflowExecutor ??
+        LocalAssistantWorkflowExecutor(
+          registry: const LocalAssistantWorkflowBridge().buildRegistry(
+            confirmationPlanner: _confirmationPlanner,
+            confirmationSessions: _confirmationSessions,
+            auditQueryService: _auditQueryService,
+            actionGateway: _actionGateway,
+            insightGateway: _insightGateway,
+            clock: clock,
+          ),
+          clock: clock,
+        );
   }
 
   final AssistantCapabilities _capabilities;
@@ -292,6 +324,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantAuditIntentResolver _auditIntentResolver;
   late final AssistantAuditQueryService _auditQueryService;
   final AssistantAuditFormatter _auditFormatter;
+  final LocalAssistantWorkflowIntentResolver _workflowIntentResolver;
+  final AssistantWorkflowPlanner _workflowPlanner;
+  late final AssistantWorkflowExecutor _workflowExecutor;
+  final AssistantWorkflowFormatter _workflowFormatter;
 
   AssistantAuditGateway get auditGateway => _auditGateway;
 
@@ -368,6 +404,28 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         ? _conversationSessions.getOrCreate(sessionId)
         : null;
 
+    // AI-016 workflow engine — multi-step composition of existing pipelines.
+    AssistantWorkflowResult? workflowResult;
+    AssistantWorkflowPresentation? workflowPresentation;
+    final workflowIntent = _workflowIntentResolver.resolve(
+      request: request,
+      capabilities: _capabilities,
+    );
+    if (workflowIntent != null && _capabilities.canExecuteWorkflow) {
+      final planned = _workflowPlanner.plan(
+        workflowIntent,
+        requestId: request.id,
+        request: request,
+      );
+      if (planned != null) {
+        workflowResult = await _workflowExecutor.execute(
+          workflow: planned,
+          request: request,
+        );
+        workflowPresentation = _workflowFormatter.format(workflowResult);
+      }
+    }
+
     // AI-014 transaction execution takes the turn when execute intent matches.
     AssistantTransactionExecutionResult? transactionExecutionResult;
     AssistantTransactionExecutionPresentation?
@@ -378,7 +436,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       request: request,
       capabilities: _capabilities,
     );
-    if (transactionIntent != null &&
+    if (workflowPresentation == null &&
+        transactionIntent != null &&
         _capabilities.canExecuteTransactionExecution) {
       final confirmationSession = (sessionId != null && sessionId.isNotEmpty)
           ? _confirmationSessions.getOrCreate(sessionId)
@@ -482,6 +541,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             writeRequest.isAi006QuoteDraft;
     if (writeRequest != null &&
         !skipPipelineQuoteWrite &&
+        workflowPresentation == null &&
         transactionExecutionPresentation == null) {
       final confirmationSatisfied = writeRequest.relatedStepId != null &&
           _confirmedStepIds.contains(writeRequest.relatedStepId);
@@ -496,7 +556,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     // AI-013 safe confirmation pipeline (lifecycle only — no ERP write).
     AssistantConfirmationResult? confirmationResult;
     AssistantConfirmationPresentation? confirmationPresentation;
-    if (transactionExecutionPresentation == null) {
+    if (workflowPresentation == null &&
+        transactionExecutionPresentation == null) {
       var confirmationIntent = _confirmationIntentResolver.resolve(
         request: request,
         capabilities: _capabilities,
@@ -536,10 +597,43 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       }
     }
 
-    // AI-015 audit query pipeline (independent of insight/read/tx write path).
     AssistantAuditResult? auditResult;
     AssistantAuditPresentation? auditPresentation;
-    if (transactionExecutionPresentation == null &&
+    AssistantActionResult? actionResult;
+    AssistantActionPresentation? actionPresentation;
+    AssistantInsightResult? insightResult;
+    AssistantInsightPresentation? insightPresentation;
+
+    // Lift nested results from workflow context when present.
+    if (workflowResult != null) {
+      final ctx = workflowResult.context;
+      final liftedConfirmation =
+          ctx['confirmationResult'] as AssistantConfirmationResult?;
+      if (liftedConfirmation != null) {
+        confirmationResult = liftedConfirmation;
+        confirmationPresentation =
+            _confirmationFormatter.format(liftedConfirmation);
+      }
+      final liftedAudit = ctx['auditResult'] as AssistantAuditResult?;
+      if (liftedAudit != null) {
+        auditResult = liftedAudit;
+        auditPresentation = _auditFormatter.format(liftedAudit);
+      }
+      final liftedAction = ctx['actionResult'] as AssistantActionResult?;
+      if (liftedAction != null) {
+        actionResult = liftedAction;
+        actionPresentation = _actionFormatter.format(liftedAction);
+      }
+      final liftedInsight = ctx['insightResult'] as AssistantInsightResult?;
+      if (liftedInsight != null) {
+        insightResult = liftedInsight;
+        insightPresentation = _insightFormatter.format(liftedInsight);
+      }
+    }
+
+    // AI-015 audit query pipeline (independent of insight/read/tx write path).
+    if (workflowPresentation == null &&
+        transactionExecutionPresentation == null &&
         confirmationPresentation == null) {
       final auditIntent = _auditIntentResolver.resolve(
         request: request,
@@ -581,9 +675,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     }
 
     // AI-012 smart-action pipeline (independent of write/read/conversation/insight).
-    AssistantActionResult? actionResult;
-    AssistantActionPresentation? actionPresentation;
-    if (transactionExecutionPresentation == null &&
+    if (workflowPresentation == null &&
+        transactionExecutionPresentation == null &&
         confirmationPresentation == null &&
         auditPresentation == null) {
       final actionIntent = _actionIntentResolver.resolve(
@@ -602,9 +695,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     }
 
     // AI-011 insight pipeline (independent of read/conversation/write).
-    AssistantInsightResult? insightResult;
-    AssistantInsightPresentation? insightPresentation;
-    if (transactionExecutionPresentation == null &&
+    if (workflowPresentation == null &&
+        transactionExecutionPresentation == null &&
         confirmationPresentation == null &&
         auditPresentation == null &&
         actionPresentation == null) {
@@ -630,7 +722,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantConversationPresentation? conversationPresentation;
 
     // Preserve AI-009/AI-010 when prior pipelines did not handle.
-    if (transactionExecutionPresentation == null &&
+    if (workflowPresentation == null &&
+        transactionExecutionPresentation == null &&
         confirmationPresentation == null &&
         auditPresentation == null &&
         actionPresentation == null &&
@@ -718,6 +811,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       confirmationPresentation: confirmationPresentation,
       transactionExecutionPresentation: transactionExecutionPresentation,
       auditPresentation: auditPresentation,
+      workflowPresentation: workflowPresentation,
       auditWarnings: auditWarnings,
       mode: _executionMode,
     );
@@ -757,6 +851,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       transactionExecutionPresentation: transactionExecutionPresentation,
       auditResult: auditResult,
       auditPresentation: auditPresentation,
+      workflowResult: workflowResult,
+      workflowPresentation: workflowPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -800,6 +896,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantTransactionExecutionPresentation?
         transactionExecutionPresentation,
     AssistantAuditPresentation? auditPresentation,
+    AssistantWorkflowPresentation? workflowPresentation,
     List<AssistantAuditWarning> auditWarnings = const [],
     required AssistantExecutionMode mode,
   }) {
@@ -816,7 +913,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    if (transactionExecutionPresentation != null) {
+    if (workflowPresentation != null) {
+      parts.add(workflowPresentation.naturalLanguage);
+    } else if (transactionExecutionPresentation != null) {
       parts.add(transactionExecutionPresentation.naturalLanguage);
     } else if (confirmationPresentation != null) {
       parts.add(confirmationPresentation.naturalLanguage);
@@ -847,14 +946,17 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       parts.add(
         'O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.',
       );
-      if (writePreparation != null && transactionExecutionPresentation == null) {
+      if (writePreparation != null &&
+          transactionExecutionPresentation == null &&
+          workflowPresentation == null) {
         parts.add(
           'A operação foi apenas preparada. '
           'Nenhuma alteração foi realizada no EventPRO.',
         );
       }
     } else if (transactionExecutionPresentation == null &&
-        auditPresentation == null) {
+        auditPresentation == null &&
+        workflowPresentation == null) {
       parts.add(
         writePreparation?.writeResult.summary ??
             'Nenhuma alteração foi realizada no EventPRO.',

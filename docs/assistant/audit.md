@@ -91,6 +91,11 @@ Intent `AUDIT_STATUS` (frases: “histórico de auditoria”, “mostrar auditor
 Limite padrão: **50**. Resultados imutáveis, ordenação cronológica
 (sequence/timestamp).
 
+## Workflow (AI-016)
+
+Audit é um step kind do Workflow Engine. Recipes podem encadear
+confirmation → audit em um único turno. Ver [workflow.md](workflow.md).
+
 ## Persistência futura
 
 Interface `AssistantAuditRepository` permite trocar o backend in-memory

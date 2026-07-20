@@ -32,6 +32,13 @@ Commands **não** declaram `capabilityId`.
 | `dependencyIndexes` | Ordens de commands produtores de deps |
 | `producedOutputs` | Keys de resultados declarados |
 
+## Multimodal (AI-020)
+
+Commands/Capabilities recebem apenas conteúdo **já normalizado** (texto).
+Entradas de mídia sem processor não chegam ao Command Resolver.
+
+Ver [multimodal_inputs.md](multimodal_inputs.md).
+
 ## Limitações
 
 - Sem execução real no Gateway

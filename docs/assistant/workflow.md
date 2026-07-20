@@ -93,6 +93,15 @@ Fluxo:
 
 `Definition → Command(by operationCode) → CommandResolver(→Capability) → Capability Resolver → ExecutionPlan`
 
+## Multimodal inputs (AI-020)
+
+Antes da interpretação, o intake pode passar pelo
+`LocalAssistantInputPipeline` (opt-in). Ver
+[multimodal_inputs.md](multimodal_inputs.md).
+
+Texto normalizado segue ao Intent/Command. Imagem/áudio/documento sem
+processor retornam `requiresProcessing` e não viram texto vazio.
+
 ## Extensibilidade
 
 1. Registrar `WorkflowDefinition` no definition registry.

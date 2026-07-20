@@ -51,6 +51,7 @@ class AssistantCapabilities {
     this.canUseSpeech = false,
     this.canUseVision = false,
     this.canUseLLM = false,
+    this.canUseMultimodalInput = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -96,6 +97,9 @@ class AssistantCapabilities {
   final bool canUseSpeech;
   final bool canUseVision;
   final bool canUseLLM;
+
+  /// Opt-in multimodal intake pipeline (AI-020) before interpretation.
+  final bool canUseMultimodalInput;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -236,6 +240,12 @@ class AssistantCapabilities {
         canExecuteBusinessWorkflow: true,
       );
 
+  /// Multimodal input engine (AI-020) — normalize text before interpretation.
+  factory AssistantCapabilities.localMultimodalInput() =>
+      const AssistantCapabilities(
+        canUseMultimodalInput: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -298,6 +308,7 @@ class AssistantCapabilities {
     bool? canUseSpeech,
     bool? canUseVision,
     bool? canUseLLM,
+    bool? canUseMultimodalInput,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -359,6 +370,8 @@ class AssistantCapabilities {
       canUseSpeech: canUseSpeech ?? this.canUseSpeech,
       canUseVision: canUseVision ?? this.canUseVision,
       canUseLLM: canUseLLM ?? this.canUseLLM,
+      canUseMultimodalInput:
+          canUseMultimodalInput ?? this.canUseMultimodalInput,
     );
   }
 
@@ -404,7 +417,8 @@ class AssistantCapabilities {
             other.canUseOCR == canUseOCR &&
             other.canUseSpeech == canUseSpeech &&
             other.canUseVision == canUseVision &&
-            other.canUseLLM == canUseLLM;
+            other.canUseLLM == canUseLLM &&
+            other.canUseMultimodalInput == canUseMultimodalInput;
   }
 
   @override
@@ -446,5 +460,6 @@ class AssistantCapabilities {
         canUseSpeech,
         canUseVision,
         canUseLLM,
+        canUseMultimodalInput,
       ]);
 }

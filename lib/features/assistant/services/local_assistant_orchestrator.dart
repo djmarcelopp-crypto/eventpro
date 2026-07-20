@@ -26,6 +26,7 @@ import '../domain/idempotency/assistant_idempotency_service.dart';
 import '../domain/insight/assistant_insight_formatter.dart';
 import '../domain/insight/assistant_insight_gateway.dart';
 import '../domain/insight/assistant_insight_planner.dart';
+import '../domain/input/assistant_input_pipeline.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -45,6 +46,8 @@ import '../models/assistant_action_result.dart';
 import '../models/assistant_action_type.dart';
 import '../models/assistant_audit_intent.dart';
 import '../models/assistant_audit_presentation.dart';
+import '../models/assistant_context.dart';
+import '../models/assistant_confidence.dart';
 import '../models/assistant_confirmation_operation_kind.dart';
 import '../models/assistant_confirmation_presentation.dart';
 import '../models/assistant_confirmation_result.dart';
@@ -57,7 +60,11 @@ import '../models/assistant_execution_token.dart';
 import '../models/assistant_insight_presentation.dart';
 import '../models/assistant_insight_result.dart';
 import '../models/assistant_intent.dart';
+import '../models/assistant_intent_type.dart';
 import '../models/assistant_module_response.dart';
+import '../models/assistant_parse_issue.dart';
+import '../models/assistant_parse_issue_type.dart';
+import '../models/assistant_parse_result.dart';
 import '../models/assistant_read_presentation.dart';
 import '../models/assistant_read_result.dart';
 import '../models/assistant_request.dart';
@@ -73,6 +80,7 @@ import 'assistant_capabilities.dart';
 import 'assistant_confirmation_session_registry.dart';
 import 'assistant_conversation_session_registry.dart';
 import 'assistant_draft_builder.dart';
+import 'assistant_input_factory.dart';
 import 'assistant_module_consultant.dart';
 import 'local_assistant_action_formatter.dart';
 import 'local_assistant_action_gateway.dart';
@@ -93,6 +101,7 @@ import 'local_assistant_idempotency_service.dart';
 import 'local_assistant_insight_formatter.dart';
 import 'local_assistant_insight_intent_resolver.dart';
 import 'local_assistant_insight_planner.dart';
+import 'local_assistant_input_pipeline.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_assistant_read_formatter.dart';
@@ -162,6 +171,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantWorkflowExecutor? workflowExecutor,
     AssistantWorkflowFormatter? workflowFormatter,
     AssistantBusinessGateway? businessGateway,
+    AssistantInputPipeline? inputPipeline,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -171,6 +181,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _actionGateway = actionGateway ??
             LocalAssistantActionGateway(clock: clock),
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
+        _inputPipeline = inputPipeline ?? LocalAssistantInputPipeline(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
         _parser = parser ?? LocalAssistantParser(clock: clock),
@@ -283,6 +294,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   }
 
   final AssistantCapabilities _capabilities;
+  final AssistantInputPipeline _inputPipeline;
   final AssistantExecutionMode _executionMode;
   final Set<String> _confirmedStepIds;
   final DateTime Function() _clock;
@@ -336,9 +348,35 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
-    final parseResult = _parser.parse(request);
+    var workingRequest = request;
+
+    if (_capabilities.canUseMultimodalInput) {
+      final multimodal = await _inputPipeline.run(
+        AssistantInputFactory.fromRequest(request),
+      );
+      if (!multimodal.readyForInterpretation) {
+        return _buildMultimodalBlockedResponse(request, multimodal);
+      }
+      final normalized = multimodal.normalizedText;
+      if (normalized != null && normalized.isNotEmpty) {
+        final hints = <String>[
+          ...?request.context?.hints,
+          'inputId:${multimodal.inputId}',
+          'correlationId:${multimodal.correlationId}',
+          'inputStatus:${multimodal.normalization.status.name}',
+        ];
+        workingRequest = request.copyWith(
+          rawText: normalized,
+          context: (request.context ?? const AssistantContext()).copyWith(
+            hints: hints,
+          ),
+        );
+      }
+    }
+
+    final parseResult = _parser.parse(workingRequest);
     final intents = _intentClassifier.classify(
-      request: request,
+      request: workingRequest,
       parseResult: parseResult,
     );
     final primary = intents.first;
@@ -346,7 +384,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         intents.length > 1 ? intents.sublist(1) : const <AssistantIntent>[];
 
     final eventDraft = AssistantDraftBuilder.buildEventDraft(
-      sourceText: request.rawText,
+      sourceText: workingRequest.rawText,
       entities: parseResult.entities,
     );
     final quoteDraft = AssistantDraftBuilder.buildQuoteDraft(
@@ -354,7 +392,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     );
 
     final interpreted = _responseBuilder.build(
-      request: request,
+      request: workingRequest,
       parseResult: parseResult,
       primaryIntent: primary,
       alternativeIntents: alternatives,
@@ -966,5 +1004,43 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
     return parts.join(' ');
+  }
+
+  AssistantResponse _buildMultimodalBlockedResponse(
+    AssistantRequest request,
+    AssistantInputPipelineResult multimodal,
+  ) {
+    final issues = multimodal.normalization.messages
+        .map(
+          (m) => AssistantParseIssue(
+            type: AssistantParseIssueType.unsupported,
+            message: m.message,
+            details: [m.code, 'inputId:${multimodal.inputId}'],
+          ),
+        )
+        .toList(growable: false);
+
+    final parseResult = AssistantParseResult(
+      entities: const [],
+      issues: issues,
+      normalizedText: '',
+    );
+
+    return _responseBuilder.build(
+      request: request,
+      parseResult: parseResult,
+      primaryIntent: const AssistantIntent(
+        type: AssistantIntentType.unknown,
+        confidence: AssistantConfidence.none,
+      ),
+      alternativeIntents: const [],
+      eventDraft: AssistantDraftBuilder.buildEventDraft(
+        sourceText: request.rawText,
+        entities: const [],
+      ),
+      quoteDraft: AssistantDraftBuilder.buildQuoteDraft(entities: const []),
+      entities: const [],
+      issues: issues,
+    );
   }
 }

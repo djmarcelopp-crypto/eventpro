@@ -76,6 +76,13 @@ mesma chave (se o write tivesse ocorrido) são cobertos pelo
 - Nenhuma edição, exclusão ou multi-write nesta sprint
 - Sem LLM, persistência ou serviços externos
 
+## Auditoria (AI-015)
+
+O orchestrator emite `executionRequested` **antes** do planner consumir o
+token quando o pending está confirmed; falha nesse append **bloqueia** a
+escrita. Após a escrita, `executionCompleted` / `executionWriteFailed`;
+falha pós-escrita vira warning sem rollback. Ver [audit.md](audit.md).
+
 ## Contratos
 
 | Tipo | Pacote |

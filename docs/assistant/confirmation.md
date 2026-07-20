@@ -62,6 +62,12 @@ token (uso único) e chama o Write Pipeline **somente** para Create Quote Draft.
 
 O confirm de AI-013 continua **sem escrita**.
 
+## Auditoria (AI-015)
+
+O orchestrator registra eventos append-only (criação, status, confirmação,
+cancelamento, expiração). Ver [audit.md](audit.md). Planners não emitem
+eventos.
+
 ## Limitações
 
 - Nenhuma escrita / edição / exclusão nesta sprint.

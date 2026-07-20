@@ -18,6 +18,7 @@ import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
 import 'assistant_action_presentation.dart';
 import 'assistant_action_result.dart';
+import 'assistant_audit_presentation.dart';
 import 'assistant_confirmation_presentation.dart';
 import 'assistant_confirmation_result.dart';
 import 'assistant_conversation_presentation.dart';
@@ -30,6 +31,7 @@ import 'assistant_transaction_execution_presentation.dart';
 import 'assistant_write_authorization_status.dart';
 import 'assistant_write_result.dart';
 import 'assistant_write_validation_result.dart';
+import '../domain/audit/assistant_audit_result.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
 
 /// Structured, explainable assistant output. Never mutates the ERP.
@@ -80,6 +82,8 @@ class AssistantResponse {
     this.confirmationPresentation,
     this.transactionExecutionResult,
     this.transactionExecutionPresentation,
+    this.auditResult,
+    this.auditPresentation,
   });
 
   final String requestId;
@@ -157,6 +161,12 @@ class AssistantResponse {
   final AssistantTransactionExecutionPresentation?
       transactionExecutionPresentation;
 
+  /// AI-015 audit query result.
+  final AssistantAuditResult? auditResult;
+
+  /// AI-015 audit presentation (NL + structured payload).
+  final AssistantAuditPresentation? auditPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -210,6 +220,8 @@ class AssistantResponse {
     AssistantTransactionExecutionResult? transactionExecutionResult,
     AssistantTransactionExecutionPresentation?
         transactionExecutionPresentation,
+    AssistantAuditResult? auditResult,
+    AssistantAuditPresentation? auditPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -231,6 +243,8 @@ class AssistantResponse {
     bool clearConfirmationPresentation = false,
     bool clearTransactionExecutionResult = false,
     bool clearTransactionExecutionPresentation = false,
+    bool clearAuditResult = false,
+    bool clearAuditPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -311,6 +325,11 @@ class AssistantResponse {
           ? null
           : (transactionExecutionPresentation ??
               this.transactionExecutionPresentation),
+      auditResult:
+          clearAuditResult ? null : (auditResult ?? this.auditResult),
+      auditPresentation: clearAuditPresentation
+          ? null
+          : (auditPresentation ?? this.auditPresentation),
     );
   }
 
@@ -363,7 +382,9 @@ class AssistantResponse {
             other.confirmationPresentation == confirmationPresentation &&
             other.transactionExecutionResult == transactionExecutionResult &&
             other.transactionExecutionPresentation ==
-                transactionExecutionPresentation;
+                transactionExecutionPresentation &&
+            other.auditResult == auditResult &&
+            other.auditPresentation == auditPresentation;
   }
 
   @override
@@ -421,6 +442,8 @@ class AssistantResponse {
             confirmationPresentation,
             transactionExecutionResult,
             transactionExecutionPresentation,
+            auditResult,
+            auditPresentation,
           ),
         ),
       );

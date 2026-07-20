@@ -16,8 +16,12 @@ Texto
     → WriteIntentFactory + Write Coordinator (AI-005…007, isolado)
     → Transaction Execution Planner/Gateway (AI-014 — Create Quote Draft only)
          → valida confirmação → consome token → Write Pipeline → Result
+         → Orchestrator emite audit (AI-015)
     → Safe Confirmation Planner (AI-013, isolado — lifecycle only)
          → ConfirmationRequest → Session → Pending → Result → Formatter
+         → Orchestrator emite audit (AI-015)
+    → Audit Query AUDIT_STATUS (AI-015, isolado)
+         → QueryService → Formatter
     → Action Intent Resolver + Planner (AI-012, isolado)
          → ActionRequest → Gateway → LocalActionAdapter → Formatter
     → Insight Intent Resolver + Planner (AI-011, isolado)
@@ -30,11 +34,11 @@ Texto
         actionResult | actionPresentation |
         confirmationResult | confirmationPresentation |
         transactionExecutionResult | transactionExecutionPresentation |
-        writeResult)
+        auditResult | auditPresentation | writeResult)
 ```
 
 Pipelines posteriores são pulados quando um anterior já atendeu o turno
-(transaction execution → confirmation → action → insight → conversation/read).
+(transaction execution → confirmation → audit → action → insight → conversation/read).
 
 Ver também:
 
@@ -51,6 +55,7 @@ Ver também:
 - [actions.md](actions.md)
 - [confirmation.md](confirmation.md)
 - [execution.md](execution.md)
+- [audit.md](audit.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -58,8 +63,8 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 
 | Camada | Responsabilidade |
 |--------|------------------|
-| Models | DTOs (intent, plan, write, read, conversation, insight, action, confirmation, tx) |
-| Domain contracts | Gateways, Idempotency, Policy, Planners/Formatters, Transaction Execution |
+| Models | DTOs (intent, plan, write, read, conversation, insight, action, confirmation, tx, audit) |
+| Domain contracts | Gateways, Idempotency, Policy, Planners/Formatters, Transaction Execution, Audit |
 | Services | Implementações locais determinísticas |
 | Adapters | In-memory / Quote write / Quote read / Quote insight / Local action |
 
@@ -74,17 +79,20 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AI-011 | Quote insights engine |
 | AI-012 | Smart action engine (navegação) |
 | AI-013 | Safe confirmation engine — sessão/preview/confirm/cancel/expire (sem escrita) |
-| AI-014 | **Transaction execution engine** — confirmação → Create Quote Draft |
+| AI-014 | Transaction execution engine — confirmação → Create Quote Draft |
+| AI-015 | **Transaction audit trail** — append-only in-memory |
 
 Production write continua **default deny**. AI-014 liga escrita apenas via
-Transaction Execution Gateway + capability opt-in.
+Transaction Execution Gateway + capability opt-in. AI-015 observa o ciclo
+sem alterar decisões dos planners.
 
 ## Defaults
 
 - `localDefaults()` → sem executores
 - `localReadIntegration()` → client/agenda in-memory
 - `localStructuredQuoteRead()` / `localQuoteInsights()` / `localSmartActions()` /
-  `localSafeConfirmation()` / `localTransactionExecution()` → opt-in progressivo
+  `localSafeConfirmation()` / `localTransactionExecution()` /
+  `localAuditTrail()` → opt-in progressivo
 
 ## Dependência
 

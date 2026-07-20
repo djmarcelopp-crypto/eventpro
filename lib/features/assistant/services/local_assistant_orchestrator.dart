@@ -8,6 +8,15 @@ import '../domain/assistant_orchestrator.dart';
 import '../domain/assistant_parser.dart';
 import '../domain/assistant_response_builder.dart';
 import '../domain/assistant_write_coordinator.dart';
+import '../domain/audit/assistant_audit_event_factory.dart';
+import '../domain/audit/assistant_audit_event_type.dart';
+import '../domain/audit/assistant_audit_formatter.dart';
+import '../domain/audit/assistant_audit_gateway.dart';
+import '../domain/audit/assistant_audit_query.dart';
+import '../domain/audit/assistant_audit_query_service.dart';
+import '../domain/audit/assistant_audit_result.dart';
+import '../domain/audit/assistant_audit_token_fingerprinter.dart';
+import '../domain/audit/assistant_audit_warning.dart';
 import '../domain/confirmation/assistant_confirmation_formatter.dart';
 import '../domain/confirmation/assistant_confirmation_planner.dart';
 import '../domain/conversation/assistant_conversation_planner.dart';
@@ -20,6 +29,8 @@ import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_gateway.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_metadata.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_outcome.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_planner.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
 import '../domain/write/assistant_write_gateway.dart';
@@ -27,6 +38,8 @@ import '../models/assistant_action.dart';
 import '../models/assistant_action_presentation.dart';
 import '../models/assistant_action_result.dart';
 import '../models/assistant_action_type.dart';
+import '../models/assistant_audit_intent.dart';
+import '../models/assistant_audit_presentation.dart';
 import '../models/assistant_confirmation_operation_kind.dart';
 import '../models/assistant_confirmation_presentation.dart';
 import '../models/assistant_confirmation_result.dart';
@@ -59,6 +72,12 @@ import 'local_assistant_action_formatter.dart';
 import 'local_assistant_action_gateway.dart';
 import 'local_assistant_action_intent_resolver.dart';
 import 'local_assistant_action_planner.dart';
+import 'local_assistant_audit_emitter.dart';
+import 'local_assistant_audit_event_factory.dart';
+import 'local_assistant_audit_formatter.dart';
+import 'local_assistant_audit_gateway.dart';
+import 'local_assistant_audit_intent_resolver.dart';
+import 'local_assistant_audit_query_service.dart';
 import 'local_assistant_confirmation_formatter.dart';
 import 'local_assistant_confirmation_planner.dart';
 import 'local_assistant_conversation_planner.dart';
@@ -120,6 +139,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantTransactionExecutionPlanner? transactionExecutionPlanner,
     AssistantTransactionExecutionGateway? transactionExecutionGateway,
     AssistantTransactionExecutionFormatter? transactionExecutionFormatter,
+    AssistantAuditGateway? auditGateway,
+    AssistantAuditEventFactory? auditEventFactory,
+    AssistantAuditTokenFingerprinter? auditTokenFingerprinter,
+    LocalAssistantAuditEmitter? auditEmitter,
+    LocalAssistantAuditIntentResolver? auditIntentResolver,
+    AssistantAuditQueryService? auditQueryService,
+    AssistantAuditFormatter? auditFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -196,12 +222,29 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             LocalAssistantTransactionExecutionPlanner(clock: clock),
         _transactionExecutionGateway = transactionExecutionGateway,
         _transactionExecutionFormatter = transactionExecutionFormatter ??
-            const LocalAssistantTransactionExecutionFormatter() {
+            const LocalAssistantTransactionExecutionFormatter(),
+        _auditGateway = auditGateway ?? LocalAssistantAuditGateway(),
+        _auditEventFactory = auditEventFactory ??
+            LocalAssistantAuditEventFactory(
+              clock: clock,
+              tokenFingerprinter: auditTokenFingerprinter,
+            ),
+        _auditIntentResolver =
+            auditIntentResolver ?? const LocalAssistantAuditIntentResolver(),
+        _auditFormatter =
+            auditFormatter ?? const LocalAssistantAuditFormatter() {
     _resolvedTransactionExecutionGateway = transactionExecutionGateway ??
         LocalAssistantTransactionExecutionGateway(
           writeCoordinator: _writeCoordinator,
           clock: clock,
         );
+    _auditEmitter = auditEmitter ??
+        LocalAssistantAuditEmitter(
+          gateway: _auditGateway,
+          factory: _auditEventFactory,
+        );
+    _auditQueryService = auditQueryService ??
+        LocalAssistantAuditQueryService(gateway: _auditGateway);
   }
 
   final AssistantCapabilities _capabilities;
@@ -243,6 +286,14 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantTransactionExecutionFormatter _transactionExecutionFormatter;
   late final AssistantTransactionExecutionGateway
       _resolvedTransactionExecutionGateway;
+  final AssistantAuditGateway _auditGateway;
+  final AssistantAuditEventFactory _auditEventFactory;
+  late final LocalAssistantAuditEmitter _auditEmitter;
+  final LocalAssistantAuditIntentResolver _auditIntentResolver;
+  late final AssistantAuditQueryService _auditQueryService;
+  final AssistantAuditFormatter _auditFormatter;
+
+  AssistantAuditGateway get auditGateway => _auditGateway;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -321,6 +372,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantTransactionExecutionResult? transactionExecutionResult;
     AssistantTransactionExecutionPresentation?
         transactionExecutionPresentation;
+    final auditWarnings = <AssistantAuditWarning>[];
+    final auditEnabled = _capabilities.canExecuteAuditTrail;
     final transactionIntent = _transactionExecutionIntentResolver.resolve(
       request: request,
       capabilities: _capabilities,
@@ -330,8 +383,6 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       final confirmationSession = (sessionId != null && sessionId.isNotEmpty)
           ? _confirmationSessions.getOrCreate(sessionId)
           : null;
-      // Propose the approved plan from the confirmed pending (divergence
-      // checks still apply when callers inject a custom planner/attrs).
       final approved = confirmationSession?.pending?.approvedAttributes;
       final proposedAttributes = (approved != null && approved.isNotEmpty)
           ? approved
@@ -339,25 +390,83 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
               ? writeRequest!.attributes
               : AssistantTransactionPlanFingerprint
                   .defaultQuoteDraftAttributes);
-      final planned = _transactionExecutionPlanner.plan(
-        intent: transactionIntent,
-        requestId: request.id,
-        sessionId: sessionId,
-        session: confirmationSession,
-        proposedOperationKind:
-            AssistantConfirmationOperationKind.createQuoteDraft,
-        proposedAttributes: proposedAttributes,
-      );
-      if (planned.rejection != null) {
-        transactionExecutionResult = planned.rejection;
-      } else if (planned.request != null) {
-        transactionExecutionResult =
-            await _resolvedTransactionExecutionGateway.execute(
-          request: planned.request!,
-          context: executionRequest.context,
-          writeGateway: _writeGateway,
+
+      var blockedByAudit = false;
+      final pending = confirmationSession?.pending;
+      if (auditEnabled &&
+          sessionId != null &&
+          sessionId.isNotEmpty &&
+          pending != null &&
+          pending.isConfirmedAwaitingExecution) {
+        final preWarn = _auditEmitter.emitExecutionRequested(
+          sessionId: sessionId,
+          rawToken: pending.token.value,
+          planFingerprint: pending.approvedPlanFingerprint,
+          operationKind: pending.operationKind.name,
         );
+        if (preWarn != null) {
+          blockedByAudit = true;
+          auditWarnings.add(preWarn);
+          transactionExecutionResult = AssistantTransactionExecutionResult(
+            requestId: request.id,
+            outcome: AssistantTransactionExecutionOutcome.invalidConfirmation,
+            valid: false,
+            executed: false,
+            summary:
+                'Execução bloqueada: falha ao registrar auditoria prévia.',
+            warnings: const [],
+            metadata: AssistantTransactionExecutionMetadata(
+              requestId: request.id,
+              generatedAt: _clock().toUtc(),
+              sessionId: sessionId,
+            ),
+          );
+        }
       }
+
+      if (!blockedByAudit) {
+        final planned = _transactionExecutionPlanner.plan(
+          intent: transactionIntent,
+          requestId: request.id,
+          sessionId: sessionId,
+          session: confirmationSession,
+          proposedOperationKind:
+              AssistantConfirmationOperationKind.createQuoteDraft,
+          proposedAttributes: proposedAttributes,
+        );
+        if (planned.rejection != null) {
+          transactionExecutionResult = planned.rejection;
+          if (auditEnabled && sessionId != null && sessionId.isNotEmpty) {
+            final raw = confirmationSession?.pending?.token.value ??
+                planned.rejection!.metadata.token;
+            final warn = _auditEmitter.emitExecutionRejected(
+              planned.rejection!,
+              sessionId: sessionId,
+              rawToken: raw,
+              planFingerprint: planned.rejection!.metadata.planFingerprint,
+            );
+            if (warn != null) auditWarnings.add(warn);
+          }
+        } else if (planned.request != null) {
+          final txRequest = planned.request!;
+          final executed = await _resolvedTransactionExecutionGateway.execute(
+            request: txRequest,
+            context: executionRequest.context,
+            writeGateway: _writeGateway,
+          );
+          transactionExecutionResult = executed;
+          if (auditEnabled && sessionId != null && sessionId.isNotEmpty) {
+            final warn = _auditEmitter.emitExecutionFinished(
+              executed,
+              sessionId: sessionId,
+              rawToken: txRequest.token.value,
+              planFingerprint: txRequest.planFingerprint,
+            );
+            if (warn != null) auditWarnings.add(warn);
+          }
+        }
+      }
+
       if (transactionExecutionResult != null) {
         transactionExecutionPresentation =
             _transactionExecutionFormatter.format(transactionExecutionResult);
@@ -417,6 +526,57 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         );
         confirmationPresentation =
             _confirmationFormatter.format(confirmationResult);
+        if (auditEnabled && sessionId != null && sessionId.isNotEmpty) {
+          final warn = _auditEmitter.emitConfirmation(
+            confirmationResult,
+            sessionId: sessionId,
+          );
+          if (warn != null) auditWarnings.add(warn);
+        }
+      }
+    }
+
+    // AI-015 audit query pipeline (independent of insight/read/tx write path).
+    AssistantAuditResult? auditResult;
+    AssistantAuditPresentation? auditPresentation;
+    if (transactionExecutionPresentation == null &&
+        confirmationPresentation == null) {
+      final auditIntent = _auditIntentResolver.resolve(
+        request: request,
+        capabilities: _capabilities,
+      );
+      if (auditIntent is AuditStatusIntent &&
+          _capabilities.canExecuteAuditTrail) {
+        AssistantAuditEventType? typeFilter;
+        if (auditIntent.byType != null) {
+          for (final t in AssistantAuditEventType.values) {
+            if (t.name == auditIntent.byType) {
+              typeFilter = t;
+              break;
+            }
+          }
+        }
+        auditResult = _auditQueryService.query(
+          AssistantAuditQuery(
+            requestId: request.id,
+            sessionId: sessionId,
+            eventType: typeFilter,
+            latestOnly: auditIntent.latestOnly,
+          ),
+        );
+        if (auditWarnings.isNotEmpty) {
+          auditResult = AssistantAuditResult(
+            requestId: auditResult.requestId,
+            events: auditResult.events,
+            totalMatched: auditResult.totalMatched,
+            returnedCount: auditResult.returnedCount,
+            query: auditResult.query,
+            warnings: [...auditResult.warnings, ...auditWarnings],
+            summary: auditResult.summary,
+            valid: auditResult.valid,
+          );
+        }
+        auditPresentation = _auditFormatter.format(auditResult);
       }
     }
 
@@ -424,7 +584,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantActionResult? actionResult;
     AssistantActionPresentation? actionPresentation;
     if (transactionExecutionPresentation == null &&
-        confirmationPresentation == null) {
+        confirmationPresentation == null &&
+        auditPresentation == null) {
       final actionIntent = _actionIntentResolver.resolve(
         request: request,
         capabilities: _capabilities,
@@ -445,6 +606,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantInsightPresentation? insightPresentation;
     if (transactionExecutionPresentation == null &&
         confirmationPresentation == null &&
+        auditPresentation == null &&
         actionPresentation == null) {
       final insightIntent = _insightIntentResolver.resolve(
         request: request,
@@ -467,9 +629,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantReadPresentation? readPresentation;
     AssistantConversationPresentation? conversationPresentation;
 
-    // Preserve AI-009/AI-010 when tx/confirmation/action/insight did not handle.
+    // Preserve AI-009/AI-010 when prior pipelines did not handle.
     if (transactionExecutionPresentation == null &&
         confirmationPresentation == null &&
+        auditPresentation == null &&
         actionPresentation == null &&
         insightPresentation == null) {
       final conversationPlan = _conversationPlanner.plan(
@@ -554,6 +717,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       actionPresentation: actionPresentation,
       confirmationPresentation: confirmationPresentation,
       transactionExecutionPresentation: transactionExecutionPresentation,
+      auditPresentation: auditPresentation,
+      auditWarnings: auditWarnings,
       mode: _executionMode,
     );
 
@@ -590,6 +755,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       confirmationPresentation: confirmationPresentation,
       transactionExecutionResult: transactionExecutionResult,
       transactionExecutionPresentation: transactionExecutionPresentation,
+      auditResult: auditResult,
+      auditPresentation: auditPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -632,6 +799,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantConfirmationPresentation? confirmationPresentation,
     AssistantTransactionExecutionPresentation?
         transactionExecutionPresentation,
+    AssistantAuditPresentation? auditPresentation,
+    List<AssistantAuditWarning> auditWarnings = const [],
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -651,6 +820,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       parts.add(transactionExecutionPresentation.naturalLanguage);
     } else if (confirmationPresentation != null) {
       parts.add(confirmationPresentation.naturalLanguage);
+    } else if (auditPresentation != null) {
+      parts.add(auditPresentation.naturalLanguage);
     } else if (actionPresentation != null) {
       parts.add(actionPresentation.naturalLanguage);
     } else if (insightPresentation != null) {
@@ -659,6 +830,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       parts.add(conversationPresentation.naturalLanguage);
     } else if (readPresentation != null) {
       parts.add(readPresentation.naturalLanguage);
+    }
+    for (final warning in auditWarnings) {
+      parts.add(warning.message);
     }
     parts.add(reportSummary);
 
@@ -679,7 +853,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           'Nenhuma alteração foi realizada no EventPRO.',
         );
       }
-    } else if (transactionExecutionPresentation == null) {
+    } else if (transactionExecutionPresentation == null &&
+        auditPresentation == null) {
       parts.add(
         writePreparation?.writeResult.summary ??
             'Nenhuma alteração foi realizada no EventPRO.',

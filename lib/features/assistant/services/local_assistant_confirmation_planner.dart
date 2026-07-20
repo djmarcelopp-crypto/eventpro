@@ -8,6 +8,7 @@ import '../models/assistant_confirmation_session.dart';
 import '../models/assistant_confirmation_token.dart';
 import '../models/assistant_confirmation_warning.dart';
 import '../models/assistant_safe_confirmation_intent.dart';
+import '../models/assistant_transaction_plan_fingerprint.dart';
 import '../models/pending_confirmation.dart';
 
 /// Safe confirmation planner — preview / validate only, never executes ERP writes.
@@ -33,7 +34,10 @@ class LocalAssistantConfirmationPlanner implements AssistantConfirmationPlanner 
   }) {
     final id = 'conf-$requestId';
     return switch (intent) {
-      CreateConfirmationIntent(:final operationKind) =>
+      CreateConfirmationIntent(
+        :final operationKind,
+        :final approvedAttributes,
+      ) =>
         AssistantConfirmationRequest(
           id: id,
           requestId: requestId,
@@ -41,6 +45,7 @@ class LocalAssistantConfirmationPlanner implements AssistantConfirmationPlanner 
           sessionId: sessionId,
           operationKind: operationKind,
           ttl: _ttl,
+          approvedAttributes: approvedAttributes,
         ),
       ConfirmPendingIntent(:final token) => AssistantConfirmationRequest(
           id: id,
@@ -119,13 +124,19 @@ class LocalAssistantConfirmationPlanner implements AssistantConfirmationPlanner 
       _tokenFactory?.call() ?? 'tok-${session.sessionId}-${++_tokenSeq}',
     );
     final ttl = request.ttl ?? _ttl;
-    final pending = PendingConfirmation(
+    final attrs = request.approvedAttributes.isNotEmpty
+        ? request.approvedAttributes
+        : (kind == AssistantConfirmationOperationKind.createQuoteDraft
+            ? AssistantTransactionPlanFingerprint.defaultQuoteDraftAttributes
+            : const <String, String>{});
+    final pending = PendingConfirmation.create(
       token: token,
       sessionId: session.sessionId,
       operationKind: kind,
       preview: preview,
       createdAt: now,
       expiresAt: now.add(ttl),
+      approvedAttributes: attrs,
     );
     session.store(pending);
     return _result(

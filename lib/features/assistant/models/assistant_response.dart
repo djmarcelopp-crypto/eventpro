@@ -26,9 +26,11 @@ import 'assistant_insight_result.dart';
 import 'assistant_read_presentation.dart';
 import 'assistant_read_result.dart';
 import 'assistant_suggestion.dart';
+import 'assistant_transaction_execution_presentation.dart';
 import 'assistant_write_authorization_status.dart';
 import 'assistant_write_result.dart';
 import 'assistant_write_validation_result.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
 
 /// Structured, explainable assistant output. Never mutates the ERP.
 class AssistantResponse {
@@ -76,6 +78,8 @@ class AssistantResponse {
     this.actionPresentation,
     this.confirmationResult,
     this.confirmationPresentation,
+    this.transactionExecutionResult,
+    this.transactionExecutionPresentation,
   });
 
   final String requestId;
@@ -146,6 +150,13 @@ class AssistantResponse {
   /// AI-013 safe confirmation presentation (NL + structured payload).
   final AssistantConfirmationPresentation? confirmationPresentation;
 
+  /// AI-014 transaction execution result (write after confirmed pending).
+  final AssistantTransactionExecutionResult? transactionExecutionResult;
+
+  /// AI-014 transaction execution presentation (NL + structured payload).
+  final AssistantTransactionExecutionPresentation?
+      transactionExecutionPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -196,6 +207,9 @@ class AssistantResponse {
     AssistantActionPresentation? actionPresentation,
     AssistantConfirmationResult? confirmationResult,
     AssistantConfirmationPresentation? confirmationPresentation,
+    AssistantTransactionExecutionResult? transactionExecutionResult,
+    AssistantTransactionExecutionPresentation?
+        transactionExecutionPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -215,6 +229,8 @@ class AssistantResponse {
     bool clearActionPresentation = false,
     bool clearConfirmationResult = false,
     bool clearConfirmationPresentation = false,
+    bool clearTransactionExecutionResult = false,
+    bool clearTransactionExecutionPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -288,6 +304,13 @@ class AssistantResponse {
       confirmationPresentation: clearConfirmationPresentation
           ? null
           : (confirmationPresentation ?? this.confirmationPresentation),
+      transactionExecutionResult: clearTransactionExecutionResult
+          ? null
+          : (transactionExecutionResult ?? this.transactionExecutionResult),
+      transactionExecutionPresentation: clearTransactionExecutionPresentation
+          ? null
+          : (transactionExecutionPresentation ??
+              this.transactionExecutionPresentation),
     );
   }
 
@@ -337,7 +360,10 @@ class AssistantResponse {
             other.actionResult == actionResult &&
             other.actionPresentation == actionPresentation &&
             other.confirmationResult == confirmationResult &&
-            other.confirmationPresentation == confirmationPresentation;
+            other.confirmationPresentation == confirmationPresentation &&
+            other.transactionExecutionResult == transactionExecutionResult &&
+            other.transactionExecutionPresentation ==
+                transactionExecutionPresentation;
   }
 
   @override
@@ -370,26 +396,32 @@ class AssistantResponse {
           Object.hashAll(integrationWarnings),
         ),
         Object.hash(
-          executionReport,
-          executionMode,
-          executionAudit,
-          Object.hashAll(executableSteps),
-          Object.hashAll(simulatedSteps),
-          Object.hashAll(skippedSteps),
-          Object.hashAll(executionWarnings),
-          writeResult,
-          writeValidation,
-          writeAuthorization,
-          Object.hashAll(writeWarnings),
-          readResult,
-          readPresentation,
-          conversationPresentation,
-          insightResult,
-          insightPresentation,
-          actionResult,
-          actionPresentation,
-          confirmationResult,
-          confirmationPresentation,
+          Object.hash(
+            executionReport,
+            executionMode,
+            executionAudit,
+            Object.hashAll(executableSteps),
+            Object.hashAll(simulatedSteps),
+            Object.hashAll(skippedSteps),
+            Object.hashAll(executionWarnings),
+            writeResult,
+            writeValidation,
+            writeAuthorization,
+            Object.hashAll(writeWarnings),
+          ),
+          Object.hash(
+            readResult,
+            readPresentation,
+            conversationPresentation,
+            insightResult,
+            insightPresentation,
+            actionResult,
+            actionPresentation,
+            confirmationResult,
+            confirmationPresentation,
+            transactionExecutionResult,
+            transactionExecutionPresentation,
+          ),
         ),
       );
 

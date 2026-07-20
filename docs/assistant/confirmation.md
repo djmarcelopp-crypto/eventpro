@@ -54,11 +54,13 @@ Sem persistência. Sessões isoladas por `sessionId` via registry injetável.
 Opt-in: `canPlanSafeConfirmation` / `canExecuteSafeConfirmation`  
 Factory: `AssistantCapabilities.localSafeConfirmation()`
 
-## Integração futura
+## Integração (AI-014)
 
-- Quando uma escrita sensível for autorizada, o write path poderá exigir um `AssistantConfirmationToken` confirmado nesta sessão.
-- AI-004 `confirmedStepIds` pode ser alimentado a partir de um pending confirmado (adapter futuro).
-- Sem confirmação automática.
+A execução real após confirmação é feita pelo
+[Transaction Execution Engine](execution.md): o turno `executar` consome o
+token (uso único) e chama o Write Pipeline **somente** para Create Quote Draft.
+
+O confirm de AI-013 continua **sem escrita**.
 
 ## Limitações
 

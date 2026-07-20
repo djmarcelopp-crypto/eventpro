@@ -9,9 +9,13 @@ sealed class AssistantSafeConfirmationIntent {
 final class CreateConfirmationIntent extends AssistantSafeConfirmationIntent {
   const CreateConfirmationIntent({
     this.operationKind = AssistantConfirmationOperationKind.createQuoteDraft,
+    this.approvedAttributes = const {},
   });
 
   final AssistantConfirmationOperationKind operationKind;
+
+  /// Canonical attributes captured at confirmation create (AI-014 plan gate).
+  final Map<String, String> approvedAttributes;
 }
 
 final class ConfirmPendingIntent extends AssistantSafeConfirmationIntent {

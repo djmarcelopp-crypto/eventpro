@@ -1,6 +1,6 @@
 # Assistente EventPRO — Arquitetura
 
-Documentação mínima da fronteira do assistente (EPIC-001…004). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
+Documentação mínima da fronteira do assistente (EPIC-001…005). Escopo restrito ao feature `lib/features/assistant/**` (adapters hexagonais podem viver no módulo ERP dono do recurso).
 
 ## Pipeline
 
@@ -12,24 +12,24 @@ Texto
     → ResponseBuilder
     → Execution Planner
     → Module Consultant (leituras AI-003 / fixtures)
-    → Execution Validator / Confirmation / Dispatcher
+    → Execution Validator / Confirmation Gate AI-004 / Dispatcher
     → WriteIntentFactory + Write Coordinator (AI-005…007, isolado)
+    → Safe Confirmation Planner (AI-013, isolado — lifecycle only)
+         → ConfirmationRequest → Session → Pending → Result → Formatter
     → Action Intent Resolver + Planner (AI-012, isolado)
-         → ActionRequest → Gateway → LocalActionAdapter
-         → ActionResult → Formatter → actionPresentation
+         → ActionRequest → Gateway → LocalActionAdapter → Formatter
     → Insight Intent Resolver + Planner (AI-011, isolado)
-         → InsightRequest → Gateway → Quote Insight Adapter → QuoteInsightService
-         → InsightResult → Formatter → insightPresentation
-         (pulado quando o turno já foi atendido por actions)
-    → Conversation Planner (AI-010) + Read Intent Resolver / Read Planner (AI-009)
-         → (session context) → ReadQuery → Gateway → Quote Read Adapter → QuoteQueryService
-         → ReadResult → Formatter → Presentation / Conversation Presentation
-         (pulado quando action/insight já atendeu o turno)
+         → InsightRequest → Gateway → Quote Insight Adapter → Formatter
+    → Conversation Planner (AI-010) + Read Planner (AI-009)
+         → ReadQuery → Gateway → Quote Read Adapter → Formatter
   → AssistantResponse
        (moduleResults | readResult | readPresentation |
         conversationPresentation | insightResult | insightPresentation |
-        actionResult | actionPresentation | writeResult)
+        actionResult | actionPresentation |
+        confirmationResult | confirmationPresentation | writeResult)
 ```
+
+Pipelines posteriores são pulados quando um anterior já atendeu o turno (confirmation → action → insight → conversation/read).
 
 Ver também:
 
@@ -44,6 +44,7 @@ Ver também:
 - [conversation-context.md](conversation-context.md)
 - [insights.md](insights.md)
 - [actions.md](actions.md)
+- [confirmation.md](confirmation.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -51,32 +52,30 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 
 | Camada | Responsabilidade |
 |--------|------------------|
-| Models | DTOs (intent, plan, write, read, presentation, conversation, insight, action) |
-| Domain contracts | Gateways, Idempotency, Policy, Read/Insight/Action Planner/Formatter, Conversation Planner |
+| Models | DTOs (intent, plan, write, read, conversation, insight, action, confirmation) |
+| Domain contracts | Gateways, Idempotency, Policy, Planners/Formatters |
 | Services | Implementações locais determinísticas |
 | Adapters | In-memory / Quote write / Quote read / Quote insight / Local action |
 
-## Escrita vs leitura vs insights vs actions
+## Sprints
 
 | Sprint | Escopo |
 |--------|--------|
 | AI-003 | Leituras fixture via Module Consultant |
+| AI-004 | Controlled execution + step confirmation gate |
 | AI-005…007 | Write hardening; única mutação = create quote draft |
-| AI-008 | Structured ERP reads (query object + adapter) |
-| AI-009 | Conversational quote intelligence |
-| AI-010 | Conversation context engine |
+| AI-008…010 | Structured / conversational reads + conversation context |
 | AI-011 | Quote insights engine |
-| AI-012 | **Smart action engine** — navegação segura (open screen / focus) |
+| AI-012 | Smart action engine (navegação) |
+| AI-013 | **Safe confirmation engine** — sessão/preview/confirm/cancel/expire (sem escrita) |
 
-Production write continua **default deny**. AI-009…012 não alteram write coordinator, gateway, policies, idempotency ou audit.
+Production write continua **default deny**. AI-009…013 não alteram write coordinator, gateway, policies, idempotency ou audit.
 
 ## Defaults
 
 - `localDefaults()` → sem executores
 - `localReadIntegration()` → client/agenda in-memory
-- `localStructuredQuoteRead()` → leitura estruturada/conversacional
-- `localQuoteInsights()` → insights + reads estruturados
-- `localSmartActions()` → actions + insights + reads (opt-in)
+- `localStructuredQuoteRead()` / `localQuoteInsights()` / `localSmartActions()` / `localSafeConfirmation()` → opt-in progressivo
 
 ## Dependência
 

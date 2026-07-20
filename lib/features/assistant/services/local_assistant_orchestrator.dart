@@ -8,6 +8,8 @@ import '../domain/assistant_orchestrator.dart';
 import '../domain/assistant_parser.dart';
 import '../domain/assistant_response_builder.dart';
 import '../domain/assistant_write_coordinator.dart';
+import '../domain/confirmation/assistant_confirmation_formatter.dart';
+import '../domain/confirmation/assistant_confirmation_planner.dart';
 import '../domain/conversation/assistant_conversation_planner.dart';
 import '../domain/gateway/assistant_gateway.dart';
 import '../domain/idempotency/assistant_idempotency_service.dart';
@@ -21,6 +23,8 @@ import '../models/assistant_action.dart';
 import '../models/assistant_action_presentation.dart';
 import '../models/assistant_action_result.dart';
 import '../models/assistant_action_type.dart';
+import '../models/assistant_confirmation_presentation.dart';
+import '../models/assistant_confirmation_result.dart';
 import '../models/assistant_conversation_presentation.dart';
 import '../models/assistant_execution_context.dart';
 import '../models/assistant_execution_mode.dart';
@@ -38,6 +42,7 @@ import '../models/assistant_response.dart';
 import '../models/assistant_write_preparation.dart';
 import '../parsers/local_assistant_parser.dart';
 import 'assistant_capabilities.dart';
+import 'assistant_confirmation_session_registry.dart';
 import 'assistant_conversation_session_registry.dart';
 import 'assistant_draft_builder.dart';
 import 'assistant_module_consultant.dart';
@@ -45,6 +50,8 @@ import 'local_assistant_action_formatter.dart';
 import 'local_assistant_action_gateway.dart';
 import 'local_assistant_action_intent_resolver.dart';
 import 'local_assistant_action_planner.dart';
+import 'local_assistant_confirmation_formatter.dart';
+import 'local_assistant_confirmation_planner.dart';
 import 'local_assistant_conversation_planner.dart';
 import 'local_assistant_execution_dispatcher.dart';
 import 'local_assistant_execution_planner.dart';
@@ -57,6 +64,7 @@ import 'local_assistant_read_coordinator.dart';
 import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
+import 'local_assistant_safe_confirmation_intent_resolver.dart';
 import 'local_assistant_write_coordinator.dart';
 import 'local_assistant_write_intent_factory.dart';
 
@@ -90,6 +98,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     LocalAssistantActionIntentResolver? actionIntentResolver,
     AssistantActionPlanner? actionPlanner,
     AssistantActionFormatter? actionFormatter,
+    AssistantConfirmationSessionRegistry? confirmationSessions,
+    LocalAssistantSafeConfirmationIntentResolver? confirmationIntentResolver,
+    AssistantConfirmationPlanner? confirmationPlanner,
+    AssistantConfirmationFormatter? confirmationFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -150,7 +162,15 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             const LocalAssistantActionIntentResolver(),
         _actionPlanner = actionPlanner ?? const LocalAssistantActionPlanner(),
         _actionFormatter =
-            actionFormatter ?? const LocalAssistantActionFormatter();
+            actionFormatter ?? const LocalAssistantActionFormatter(),
+        _confirmationSessions = confirmationSessions ??
+            AssistantConfirmationSessionRegistry(clock: clock),
+        _confirmationIntentResolver = confirmationIntentResolver ??
+            const LocalAssistantSafeConfirmationIntentResolver(),
+        _confirmationPlanner = confirmationPlanner ??
+            LocalAssistantConfirmationPlanner(clock: clock),
+        _confirmationFormatter = confirmationFormatter ??
+            const LocalAssistantConfirmationFormatter();
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
@@ -179,6 +199,11 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantActionIntentResolver _actionIntentResolver;
   final AssistantActionPlanner _actionPlanner;
   final AssistantActionFormatter _actionFormatter;
+  final AssistantConfirmationSessionRegistry _confirmationSessions;
+  final LocalAssistantSafeConfirmationIntentResolver
+      _confirmationIntentResolver;
+  final AssistantConfirmationPlanner _confirmationPlanner;
+  final AssistantConfirmationFormatter _confirmationFormatter;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -265,27 +290,54 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         ? _conversationSessions.getOrCreate(sessionId)
         : null;
 
+    // AI-013 safe confirmation pipeline (lifecycle only — no ERP write).
+    AssistantConfirmationResult? confirmationResult;
+    AssistantConfirmationPresentation? confirmationPresentation;
+    final confirmationIntent = _confirmationIntentResolver.resolve(
+      request: request,
+      capabilities: _capabilities,
+    );
+    if (confirmationIntent != null &&
+        _capabilities.canExecuteSafeConfirmation) {
+      final confirmationSession = (sessionId != null && sessionId.isNotEmpty)
+          ? _confirmationSessions.getOrCreate(sessionId)
+          : null;
+      final confirmationRequest = _confirmationPlanner.planRequest(
+        confirmationIntent,
+        requestId: request.id,
+        sessionId: sessionId,
+      );
+      confirmationResult = _confirmationPlanner.process(
+        request: confirmationRequest,
+        session: confirmationSession,
+      );
+      confirmationPresentation =
+          _confirmationFormatter.format(confirmationResult);
+    }
+
     // AI-012 smart-action pipeline (independent of write/read/conversation/insight).
     AssistantActionResult? actionResult;
     AssistantActionPresentation? actionPresentation;
-    final actionIntent = _actionIntentResolver.resolve(
-      request: request,
-      capabilities: _capabilities,
-      session: session,
-    );
-    if (actionIntent != null && _capabilities.canExecuteSmartActions) {
-      final actionRequest = _actionPlanner.plan(
-        actionIntent,
+    if (confirmationPresentation == null) {
+      final actionIntent = _actionIntentResolver.resolve(
         request: request,
+        capabilities: _capabilities,
+        session: session,
       );
-      actionResult = await _actionGateway.execute(actionRequest);
-      actionPresentation = _actionFormatter.format(actionResult);
+      if (actionIntent != null && _capabilities.canExecuteSmartActions) {
+        final actionRequest = _actionPlanner.plan(
+          actionIntent,
+          request: request,
+        );
+        actionResult = await _actionGateway.execute(actionRequest);
+        actionPresentation = _actionFormatter.format(actionResult);
+      }
     }
 
     // AI-011 insight pipeline (independent of read/conversation/write).
     AssistantInsightResult? insightResult;
     AssistantInsightPresentation? insightPresentation;
-    if (actionPresentation == null) {
+    if (confirmationPresentation == null && actionPresentation == null) {
       final insightIntent = _insightIntentResolver.resolve(
         request: request,
         capabilities: _capabilities,
@@ -307,8 +359,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantReadPresentation? readPresentation;
     AssistantConversationPresentation? conversationPresentation;
 
-    // Preserve AI-009/AI-010 when action/insight did not handle this turn.
-    if (actionPresentation == null && insightPresentation == null) {
+    // Preserve AI-009/AI-010 when confirmation/action/insight did not handle.
+    if (confirmationPresentation == null &&
+        actionPresentation == null &&
+        insightPresentation == null) {
       final conversationPlan = _conversationPlanner.plan(
         request: request,
         session: session,
@@ -386,6 +440,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       conversationPresentation: conversationPresentation,
       insightPresentation: insightPresentation,
       actionPresentation: actionPresentation,
+      confirmationPresentation: confirmationPresentation,
       mode: _executionMode,
     );
 
@@ -418,6 +473,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       insightPresentation: insightPresentation,
       actionResult: actionResult,
       actionPresentation: actionPresentation,
+      confirmationResult: confirmationResult,
+      confirmationPresentation: confirmationPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -456,6 +513,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantConversationPresentation? conversationPresentation,
     AssistantInsightPresentation? insightPresentation,
     AssistantActionPresentation? actionPresentation,
+    AssistantConfirmationPresentation? confirmationPresentation,
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -471,7 +529,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    if (actionPresentation != null) {
+    if (confirmationPresentation != null) {
+      parts.add(confirmationPresentation.naturalLanguage);
+    } else if (actionPresentation != null) {
       parts.add(actionPresentation.naturalLanguage);
     } else if (insightPresentation != null) {
       parts.add(insightPresentation.naturalLanguage);

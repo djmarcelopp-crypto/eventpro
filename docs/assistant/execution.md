@@ -83,6 +83,12 @@ token quando o pending está confirmed; falha nesse append **bloqueia** a
 escrita. Após a escrita, `executionCompleted` / `executionWriteFailed`;
 falha pós-escrita vira warning sem rollback. Ver [audit.md](audit.md).
 
+## Workflow (AI-016)
+
+TX permanece um step kind registrável. Recipes atuais não invocam TX
+automaticamente — execução continua via intent dedicado. Ver
+[workflow.md](workflow.md).
+
 ## Contratos
 
 | Tipo | Pacote |

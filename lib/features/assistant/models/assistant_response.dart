@@ -28,11 +28,13 @@ import 'assistant_read_presentation.dart';
 import 'assistant_read_result.dart';
 import 'assistant_suggestion.dart';
 import 'assistant_transaction_execution_presentation.dart';
+import 'assistant_workflow_presentation.dart';
 import 'assistant_write_authorization_status.dart';
 import 'assistant_write_result.dart';
 import 'assistant_write_validation_result.dart';
 import '../domain/audit/assistant_audit_result.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
+import '../domain/workflow/assistant_workflow_result.dart';
 
 /// Structured, explainable assistant output. Never mutates the ERP.
 class AssistantResponse {
@@ -84,6 +86,8 @@ class AssistantResponse {
     this.transactionExecutionPresentation,
     this.auditResult,
     this.auditPresentation,
+    this.workflowResult,
+    this.workflowPresentation,
   });
 
   final String requestId;
@@ -167,6 +171,12 @@ class AssistantResponse {
   /// AI-015 audit presentation (NL + structured payload).
   final AssistantAuditPresentation? auditPresentation;
 
+  /// AI-016 workflow execution result.
+  final AssistantWorkflowResult? workflowResult;
+
+  /// AI-016 workflow presentation (NL + structured payload).
+  final AssistantWorkflowPresentation? workflowPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -222,6 +232,8 @@ class AssistantResponse {
         transactionExecutionPresentation,
     AssistantAuditResult? auditResult,
     AssistantAuditPresentation? auditPresentation,
+    AssistantWorkflowResult? workflowResult,
+    AssistantWorkflowPresentation? workflowPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -245,6 +257,8 @@ class AssistantResponse {
     bool clearTransactionExecutionPresentation = false,
     bool clearAuditResult = false,
     bool clearAuditPresentation = false,
+    bool clearWorkflowResult = false,
+    bool clearWorkflowPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -330,6 +344,12 @@ class AssistantResponse {
       auditPresentation: clearAuditPresentation
           ? null
           : (auditPresentation ?? this.auditPresentation),
+      workflowResult: clearWorkflowResult
+          ? null
+          : (workflowResult ?? this.workflowResult),
+      workflowPresentation: clearWorkflowPresentation
+          ? null
+          : (workflowPresentation ?? this.workflowPresentation),
     );
   }
 
@@ -384,7 +404,9 @@ class AssistantResponse {
             other.transactionExecutionPresentation ==
                 transactionExecutionPresentation &&
             other.auditResult == auditResult &&
-            other.auditPresentation == auditPresentation;
+            other.auditPresentation == auditPresentation &&
+            other.workflowResult == workflowResult &&
+            other.workflowPresentation == workflowPresentation;
   }
 
   @override
@@ -444,6 +466,8 @@ class AssistantResponse {
             transactionExecutionPresentation,
             auditResult,
             auditPresentation,
+            workflowResult,
+            workflowPresentation,
           ),
         ),
       );

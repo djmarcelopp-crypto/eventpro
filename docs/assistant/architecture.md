@@ -14,8 +14,8 @@ Texto
     → Module Consultant (leituras AI-003 / fixtures)
     → Execution Validator / Confirmation Gate AI-004 / Dispatcher
     → WriteIntentFactory + Write Coordinator (AI-005…007, isolado)
-    → Workflow Engine (AI-016/017) — Definition Registry → ExecutionPlan → Step Registry
-         → Business Bridge → Business Registry/Gateway (AI-017 stubs)
+    → Workflow Engine (AI-016…018) — Definition → Capability Resolver → ExecutionPlan
+         → Step Registry → Business Bridge → Gateway (stubs)
     → Transaction Execution Planner/Gateway (AI-014 — Create Quote Draft only)
          → valida confirmação → consome token → Write Pipeline → Result
          → Orchestrator emite audit (AI-015)
@@ -56,6 +56,7 @@ Ver também:
 - [audit.md](audit.md)
 - [workflow.md](workflow.md)
 - [business_workflows.md](business_workflows.md)
+- [business_capabilities.md](business_capabilities.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -82,10 +83,11 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AI-014 | Transaction execution engine — confirmação → Create Quote Draft |
 | AI-015 | Transaction audit trail — append-only in-memory |
 | AI-016 | Workflow engine — composição determinística de pipelines |
-| AI-017 | **Business workflow integration** — bridge/registry/gateway + entity refs |
+| AI-017 | Business workflow integration — bridge/registry/gateway + entity refs |
+| AI-018 | **Business capability engine** — registry/resolver + planner integration |
 
-Production write continua **default deny**. AI-016/017 não duplicam pipelines
-nem regras de módulo; apenas orquestram via registries.
+Production write continua **default deny**. AI-016…018 não duplicam pipelines
+nem regras de módulo; capabilities são declarativas e o Gateway só entra na execução.
 
 ## Defaults
 

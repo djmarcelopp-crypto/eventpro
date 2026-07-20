@@ -5,6 +5,8 @@ import 'assistant_workflow_metadata.dart';
 import 'assistant_workflow_step.dart';
 import '../business/capabilities/assistant_business_capability_resolution.dart';
 import '../business/capabilities/capability_execution_node.dart';
+import '../business/commands/assistant_business_command_resolution.dart';
+import '../business/commands/command_execution_node.dart';
 
 /// Request-scoped plan produced by the planner from a [AssistantWorkflowDefinition].
 class AssistantWorkflowExecutionPlan {
@@ -17,6 +19,8 @@ class AssistantWorkflowExecutionPlan {
     this.label,
     this.resolvedCapabilities = const [],
     this.executionNodes = const [],
+    this.resolvedCommands = const [],
+    this.commandExecutionNodes = const [],
   });
 
   final AssistantWorkflowId id;
@@ -32,8 +36,18 @@ class AssistantWorkflowExecutionPlan {
   /// Ordered capability execution graph for business steps (AI-018).
   final List<CapabilityExecutionNode> executionNodes;
 
+  /// Commands validated for business steps (AI-019) — empty for non-business recipes.
+  final List<AssistantBusinessCommandResolution> resolvedCommands;
+
+  /// Ordered command execution graph for business steps (AI-019).
+  final List<CommandExecutionNode> commandExecutionNodes;
+
   bool get capabilitiesReady =>
       executionNodes.isEmpty || executionNodes.every((n) => n.ready);
+
+  bool get commandsReady =>
+      commandExecutionNodes.isEmpty ||
+      commandExecutionNodes.every((n) => n.ready);
 
   factory AssistantWorkflowExecutionPlan.fromDefinition({
     required AssistantWorkflowDefinition definition,
@@ -42,6 +56,8 @@ class AssistantWorkflowExecutionPlan {
     List<AssistantBusinessCapabilityResolution> resolvedCapabilities =
         const [],
     List<CapabilityExecutionNode> executionNodes = const [],
+    List<AssistantBusinessCommandResolution> resolvedCommands = const [],
+    List<CommandExecutionNode> commandExecutionNodes = const [],
   }) {
     final id = AssistantWorkflowId('wf-${definition.id}-$requestId');
     return AssistantWorkflowExecutionPlan(
@@ -52,6 +68,8 @@ class AssistantWorkflowExecutionPlan {
       steps: List.unmodifiable(definition.steps),
       resolvedCapabilities: List.unmodifiable(resolvedCapabilities),
       executionNodes: List.unmodifiable(executionNodes),
+      resolvedCommands: List.unmodifiable(resolvedCommands),
+      commandExecutionNodes: List.unmodifiable(commandExecutionNodes),
       metadata: AssistantWorkflowMetadata(
         workflowId: id.value,
         generatedAt: generatedAt,
@@ -83,5 +101,9 @@ class AssistantWorkflowExecutionPlan {
             resolvedCapabilities.map((r) => r.toDeterministicMap()).toList(),
         'executionNodes':
             executionNodes.map((n) => n.toDeterministicMap()).toList(),
+        'resolvedCommands':
+            resolvedCommands.map((r) => r.toDeterministicMap()).toList(),
+        'commandExecutionNodes':
+            commandExecutionNodes.map((n) => n.toDeterministicMap()).toList(),
       };
 }

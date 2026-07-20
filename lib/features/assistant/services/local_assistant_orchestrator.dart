@@ -18,11 +18,16 @@ import '../domain/insight/assistant_insight_gateway.dart';
 import '../domain/insight/assistant_insight_planner.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_gateway.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_planner.dart';
+import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
 import '../domain/write/assistant_write_gateway.dart';
 import '../models/assistant_action.dart';
 import '../models/assistant_action_presentation.dart';
 import '../models/assistant_action_result.dart';
 import '../models/assistant_action_type.dart';
+import '../models/assistant_confirmation_operation_kind.dart';
 import '../models/assistant_confirmation_presentation.dart';
 import '../models/assistant_confirmation_result.dart';
 import '../models/assistant_conversation_presentation.dart';
@@ -39,7 +44,11 @@ import '../models/assistant_read_presentation.dart';
 import '../models/assistant_read_result.dart';
 import '../models/assistant_request.dart';
 import '../models/assistant_response.dart';
+import '../models/assistant_safe_confirmation_intent.dart';
+import '../models/assistant_transaction_execution_presentation.dart';
+import '../models/assistant_transaction_plan_fingerprint.dart';
 import '../models/assistant_write_preparation.dart';
+import '../models/assistant_write_result.dart';
 import '../parsers/local_assistant_parser.dart';
 import 'assistant_capabilities.dart';
 import 'assistant_confirmation_session_registry.dart';
@@ -65,6 +74,10 @@ import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
 import 'local_assistant_safe_confirmation_intent_resolver.dart';
+import 'local_assistant_transaction_execution_formatter.dart';
+import 'local_assistant_transaction_execution_gateway.dart';
+import 'local_assistant_transaction_execution_intent_resolver.dart';
+import 'local_assistant_transaction_execution_planner.dart';
 import 'local_assistant_write_coordinator.dart';
 import 'local_assistant_write_intent_factory.dart';
 
@@ -102,6 +115,11 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     LocalAssistantSafeConfirmationIntentResolver? confirmationIntentResolver,
     AssistantConfirmationPlanner? confirmationPlanner,
     AssistantConfirmationFormatter? confirmationFormatter,
+    LocalAssistantTransactionExecutionIntentResolver?
+        transactionExecutionIntentResolver,
+    AssistantTransactionExecutionPlanner? transactionExecutionPlanner,
+    AssistantTransactionExecutionGateway? transactionExecutionGateway,
+    AssistantTransactionExecutionFormatter? transactionExecutionFormatter,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -170,7 +188,21 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _confirmationPlanner = confirmationPlanner ??
             LocalAssistantConfirmationPlanner(clock: clock),
         _confirmationFormatter = confirmationFormatter ??
-            const LocalAssistantConfirmationFormatter();
+            const LocalAssistantConfirmationFormatter(),
+        _transactionExecutionIntentResolver =
+            transactionExecutionIntentResolver ??
+                const LocalAssistantTransactionExecutionIntentResolver(),
+        _transactionExecutionPlanner = transactionExecutionPlanner ??
+            LocalAssistantTransactionExecutionPlanner(clock: clock),
+        _transactionExecutionGateway = transactionExecutionGateway,
+        _transactionExecutionFormatter = transactionExecutionFormatter ??
+            const LocalAssistantTransactionExecutionFormatter() {
+    _resolvedTransactionExecutionGateway = transactionExecutionGateway ??
+        LocalAssistantTransactionExecutionGateway(
+          writeCoordinator: _writeCoordinator,
+          clock: clock,
+        );
+  }
 
   final AssistantCapabilities _capabilities;
   final AssistantExecutionMode _executionMode;
@@ -204,6 +236,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       _confirmationIntentResolver;
   final AssistantConfirmationPlanner _confirmationPlanner;
   final AssistantConfirmationFormatter _confirmationFormatter;
+  final LocalAssistantTransactionExecutionIntentResolver
+      _transactionExecutionIntentResolver;
+  final AssistantTransactionExecutionPlanner _transactionExecutionPlanner;
+  final AssistantTransactionExecutionGateway? _transactionExecutionGateway;
+  final AssistantTransactionExecutionFormatter _transactionExecutionFormatter;
+  late final AssistantTransactionExecutionGateway
+      _resolvedTransactionExecutionGateway;
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
@@ -273,8 +312,68 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       plan: enrichedPlan,
     );
 
+    final sessionId = request.context?.sessionId?.trim();
+    final session = (sessionId != null && sessionId.isNotEmpty)
+        ? _conversationSessions.getOrCreate(sessionId)
+        : null;
+
+    // AI-014 transaction execution takes the turn when execute intent matches.
+    AssistantTransactionExecutionResult? transactionExecutionResult;
+    AssistantTransactionExecutionPresentation?
+        transactionExecutionPresentation;
+    final transactionIntent = _transactionExecutionIntentResolver.resolve(
+      request: request,
+      capabilities: _capabilities,
+    );
+    if (transactionIntent != null &&
+        _capabilities.canExecuteTransactionExecution) {
+      final confirmationSession = (sessionId != null && sessionId.isNotEmpty)
+          ? _confirmationSessions.getOrCreate(sessionId)
+          : null;
+      // Propose the approved plan from the confirmed pending (divergence
+      // checks still apply when callers inject a custom planner/attrs).
+      final approved = confirmationSession?.pending?.approvedAttributes;
+      final proposedAttributes = (approved != null && approved.isNotEmpty)
+          ? approved
+          : (writeRequest?.attributes.isNotEmpty == true
+              ? writeRequest!.attributes
+              : AssistantTransactionPlanFingerprint
+                  .defaultQuoteDraftAttributes);
+      final planned = _transactionExecutionPlanner.plan(
+        intent: transactionIntent,
+        requestId: request.id,
+        sessionId: sessionId,
+        session: confirmationSession,
+        proposedOperationKind:
+            AssistantConfirmationOperationKind.createQuoteDraft,
+        proposedAttributes: proposedAttributes,
+      );
+      if (planned.rejection != null) {
+        transactionExecutionResult = planned.rejection;
+      } else if (planned.request != null) {
+        transactionExecutionResult =
+            await _resolvedTransactionExecutionGateway.execute(
+          request: planned.request!,
+          context: executionRequest.context,
+          writeGateway: _writeGateway,
+        );
+      }
+      if (transactionExecutionResult != null) {
+        transactionExecutionPresentation =
+            _transactionExecutionFormatter.format(transactionExecutionResult);
+      }
+    }
+
+    // Pipeline write: when AI-014 is enabled, Create Quote Draft writes only
+    // via TransactionExecutionGateway (not the early write path).
     AssistantWritePreparation? writePreparation;
-    if (writeRequest != null) {
+    final skipPipelineQuoteWrite =
+        _capabilities.canExecuteTransactionExecution &&
+            writeRequest != null &&
+            writeRequest.isAi006QuoteDraft;
+    if (writeRequest != null &&
+        !skipPipelineQuoteWrite &&
+        transactionExecutionPresentation == null) {
       final confirmationSatisfied = writeRequest.relatedStepId != null &&
           _confirmedStepIds.contains(writeRequest.relatedStepId);
       writePreparation = await _writeCoordinator.prepareAndMaybeExecute(
@@ -285,40 +384,47 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
 
-    final sessionId = request.context?.sessionId?.trim();
-    final session = (sessionId != null && sessionId.isNotEmpty)
-        ? _conversationSessions.getOrCreate(sessionId)
-        : null;
-
     // AI-013 safe confirmation pipeline (lifecycle only — no ERP write).
     AssistantConfirmationResult? confirmationResult;
     AssistantConfirmationPresentation? confirmationPresentation;
-    final confirmationIntent = _confirmationIntentResolver.resolve(
-      request: request,
-      capabilities: _capabilities,
-    );
-    if (confirmationIntent != null &&
-        _capabilities.canExecuteSafeConfirmation) {
-      final confirmationSession = (sessionId != null && sessionId.isNotEmpty)
-          ? _confirmationSessions.getOrCreate(sessionId)
-          : null;
-      final confirmationRequest = _confirmationPlanner.planRequest(
-        confirmationIntent,
-        requestId: request.id,
-        sessionId: sessionId,
+    if (transactionExecutionPresentation == null) {
+      var confirmationIntent = _confirmationIntentResolver.resolve(
+        request: request,
+        capabilities: _capabilities,
       );
-      confirmationResult = _confirmationPlanner.process(
-        request: confirmationRequest,
-        session: confirmationSession,
-      );
-      confirmationPresentation =
-          _confirmationFormatter.format(confirmationResult);
+      if (confirmationIntent is CreateConfirmationIntent) {
+        final attrs = writeRequest?.attributes.isNotEmpty == true
+            ? writeRequest!.attributes
+            : AssistantTransactionPlanFingerprint.defaultQuoteDraftAttributes;
+        confirmationIntent = CreateConfirmationIntent(
+          operationKind: confirmationIntent.operationKind,
+          approvedAttributes: attrs,
+        );
+      }
+      if (confirmationIntent != null &&
+          _capabilities.canExecuteSafeConfirmation) {
+        final confirmationSession = (sessionId != null && sessionId.isNotEmpty)
+            ? _confirmationSessions.getOrCreate(sessionId)
+            : null;
+        final confirmationRequest = _confirmationPlanner.planRequest(
+          confirmationIntent,
+          requestId: request.id,
+          sessionId: sessionId,
+        );
+        confirmationResult = _confirmationPlanner.process(
+          request: confirmationRequest,
+          session: confirmationSession,
+        );
+        confirmationPresentation =
+            _confirmationFormatter.format(confirmationResult);
+      }
     }
 
     // AI-012 smart-action pipeline (independent of write/read/conversation/insight).
     AssistantActionResult? actionResult;
     AssistantActionPresentation? actionPresentation;
-    if (confirmationPresentation == null) {
+    if (transactionExecutionPresentation == null &&
+        confirmationPresentation == null) {
       final actionIntent = _actionIntentResolver.resolve(
         request: request,
         capabilities: _capabilities,
@@ -337,7 +443,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     // AI-011 insight pipeline (independent of read/conversation/write).
     AssistantInsightResult? insightResult;
     AssistantInsightPresentation? insightPresentation;
-    if (confirmationPresentation == null && actionPresentation == null) {
+    if (transactionExecutionPresentation == null &&
+        confirmationPresentation == null &&
+        actionPresentation == null) {
       final insightIntent = _insightIntentResolver.resolve(
         request: request,
         capabilities: _capabilities,
@@ -359,8 +467,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantReadPresentation? readPresentation;
     AssistantConversationPresentation? conversationPresentation;
 
-    // Preserve AI-009/AI-010 when confirmation/action/insight did not handle.
-    if (confirmationPresentation == null &&
+    // Preserve AI-009/AI-010 when tx/confirmation/action/insight did not handle.
+    if (transactionExecutionPresentation == null &&
+        confirmationPresentation == null &&
         actionPresentation == null &&
         insightPresentation == null) {
       final conversationPlan = _conversationPlanner.plan(
@@ -418,7 +527,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       }
     }
 
-    final mutated = writePreparation?.writeResult.mutatedErp ?? false;
+    final txWrite = transactionExecutionResult?.writeResult;
+    final mutated = writePreparation?.writeResult.mutatedErp == true ||
+        txWrite?.mutatedErp == true;
     final enrichedReport = report.copyWith(
       mutatedErp: mutated,
       warnings: [
@@ -436,11 +547,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       moduleResults: consultation.results,
       reportSummary: enrichedReport.summary,
       writePreparation: writePreparation,
+      transactionWriteResult: txWrite,
       readPresentation: readPresentation,
       conversationPresentation: conversationPresentation,
       insightPresentation: insightPresentation,
       actionPresentation: actionPresentation,
       confirmationPresentation: confirmationPresentation,
+      transactionExecutionPresentation: transactionExecutionPresentation,
       mode: _executionMode,
     );
 
@@ -462,7 +575,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       simulatedSteps: enrichedReport.simulatedSteps,
       skippedSteps: enrichedReport.skippedSteps,
       executionWarnings: enrichedReport.warnings,
-      writeResult: writePreparation?.writeResult,
+      writeResult: txWrite ?? writePreparation?.writeResult,
       writeValidation: writePreparation?.writeValidation,
       writeAuthorization: writePreparation?.writeAuthorization,
       writeWarnings: writePreparation?.writeWarnings ?? const [],
@@ -475,6 +588,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       actionPresentation: actionPresentation,
       confirmationResult: confirmationResult,
       confirmationPresentation: confirmationPresentation,
+      transactionExecutionResult: transactionExecutionResult,
+      transactionExecutionPresentation: transactionExecutionPresentation,
       friendlyMessage: friendlyMessage,
     );
   }
@@ -509,11 +624,14 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     required List<AssistantModuleResponse> moduleResults,
     required String reportSummary,
     AssistantWritePreparation? writePreparation,
+    AssistantWriteResult? transactionWriteResult,
     AssistantReadPresentation? readPresentation,
     AssistantConversationPresentation? conversationPresentation,
     AssistantInsightPresentation? insightPresentation,
     AssistantActionPresentation? actionPresentation,
     AssistantConfirmationPresentation? confirmationPresentation,
+    AssistantTransactionExecutionPresentation?
+        transactionExecutionPresentation,
     required AssistantExecutionMode mode,
   }) {
     final parts = <String>[base];
@@ -529,7 +647,9 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         parts.add('Consulta: ${payload.summary}.');
       }
     }
-    if (confirmationPresentation != null) {
+    if (transactionExecutionPresentation != null) {
+      parts.add(transactionExecutionPresentation.naturalLanguage);
+    } else if (confirmationPresentation != null) {
       parts.add(confirmationPresentation.naturalLanguage);
     } else if (actionPresentation != null) {
       parts.add(actionPresentation.naturalLanguage);
@@ -542,7 +662,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     }
     parts.add(reportSummary);
 
-    final write = writePreparation?.writeResult;
+    final write = transactionWriteResult ?? writePreparation?.writeResult;
     if (write?.executed == true && write?.draftId != null) {
       parts.add(
         'O orçamento ${write!.draftNumber ?? write.draftId} foi criado '
@@ -553,13 +673,13 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       parts.add(
         'O assistente simulou a execução. Nenhuma alteração foi realizada no EventPRO.',
       );
-      if (writePreparation != null) {
+      if (writePreparation != null && transactionExecutionPresentation == null) {
         parts.add(
           'A operação foi apenas preparada. '
           'Nenhuma alteração foi realizada no EventPRO.',
         );
       }
-    } else {
+    } else if (transactionExecutionPresentation == null) {
       parts.add(
         writePreparation?.writeResult.summary ??
             'Nenhuma alteração foi realizada no EventPRO.',

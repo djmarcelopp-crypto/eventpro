@@ -61,5 +61,25 @@ class AssistantConfirmationSession {
     );
   }
 
+  /// Atomically consumes a confirmed pending for single-use execution.
+  ///
+  /// Returns `false` when the pending is missing, mismatched, cancelled,
+  /// expired, not confirmed, or already consumed.
+  bool tryConsume({
+    AssistantConfirmationToken? token,
+    DateTime? now,
+  }) {
+    final current = _pending;
+    if (current == null) return false;
+    if (token != null && current.token != token) return false;
+    if (current.consumed) return false;
+    if (current.cancelled) return false;
+    if (!current.confirmed || !current.resolved) return false;
+    final at = (now ?? _clock()).toUtc();
+    if (current.isPastExpiresAt(at)) return false;
+    _pending = current.copyWith(consumed: true);
+    return true;
+  }
+
   void clear() => reset();
 }

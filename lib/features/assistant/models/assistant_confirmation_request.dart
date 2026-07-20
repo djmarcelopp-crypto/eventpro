@@ -12,6 +12,7 @@ class AssistantConfirmationRequest {
     this.operationKind,
     this.token,
     this.ttl,
+    this.approvedAttributes = const {},
   });
 
   final String id;
@@ -25,6 +26,9 @@ class AssistantConfirmationRequest {
   final AssistantConfirmationToken? token;
   final Duration? ttl;
 
+  /// Attributes approved with the confirmation preview (plan fingerprint).
+  final Map<String, String> approvedAttributes;
+
   Map<String, Object?> toDeterministicMap() => {
         'id': id,
         'requestId': requestId,
@@ -33,6 +37,7 @@ class AssistantConfirmationRequest {
         'operationKind': operationKind?.name,
         'token': token?.value,
         'ttlMs': ttl?.inMilliseconds,
+        'approvedAttributes': approvedAttributes,
       };
 }
 

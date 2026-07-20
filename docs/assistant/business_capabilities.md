@@ -60,15 +60,17 @@ Sem switch. Capacidades iniciais (todas `version = 1.0.0`):
 
 ## Planejamento
 
-`LocalAssistantWorkflowPlanner.planExecution`:
+`LocalAssistantWorkflowPlanner.planExecution` (AI-019 + AI-018):
 
 1. carrega Definition;
-2. para steps `business`, mapeia `operation` → capability;
-3. `resolveSequence`;
-4. se alguma capability não estiver `ready`, o plano é `null`;
-5. caso contrário, `ExecutionPlan` com `resolvedCapabilities` **e** `executionNodes`.
+2. steps `business`: `operation` → **Command** (`operationCode`);
+3. **CommandResolver** resolve a Capability correspondente;
+4. Capability `resolveSequence`;
+5. `ExecutionPlan` com `commandExecutionNodes` (`plannerOrder`, deps, outputs).
 
 Recipes sem steps business (AI-016) seguem inalteradas (`executionNodes` vazio).
+
+Ver [business_commands.md](business_commands.md).
 
 ## Contexto
 
@@ -78,6 +80,7 @@ Recipes sem steps business (AI-016) seguem inalteradas (`executionNodes` vazio).
 - `producedEntities`
 - `satisfiedDependencies`
 - `sharedOutputs`
+- `resolvedCommands` / `commandExecutionNodes` (AI-019)
 
 ## Limitações
 

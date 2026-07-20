@@ -1,9 +1,12 @@
 import '../business/assistant_business_reference.dart';
 import '../business/assistant_business_result.dart';
 import '../business/capabilities/assistant_business_capability_resolution.dart';
+import '../business/commands/assistant_business_command_resolution.dart';
+import '../business/commands/command_execution_node.dart';
 import 'assistant_workflow_context.dart';
 
-/// Stable context keys for business references (AI-017) and capabilities (AI-018).
+/// Stable context keys for business references (AI-017), capabilities (AI-018)
+/// and commands (AI-019).
 abstract final class AssistantWorkflowBusinessKeys {
   static const clientReference = 'clientReference';
   static const quoteReference = 'quoteReference';
@@ -15,6 +18,9 @@ abstract final class AssistantWorkflowBusinessKeys {
   static const producedEntities = 'producedEntities';
   static const satisfiedDependencies = 'satisfiedDependencies';
   static const sharedOutputs = 'sharedOutputs';
+
+  static const resolvedCommands = 'resolvedCommands';
+  static const commandExecutionNodes = 'commandExecutionNodes';
 }
 
 /// Typed accessors for business references on [AssistantWorkflowContext].
@@ -74,6 +80,22 @@ extension AssistantWorkflowBusinessContext on AssistantWorkflowContext {
     return const {};
   }
 
+  List<AssistantBusinessCommandResolution> get resolvedCommands {
+    final v = this[AssistantWorkflowBusinessKeys.resolvedCommands];
+    if (v is List<AssistantBusinessCommandResolution>) return v;
+    if (v is List) {
+      return v.whereType<AssistantBusinessCommandResolution>().toList();
+    }
+    return const [];
+  }
+
+  List<CommandExecutionNode> get commandExecutionNodes {
+    final v = this[AssistantWorkflowBusinessKeys.commandExecutionNodes];
+    if (v is List<CommandExecutionNode>) return v;
+    if (v is List) return v.whereType<CommandExecutionNode>().toList();
+    return const [];
+  }
+
   AssistantWorkflowContext withClientReference(ClientReference reference) =>
       put(AssistantWorkflowBusinessKeys.clientReference, reference);
 
@@ -114,5 +136,21 @@ extension AssistantWorkflowBusinessContext on AssistantWorkflowContext {
       put(
         AssistantWorkflowBusinessKeys.sharedOutputs,
         Map<String, Object?>.unmodifiable(outputs),
+      );
+
+  AssistantWorkflowContext withResolvedCommands(
+    List<AssistantBusinessCommandResolution> resolutions,
+  ) =>
+      put(
+        AssistantWorkflowBusinessKeys.resolvedCommands,
+        List<AssistantBusinessCommandResolution>.unmodifiable(resolutions),
+      );
+
+  AssistantWorkflowContext withCommandExecutionNodes(
+    List<CommandExecutionNode> nodes,
+  ) =>
+      put(
+        AssistantWorkflowBusinessKeys.commandExecutionNodes,
+        List<CommandExecutionNode>.unmodifiable(nodes),
       );
 }

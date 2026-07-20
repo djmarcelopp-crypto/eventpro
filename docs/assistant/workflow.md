@@ -82,9 +82,16 @@ Antes da execução, o Planner resolve capabilities declarativas
 `AssistantBusinessCapabilityCategory` e `CapabilityExecutionNode` no
 `ExecutionPlan`. Ver [business_capabilities.md](business_capabilities.md).
 
-Fluxo de planejamento:
+## Business commands (AI-019)
 
-`Definition → Capability Resolver → ExecutionPlan (nodes) → Executor → Gateway`
+Antes das capabilities, o Planner resolve **commands** via
+`operationCode`. O **CommandResolver** é o único responsável por
+resolver a Capability correspondente. Ver
+[business_commands.md](business_commands.md).
+
+Fluxo:
+
+`Definition → Command(by operationCode) → CommandResolver(→Capability) → Capability Resolver → ExecutionPlan`
 
 ## Extensibilidade
 
@@ -92,7 +99,8 @@ Fluxo de planejamento:
 2. Registrar handler no step registry (se kind novo).
 3. Registrar operação no business registry (AI-017).
 4. Registrar capability no capability registry (AI-018).
-5. Resolver frases no intent resolver.
+5. Registrar command no command registry (AI-019).
+6. Resolver frases no intent resolver.
 
 ## Limitações
 

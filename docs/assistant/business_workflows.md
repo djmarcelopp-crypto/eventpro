@@ -87,17 +87,24 @@ Capability: `AssistantCapabilities.localBusinessWorkflow()`.
 
 ## Capability Engine (AI-018)
 
-Planejamento passa a validar **capabilities** declarativas antes da
-execução. O Gateway continua sendo invocado só no Executor.
+Planejamento valida **capabilities** declarativas antes da execução.
+O Gateway continua sendo invocado só no Executor.
 
 Ver [business_capabilities.md](business_capabilities.md).
 
+## Command Engine (AI-019)
+
+Planejamento valida **commands** por `operationCode`; o CommandResolver
+resolve a Capability:
+
 ```
-Definition → Capability Resolver → Execution Plan (executionNodes) → Executor → Gateway
+Command(operationCode) → CommandResolver → Capability → Execution Plan
 ```
 
-O Planner **não** conhece o Gateway. Capabilities têm `version`,
-`category` e `CapabilityResolutionStatus` no planejamento.
+`CommandExecutionNode` inclui `plannerOrder`, `dependencyIndexes` e
+`producedOutputs`. Ver [business_commands.md](business_commands.md).
+
+O Planner **não** conhece o Gateway.
 
 ## Limitações
 

@@ -82,6 +82,12 @@ Ver [business_commands.md](business_commands.md).
 - `sharedOutputs`
 - `resolvedCommands` / `commandExecutionNodes` (AI-019)
 
+## Multimodal (AI-020)
+
+Capabilities e Commands só recebem conteúdo **já normalizado** (texto ready).
+Entradas de imagem/áudio/documento sem processor **não** chegam como texto
+vazio ao Capability Resolver. Ver [multimodal_inputs.md](multimodal_inputs.md).
+
 ## Limitações
 
 - Sem Drift / HTTP / LLM / persistência

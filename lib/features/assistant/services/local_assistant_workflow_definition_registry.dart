@@ -1,3 +1,4 @@
+import '../domain/business/assistant_business_operation.dart';
 import '../domain/workflow/assistant_workflow_definition.dart';
 import '../domain/workflow/assistant_workflow_definition_registry.dart';
 import '../domain/workflow/assistant_workflow_step.dart';
@@ -70,6 +71,78 @@ class LocalAssistantWorkflowDefinitionRegistry
             kind: AssistantWorkflowStepKind.action,
             label: 'Abrir último orçamento',
             params: {'action': 'openLastQuote'},
+          ),
+        ],
+      ),
+      AssistantWorkflowRecipe.findClientThenCreateQuote.name:
+          const AssistantWorkflowDefinition(
+        id: 'findClientThenCreateQuote',
+        label: 'Buscar cliente e criar orçamento',
+        steps: [
+          AssistantWorkflowStep(
+            id: 'step-find-client',
+            kind: AssistantWorkflowStepKind.business,
+            label: 'Buscar cliente',
+            params: {
+              'operation': AssistantBusinessOperationCodes.findClient,
+              'query': 'cliente',
+            },
+          ),
+          AssistantWorkflowStep(
+            id: 'step-create-quote',
+            kind: AssistantWorkflowStepKind.business,
+            label: 'Criar orçamento',
+            params: {
+              'operation': AssistantBusinessOperationCodes.createQuote,
+            },
+          ),
+        ],
+      ),
+      AssistantWorkflowRecipe.findEventThenOpenEvent.name:
+          const AssistantWorkflowDefinition(
+        id: 'findEventThenOpenEvent',
+        label: 'Buscar evento e abrir',
+        steps: [
+          AssistantWorkflowStep(
+            id: 'step-find-event',
+            kind: AssistantWorkflowStepKind.business,
+            label: 'Buscar evento',
+            params: {
+              'operation': AssistantBusinessOperationCodes.findEvent,
+              'query': 'evento',
+            },
+          ),
+          AssistantWorkflowStep(
+            id: 'step-open-event',
+            kind: AssistantWorkflowStepKind.business,
+            label: 'Abrir evento',
+            params: {
+              'operation': AssistantBusinessOperationCodes.openEvent,
+            },
+          ),
+        ],
+      ),
+      AssistantWorkflowRecipe.findQuoteThenFindContract.name:
+          const AssistantWorkflowDefinition(
+        id: 'findQuoteThenFindContract',
+        label: 'Buscar orçamento e contrato',
+        steps: [
+          AssistantWorkflowStep(
+            id: 'step-find-quote',
+            kind: AssistantWorkflowStepKind.business,
+            label: 'Buscar orçamento',
+            params: {
+              'operation': AssistantBusinessOperationCodes.findQuote,
+              'query': 'orcamento',
+            },
+          ),
+          AssistantWorkflowStep(
+            id: 'step-find-contract',
+            kind: AssistantWorkflowStepKind.business,
+            label: 'Buscar contrato',
+            params: {
+              'operation': AssistantBusinessOperationCodes.findContract,
+            },
           ),
         ],
       ),

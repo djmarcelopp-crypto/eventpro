@@ -30,6 +30,7 @@ class AssistantCapabilities {
     this.canPlanTransactionExecution = false,
     this.canPlanAuditTrail = false,
     this.canPlanWorkflow = false,
+    this.canPlanBusinessWorkflow = false,
     this.canExecuteCreateEvent = false,
     this.canExecuteCreateQuote = false,
     this.canExecuteScheduleRead = false,
@@ -45,6 +46,7 @@ class AssistantCapabilities {
     this.canExecuteTransactionExecution = false,
     this.canExecuteAuditTrail = false,
     this.canExecuteWorkflow = false,
+    this.canExecuteBusinessWorkflow = false,
     this.canUseOCR = false,
     this.canUseSpeech = false,
     this.canUseVision = false,
@@ -70,6 +72,7 @@ class AssistantCapabilities {
   final bool canPlanTransactionExecution;
   final bool canPlanAuditTrail;
   final bool canPlanWorkflow;
+  final bool canPlanBusinessWorkflow;
 
   // --- Execution (writes always false by default; reads opt-in) ---
   final bool canExecuteCreateEvent;
@@ -87,6 +90,7 @@ class AssistantCapabilities {
   final bool canExecuteTransactionExecution;
   final bool canExecuteAuditTrail;
   final bool canExecuteWorkflow;
+  final bool canExecuteBusinessWorkflow;
 
   final bool canUseOCR;
   final bool canUseSpeech;
@@ -209,6 +213,29 @@ class AssistantCapabilities {
         canExecuteWorkflow: true,
       );
 
+  /// Business workflow integration (AI-017) over AI-016 stubs.
+  factory AssistantCapabilities.localBusinessWorkflow() =>
+      const AssistantCapabilities(
+        integrationMode: AssistantIntegrationMode.erp,
+        canPlanStructuredQuoteRead: true,
+        canExecuteStructuredQuoteRead: true,
+        canPlanQuoteInsights: true,
+        canExecuteQuoteInsights: true,
+        canPlanSmartActions: true,
+        canExecuteSmartActions: true,
+        canPlanSafeConfirmation: true,
+        canExecuteSafeConfirmation: true,
+        canPlanTransactionExecution: true,
+        canExecuteTransactionExecution: true,
+        canExecuteCreateQuote: true,
+        canPlanAuditTrail: true,
+        canExecuteAuditTrail: true,
+        canPlanWorkflow: true,
+        canExecuteWorkflow: true,
+        canPlanBusinessWorkflow: true,
+        canExecuteBusinessWorkflow: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -224,7 +251,8 @@ class AssistantCapabilities {
       canExecuteSafeConfirmation ||
       canExecuteTransactionExecution ||
       canExecuteAuditTrail ||
-      canExecuteWorkflow;
+      canExecuteWorkflow ||
+      canExecuteBusinessWorkflow;
 
   bool get anyWriteExecutionEnabled =>
       canExecuteCreateEvent || canExecuteCreateQuote;
@@ -249,6 +277,7 @@ class AssistantCapabilities {
     bool? canPlanTransactionExecution,
     bool? canPlanAuditTrail,
     bool? canPlanWorkflow,
+    bool? canPlanBusinessWorkflow,
     bool? canExecuteCreateEvent,
     bool? canExecuteCreateQuote,
     bool? canExecuteScheduleRead,
@@ -264,6 +293,7 @@ class AssistantCapabilities {
     bool? canExecuteTransactionExecution,
     bool? canExecuteAuditTrail,
     bool? canExecuteWorkflow,
+    bool? canExecuteBusinessWorkflow,
     bool? canUseOCR,
     bool? canUseSpeech,
     bool? canUseVision,
@@ -293,6 +323,8 @@ class AssistantCapabilities {
           this.canPlanTransactionExecution,
       canPlanAuditTrail: canPlanAuditTrail ?? this.canPlanAuditTrail,
       canPlanWorkflow: canPlanWorkflow ?? this.canPlanWorkflow,
+      canPlanBusinessWorkflow:
+          canPlanBusinessWorkflow ?? this.canPlanBusinessWorkflow,
       canExecuteCreateEvent:
           canExecuteCreateEvent ?? this.canExecuteCreateEvent,
       canExecuteCreateQuote:
@@ -321,6 +353,8 @@ class AssistantCapabilities {
       canExecuteAuditTrail:
           canExecuteAuditTrail ?? this.canExecuteAuditTrail,
       canExecuteWorkflow: canExecuteWorkflow ?? this.canExecuteWorkflow,
+      canExecuteBusinessWorkflow:
+          canExecuteBusinessWorkflow ?? this.canExecuteBusinessWorkflow,
       canUseOCR: canUseOCR ?? this.canUseOCR,
       canUseSpeech: canUseSpeech ?? this.canUseSpeech,
       canUseVision: canUseVision ?? this.canUseVision,
@@ -348,6 +382,7 @@ class AssistantCapabilities {
             other.canPlanTransactionExecution == canPlanTransactionExecution &&
             other.canPlanAuditTrail == canPlanAuditTrail &&
             other.canPlanWorkflow == canPlanWorkflow &&
+            other.canPlanBusinessWorkflow == canPlanBusinessWorkflow &&
             other.canExecuteCreateEvent == canExecuteCreateEvent &&
             other.canExecuteCreateQuote == canExecuteCreateQuote &&
             other.canExecuteScheduleRead == canExecuteScheduleRead &&
@@ -365,6 +400,7 @@ class AssistantCapabilities {
                 canExecuteTransactionExecution &&
             other.canExecuteAuditTrail == canExecuteAuditTrail &&
             other.canExecuteWorkflow == canExecuteWorkflow &&
+            other.canExecuteBusinessWorkflow == canExecuteBusinessWorkflow &&
             other.canUseOCR == canUseOCR &&
             other.canUseSpeech == canUseSpeech &&
             other.canUseVision == canUseVision &&
@@ -389,6 +425,7 @@ class AssistantCapabilities {
         canPlanTransactionExecution,
         canPlanAuditTrail,
         canPlanWorkflow,
+        canPlanBusinessWorkflow,
         canExecuteCreateEvent,
         canExecuteCreateQuote,
         canExecuteScheduleRead,
@@ -404,6 +441,7 @@ class AssistantCapabilities {
         canExecuteTransactionExecution,
         canExecuteAuditTrail,
         canExecuteWorkflow,
+        canExecuteBusinessWorkflow,
         canUseOCR,
         canUseSpeech,
         canUseVision,

@@ -2,6 +2,7 @@ import '../domain/action/assistant_action_gateway.dart';
 import '../domain/action/assistant_action_planner.dart';
 import '../domain/audit/assistant_audit_query.dart';
 import '../domain/audit/assistant_audit_query_service.dart';
+import '../domain/business/assistant_business_gateway.dart';
 import '../domain/confirmation/assistant_confirmation_planner.dart';
 import '../domain/insight/assistant_insight_gateway.dart';
 import '../domain/insight/assistant_insight_planner.dart';
@@ -14,8 +15,10 @@ import '../models/assistant_action_intent.dart';
 import '../models/assistant_insight_intent.dart';
 import '../models/assistant_safe_confirmation_intent.dart';
 import 'assistant_confirmation_session_registry.dart';
+import 'assistant_workflow_business_bridge.dart';
 import 'callback_assistant_workflow_step_handler.dart';
 import 'local_assistant_action_planner.dart';
+import 'local_assistant_business_gateway.dart';
 import 'local_assistant_insight_planner.dart';
 import 'local_assistant_workflow_step_registry.dart';
 
@@ -29,12 +32,15 @@ class LocalAssistantWorkflowBridge {
     required AssistantAuditQueryService auditQueryService,
     required AssistantActionGateway actionGateway,
     AssistantInsightGateway? insightGateway,
+    AssistantBusinessGateway? businessGateway,
     AssistantInsightPlanner insightPlanner =
         const LocalAssistantInsightPlanner(),
     AssistantActionPlanner actionPlanner = const LocalAssistantActionPlanner(),
     DateTime Function()? clock,
   }) {
     final now = clock ?? DateTime.now;
+    final resolvedBusinessGateway =
+        businessGateway ?? LocalAssistantBusinessGateway();
     var registry = LocalAssistantWorkflowStepRegistry();
 
     registry = registry.register(
@@ -199,6 +205,11 @@ class LocalAssistantWorkflowBridge {
           outputs: const {'transactionExecution': 'skipped'},
         );
       }),
+    );
+
+    registry = registry.register(
+      AssistantWorkflowStepKind.business,
+      AssistantWorkflowBusinessBridge(gateway: resolvedBusinessGateway),
     );
 
     return registry;

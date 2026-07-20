@@ -61,16 +61,29 @@ compartilhados entre etapas e podem ser elevados ao `AssistantResponse`.
 | `confirmationStatusThenAudit` | confirmation(status) → audit |
 | `confirmationCreateThenAudit` | confirmation(create) → audit |
 | `reviewQuotesThenOpenLast` | insight(last) → action(openLast) |
+| `findClientThenCreateQuote` | business(FIND_CLIENT) → business(CREATE_QUOTE) |
+| `findEventThenOpenEvent` | business(FIND_EVENT) → business(OPEN_EVENT) |
+| `findQuoteThenFindContract` | business(FIND_QUOTE) → business(FIND_CONTRACT) |
+
+## Business integration (AI-017)
+
+`StepKind.business` é atendido por `AssistantWorkflowBusinessBridge`, que
+delega a `AssistantBusinessGateway` via registry extensível. Ver
+[business_workflows.md](business_workflows.md).
+
+Referências (`ClientReference`, …) fluem no `WorkflowContext` sem modelos ERP.
 
 ## Extensibilidade
 
 1. Registrar `WorkflowDefinition` no definition registry.
 2. Registrar handler no step registry (se kind novo).
-3. Resolver frases no intent resolver.
+3. Registrar operação no business registry (AI-017).
+4. Resolver frases no intent resolver.
 
 ## Limitações
 
 - Sem rollback / filas / persistência / paralelismo / LLM
 - Um workflow por turno
 - TX/Read nas recipes atuais são stubs de reconhecimento (extensíveis)
+- Business ops atuais são stubs locais (sem ERP)
 - Sem alteração de `schemaVersion` (continua **12**)

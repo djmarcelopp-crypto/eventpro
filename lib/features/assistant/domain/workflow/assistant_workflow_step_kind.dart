@@ -6,4 +6,5 @@ enum AssistantWorkflowStepKind {
   confirmation,
   transactionExecution,
   audit,
+  business,
 }

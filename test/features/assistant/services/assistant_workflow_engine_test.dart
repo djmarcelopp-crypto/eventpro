@@ -67,7 +67,7 @@ void main() {
     test('definition registry: planner não embute receitas', () {
       final defs = LocalAssistantWorkflowDefinitionRegistry.defaults();
       expect(defs.find('confirmationCreateThenAudit'), isNotNull);
-      expect(defs.definitions, hasLength(3));
+      expect(defs.definitions, hasLength(6));
 
       final planner = LocalAssistantWorkflowPlanner(
         clock: clock,

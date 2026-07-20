@@ -17,6 +17,7 @@ import '../domain/audit/assistant_audit_query_service.dart';
 import '../domain/audit/assistant_audit_result.dart';
 import '../domain/audit/assistant_audit_token_fingerprinter.dart';
 import '../domain/audit/assistant_audit_warning.dart';
+import '../domain/business/assistant_business_gateway.dart';
 import '../domain/confirmation/assistant_confirmation_formatter.dart';
 import '../domain/confirmation/assistant_confirmation_planner.dart';
 import '../domain/conversation/assistant_conversation_planner.dart';
@@ -160,6 +161,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantWorkflowPlanner? workflowPlanner,
     AssistantWorkflowExecutor? workflowExecutor,
     AssistantWorkflowFormatter? workflowFormatter,
+    AssistantBusinessGateway? businessGateway,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -273,6 +275,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             auditQueryService: _auditQueryService,
             actionGateway: _actionGateway,
             insightGateway: _insightGateway,
+            businessGateway: businessGateway,
             clock: clock,
           ),
           clock: clock,

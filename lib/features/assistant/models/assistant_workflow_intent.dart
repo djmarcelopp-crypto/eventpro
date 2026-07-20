@@ -13,6 +13,15 @@ enum AssistantWorkflowRecipe {
 
   /// insight (last quote) → action (open last quote)
   reviewQuotesThenOpenLast,
+
+  /// FIND_CLIENT → CREATE_QUOTE (business stubs)
+  findClientThenCreateQuote,
+
+  /// FIND_EVENT → OPEN_EVENT (business stubs)
+  findEventThenOpenEvent,
+
+  /// FIND_QUOTE → FIND_CONTRACT (business stubs)
+  findQuoteThenFindContract,
 }
 
 final class RunWorkflowIntent extends AssistantWorkflowIntent {

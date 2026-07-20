@@ -49,6 +49,8 @@ dependencies:
   drift: ^2.34.2
   drift_flutter: ^0.3.1
   uuid: ^4.5.1
+  # HMAC-SHA-256 for assistant audit token fingerprints (AI-015).
+  crypto: ^3.0.7
 
 dev_dependencies:
   flutter_test:

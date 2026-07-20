@@ -73,12 +73,26 @@ delega a `AssistantBusinessGateway` via registry extensível. Ver
 
 Referências (`ClientReference`, …) fluem no `WorkflowContext` sem modelos ERP.
 
+## Business capabilities (AI-018)
+
+Antes da execução, o Planner resolve capabilities declarativas
+(`FindClient`, `CreateQuote`, …) via
+`AssistantBusinessCapabilityResolver`, com
+`CapabilityResolutionStatus`, `AssistantBusinessCapabilityVersion`,
+`AssistantBusinessCapabilityCategory` e `CapabilityExecutionNode` no
+`ExecutionPlan`. Ver [business_capabilities.md](business_capabilities.md).
+
+Fluxo de planejamento:
+
+`Definition → Capability Resolver → ExecutionPlan (nodes) → Executor → Gateway`
+
 ## Extensibilidade
 
 1. Registrar `WorkflowDefinition` no definition registry.
 2. Registrar handler no step registry (se kind novo).
 3. Registrar operação no business registry (AI-017).
-4. Resolver frases no intent resolver.
+4. Registrar capability no capability registry (AI-018).
+5. Resolver frases no intent resolver.
 
 ## Limitações
 

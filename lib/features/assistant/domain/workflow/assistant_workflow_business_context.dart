@@ -1,14 +1,20 @@
 import '../business/assistant_business_reference.dart';
 import '../business/assistant_business_result.dart';
+import '../business/capabilities/assistant_business_capability_resolution.dart';
 import 'assistant_workflow_context.dart';
 
-/// Stable context keys for business references (AI-017).
+/// Stable context keys for business references (AI-017) and capabilities (AI-018).
 abstract final class AssistantWorkflowBusinessKeys {
   static const clientReference = 'clientReference';
   static const quoteReference = 'quoteReference';
   static const eventReference = 'eventReference';
   static const contractReference = 'contractReference';
   static const businessResult = 'businessResult';
+
+  static const resolvedCapabilities = 'resolvedCapabilities';
+  static const producedEntities = 'producedEntities';
+  static const satisfiedDependencies = 'satisfiedDependencies';
+  static const sharedOutputs = 'sharedOutputs';
 }
 
 /// Typed accessors for business references on [AssistantWorkflowContext].
@@ -38,6 +44,36 @@ extension AssistantWorkflowBusinessContext on AssistantWorkflowContext {
     return v is AssistantBusinessResult ? v : null;
   }
 
+  List<AssistantBusinessCapabilityResolution> get resolvedCapabilities {
+    final v = this[AssistantWorkflowBusinessKeys.resolvedCapabilities];
+    if (v is List<AssistantBusinessCapabilityResolution>) return v;
+    if (v is List) {
+      return v.whereType<AssistantBusinessCapabilityResolution>().toList();
+    }
+    return const [];
+  }
+
+  List<AssistantBusinessReference> get producedEntities {
+    final v = this[AssistantWorkflowBusinessKeys.producedEntities];
+    if (v is List<AssistantBusinessReference>) return v;
+    if (v is List) return v.whereType<AssistantBusinessReference>().toList();
+    return const [];
+  }
+
+  Set<String> get satisfiedDependencies {
+    final v = this[AssistantWorkflowBusinessKeys.satisfiedDependencies];
+    if (v is Set<String>) return v;
+    if (v is List) return v.whereType<String>().toSet();
+    return const {};
+  }
+
+  Map<String, Object?> get sharedOutputs {
+    final v = this[AssistantWorkflowBusinessKeys.sharedOutputs];
+    if (v is Map<String, Object?>) return v;
+    if (v is Map) return Map<String, Object?>.from(v);
+    return const {};
+  }
+
   AssistantWorkflowContext withClientReference(ClientReference reference) =>
       put(AssistantWorkflowBusinessKeys.clientReference, reference);
 
@@ -51,4 +87,32 @@ extension AssistantWorkflowBusinessContext on AssistantWorkflowContext {
     ContractReference reference,
   ) =>
       put(AssistantWorkflowBusinessKeys.contractReference, reference);
+
+  AssistantWorkflowContext withResolvedCapabilities(
+    List<AssistantBusinessCapabilityResolution> resolutions,
+  ) =>
+      put(
+        AssistantWorkflowBusinessKeys.resolvedCapabilities,
+        List<AssistantBusinessCapabilityResolution>.unmodifiable(resolutions),
+      );
+
+  AssistantWorkflowContext withProducedEntities(
+    List<AssistantBusinessReference> entities,
+  ) =>
+      put(
+        AssistantWorkflowBusinessKeys.producedEntities,
+        List<AssistantBusinessReference>.unmodifiable(entities),
+      );
+
+  AssistantWorkflowContext withSatisfiedDependencies(Set<String> keys) =>
+      put(
+        AssistantWorkflowBusinessKeys.satisfiedDependencies,
+        Set<String>.unmodifiable(keys),
+      );
+
+  AssistantWorkflowContext withSharedOutputs(Map<String, Object?> outputs) =>
+      put(
+        AssistantWorkflowBusinessKeys.sharedOutputs,
+        Map<String, Object?>.unmodifiable(outputs),
+      );
 }

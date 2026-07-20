@@ -85,6 +85,20 @@ Capability: `AssistantCapabilities.localBusinessWorkflow()`.
 | Business Registry/Gateway | Não (stubs) |
 | Futuros adapters ERP | Sim (fora do assistente) |
 
+## Capability Engine (AI-018)
+
+Planejamento passa a validar **capabilities** declarativas antes da
+execução. O Gateway continua sendo invocado só no Executor.
+
+Ver [business_capabilities.md](business_capabilities.md).
+
+```
+Definition → Capability Resolver → Execution Plan (executionNodes) → Executor → Gateway
+```
+
+O Planner **não** conhece o Gateway. Capabilities têm `version`,
+`category` e `CapabilityResolutionStatus` no planejamento.
+
 ## Limitações
 
 - Stubs in-memory apenas

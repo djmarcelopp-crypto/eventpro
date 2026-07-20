@@ -26,6 +26,7 @@ class AssistantCapabilities {
     this.canPlanStructuredQuoteRead = false,
     this.canPlanQuoteInsights = false,
     this.canPlanSmartActions = false,
+    this.canPlanSafeConfirmation = false,
     this.canExecuteCreateEvent = false,
     this.canExecuteCreateQuote = false,
     this.canExecuteScheduleRead = false,
@@ -37,6 +38,7 @@ class AssistantCapabilities {
     this.canExecuteStructuredQuoteRead = false,
     this.canExecuteQuoteInsights = false,
     this.canExecuteSmartActions = false,
+    this.canExecuteSafeConfirmation = false,
     this.canUseOCR = false,
     this.canUseSpeech = false,
     this.canUseVision = false,
@@ -58,6 +60,7 @@ class AssistantCapabilities {
   final bool canPlanStructuredQuoteRead;
   final bool canPlanQuoteInsights;
   final bool canPlanSmartActions;
+  final bool canPlanSafeConfirmation;
 
   // --- Execution (writes always false by default; reads opt-in) ---
   final bool canExecuteCreateEvent;
@@ -71,6 +74,7 @@ class AssistantCapabilities {
   final bool canExecuteStructuredQuoteRead;
   final bool canExecuteQuoteInsights;
   final bool canExecuteSmartActions;
+  final bool canExecuteSafeConfirmation;
 
   final bool canUseOCR;
   final bool canUseSpeech;
@@ -122,6 +126,20 @@ class AssistantCapabilities {
         canExecuteSmartActions: true,
       );
 
+  /// Safe confirmation engine (AI-013) + actions for cross-pipeline compat.
+  factory AssistantCapabilities.localSafeConfirmation() =>
+      const AssistantCapabilities(
+        integrationMode: AssistantIntegrationMode.erp,
+        canPlanStructuredQuoteRead: true,
+        canExecuteStructuredQuoteRead: true,
+        canPlanQuoteInsights: true,
+        canExecuteQuoteInsights: true,
+        canPlanSmartActions: true,
+        canExecuteSmartActions: true,
+        canPlanSafeConfirmation: true,
+        canExecuteSafeConfirmation: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -133,7 +151,8 @@ class AssistantCapabilities {
       canExecuteSearchTeam ||
       canExecuteStructuredQuoteRead ||
       canExecuteQuoteInsights ||
-      canExecuteSmartActions;
+      canExecuteSmartActions ||
+      canExecuteSafeConfirmation;
 
   bool get anyWriteExecutionEnabled =>
       canExecuteCreateEvent || canExecuteCreateQuote;
@@ -154,6 +173,7 @@ class AssistantCapabilities {
     bool? canPlanStructuredQuoteRead,
     bool? canPlanQuoteInsights,
     bool? canPlanSmartActions,
+    bool? canPlanSafeConfirmation,
     bool? canExecuteCreateEvent,
     bool? canExecuteCreateQuote,
     bool? canExecuteScheduleRead,
@@ -165,6 +185,7 @@ class AssistantCapabilities {
     bool? canExecuteStructuredQuoteRead,
     bool? canExecuteQuoteInsights,
     bool? canExecuteSmartActions,
+    bool? canExecuteSafeConfirmation,
     bool? canUseOCR,
     bool? canUseSpeech,
     bool? canUseVision,
@@ -188,6 +209,8 @@ class AssistantCapabilities {
           canPlanQuoteInsights ?? this.canPlanQuoteInsights,
       canPlanSmartActions:
           canPlanSmartActions ?? this.canPlanSmartActions,
+      canPlanSafeConfirmation:
+          canPlanSafeConfirmation ?? this.canPlanSafeConfirmation,
       canExecuteCreateEvent:
           canExecuteCreateEvent ?? this.canExecuteCreateEvent,
       canExecuteCreateQuote:
@@ -209,6 +232,8 @@ class AssistantCapabilities {
           canExecuteQuoteInsights ?? this.canExecuteQuoteInsights,
       canExecuteSmartActions:
           canExecuteSmartActions ?? this.canExecuteSmartActions,
+      canExecuteSafeConfirmation:
+          canExecuteSafeConfirmation ?? this.canExecuteSafeConfirmation,
       canUseOCR: canUseOCR ?? this.canUseOCR,
       canUseSpeech: canUseSpeech ?? this.canUseSpeech,
       canUseVision: canUseVision ?? this.canUseVision,
@@ -232,6 +257,7 @@ class AssistantCapabilities {
             other.canPlanStructuredQuoteRead == canPlanStructuredQuoteRead &&
             other.canPlanQuoteInsights == canPlanQuoteInsights &&
             other.canPlanSmartActions == canPlanSmartActions &&
+            other.canPlanSafeConfirmation == canPlanSafeConfirmation &&
             other.canExecuteCreateEvent == canExecuteCreateEvent &&
             other.canExecuteCreateQuote == canExecuteCreateQuote &&
             other.canExecuteScheduleRead == canExecuteScheduleRead &&
@@ -244,6 +270,7 @@ class AssistantCapabilities {
                 canExecuteStructuredQuoteRead &&
             other.canExecuteQuoteInsights == canExecuteQuoteInsights &&
             other.canExecuteSmartActions == canExecuteSmartActions &&
+            other.canExecuteSafeConfirmation == canExecuteSafeConfirmation &&
             other.canUseOCR == canUseOCR &&
             other.canUseSpeech == canUseSpeech &&
             other.canUseVision == canUseVision &&
@@ -264,6 +291,7 @@ class AssistantCapabilities {
         canPlanStructuredQuoteRead,
         canPlanQuoteInsights,
         canPlanSmartActions,
+        canPlanSafeConfirmation,
         canExecuteCreateEvent,
         canExecuteCreateQuote,
         canExecuteScheduleRead,
@@ -275,6 +303,7 @@ class AssistantCapabilities {
         canExecuteStructuredQuoteRead,
         canExecuteQuoteInsights,
         canExecuteSmartActions,
+        canExecuteSafeConfirmation,
         canUseOCR,
         canUseSpeech,
         canUseVision,

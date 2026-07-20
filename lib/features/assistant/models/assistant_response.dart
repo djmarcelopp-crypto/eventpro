@@ -18,6 +18,8 @@ import 'assistant_question.dart';
 import 'assistant_quote_draft.dart';
 import 'assistant_action_presentation.dart';
 import 'assistant_action_result.dart';
+import 'assistant_confirmation_presentation.dart';
+import 'assistant_confirmation_result.dart';
 import 'assistant_conversation_presentation.dart';
 import 'assistant_insight_presentation.dart';
 import 'assistant_insight_result.dart';
@@ -72,6 +74,8 @@ class AssistantResponse {
     this.insightPresentation,
     this.actionResult,
     this.actionPresentation,
+    this.confirmationResult,
+    this.confirmationPresentation,
   });
 
   final String requestId;
@@ -136,6 +140,12 @@ class AssistantResponse {
   /// AI-012 smart-action presentation (NL + structured payload).
   final AssistantActionPresentation? actionPresentation;
 
+  /// AI-013 safe confirmation result (lifecycle only — no ERP write).
+  final AssistantConfirmationResult? confirmationResult;
+
+  /// AI-013 safe confirmation presentation (NL + structured payload).
+  final AssistantConfirmationPresentation? confirmationPresentation;
+
   List<AssistantModuleDataSource> get moduleDataSources =>
       moduleResults.map((r) => r.dataSource).toSet().toList(growable: false);
 
@@ -184,6 +194,8 @@ class AssistantResponse {
     AssistantInsightPresentation? insightPresentation,
     AssistantActionResult? actionResult,
     AssistantActionPresentation? actionPresentation,
+    AssistantConfirmationResult? confirmationResult,
+    AssistantConfirmationPresentation? confirmationPresentation,
     bool clearEventDraft = false,
     bool clearQuoteDraft = false,
     bool clearExecutionPlan = false,
@@ -201,6 +213,8 @@ class AssistantResponse {
     bool clearInsightPresentation = false,
     bool clearActionResult = false,
     bool clearActionPresentation = false,
+    bool clearConfirmationResult = false,
+    bool clearConfirmationPresentation = false,
   }) {
     return AssistantResponse(
       requestId: requestId ?? this.requestId,
@@ -268,6 +282,12 @@ class AssistantResponse {
       actionPresentation: clearActionPresentation
           ? null
           : (actionPresentation ?? this.actionPresentation),
+      confirmationResult: clearConfirmationResult
+          ? null
+          : (confirmationResult ?? this.confirmationResult),
+      confirmationPresentation: clearConfirmationPresentation
+          ? null
+          : (confirmationPresentation ?? this.confirmationPresentation),
     );
   }
 
@@ -315,7 +335,9 @@ class AssistantResponse {
             other.insightResult == insightResult &&
             other.insightPresentation == insightPresentation &&
             other.actionResult == actionResult &&
-            other.actionPresentation == actionPresentation;
+            other.actionPresentation == actionPresentation &&
+            other.confirmationResult == confirmationResult &&
+            other.confirmationPresentation == confirmationPresentation;
   }
 
   @override
@@ -366,6 +388,8 @@ class AssistantResponse {
           insightPresentation,
           actionResult,
           actionPresentation,
+          confirmationResult,
+          confirmationPresentation,
         ),
       );
 

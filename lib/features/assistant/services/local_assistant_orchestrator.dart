@@ -48,6 +48,10 @@ import '../domain/vision/assistant_vision_core.dart';
 import '../domain/vision/assistant_vision_port.dart';
 import '../domain/vision/assistant_vision_result.dart';
 import '../domain/vision/assistant_vision_types.dart';
+import '../domain/voice/assistant_audio_core.dart';
+import '../domain/voice/assistant_audio_result.dart';
+import '../domain/voice/assistant_audio_types.dart';
+import '../domain/voice/assistant_voice_port.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -134,9 +138,11 @@ import 'local_assistant_persistent_memory.dart';
 import 'local_assistant_provider_registry.dart';
 import 'local_assistant_provider_selector.dart';
 import 'local_assistant_vision_router.dart';
+import 'local_assistant_voice_router.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_mock_model_provider.dart';
 import 'local_mock_vision_engine.dart';
+import 'local_mock_voice_engine.dart';
 import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
@@ -210,6 +216,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantProviderRegistry? providerRegistry,
     AssistantProviderSelector? providerSelector,
     AssistantVisionRouter? visionRouter,
+    AssistantVoiceRouter? voiceRouter,
     AssistantGatewayIntelligence? gatewayIntelligence,
     AssistantBusinessReasoning? businessReasoning,
     this._executionMode = AssistantExecutionMode.dryRun,
@@ -251,6 +258,18 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
                     return router;
                   }()
                 : LocalAssistantVisionRouter()),
+        _voiceRouter = voiceRouter ??
+            ((capabilities ?? const AssistantCapabilities()).canUseVoiceEngine
+                ? () {
+                    final router = LocalAssistantVoiceRouter();
+                    router.register(
+                      LocalMockVoiceEngine.registration(
+                        port: LocalMockVoiceEngine(clock: clock),
+                      ),
+                    );
+                    return router;
+                  }()
+                : LocalAssistantVoiceRouter()),
         _gatewayIntelligence = gatewayIntelligence ??
             LocalAssistantGatewayIntelligence(gateway: gateway),
         _businessReasoning =
@@ -378,6 +397,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantProviderRegistry _providerRegistry;
   final AssistantProviderSelector _providerSelector;
   final AssistantVisionRouter _visionRouter;
+  final AssistantVoiceRouter _voiceRouter;
   final AssistantGatewayIntelligence _gatewayIntelligence;
   final AssistantBusinessReasoning _businessReasoning;
   final AssistantExecutionMode _executionMode;
@@ -482,6 +502,39 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             for (final s in vision.signals.take(6))
               'visionSignal:${s.code}',
             if (vision.error != null) 'visionError:${vision.error!.code.name}',
+          ];
+          effectiveRequest = effectiveRequest.copyWith(
+            context:
+                (effectiveRequest.context ?? const AssistantContext()).copyWith(
+              hints: hints,
+            ),
+          );
+        }
+      }
+    }
+
+    if (_capabilities.canUseVoiceEngine) {
+      // AI-027: structured audio facts only — never decisions / workflows.
+      final audioRequest = _buildAudioRequest(effectiveRequest);
+      if (audioRequest != null) {
+        final selection = _voiceRouter.select(
+          AssistantVoiceSelectionCriteria(
+            audioType: audioRequest.input.type,
+            mimeType: audioRequest.input.reference.mimeType,
+            requiredCapabilities: audioRequest.requestedCapabilities,
+          ),
+        );
+        if (selection != null) {
+          final audio = await selection.port.analyzeAudio(audioRequest);
+          final hints = <String>[
+            ...?effectiveRequest.context?.hints,
+            'voiceEngine:${audio.engineId}',
+            'voiceStatus:${audio.status.name}',
+            'voiceConfidence:${audio.confidence.name}',
+            'voiceSpeakers:${audio.speakers.length}',
+            'voiceSegments:${audio.transcription.segments.length}',
+            for (final s in audio.signals.take(6)) 'voiceSignal:${s.code}',
+            if (audio.error != null) 'voiceError:${audio.error!.code.name}',
           ];
           effectiveRequest = effectiveRequest.copyWith(
             context:
@@ -1201,6 +1254,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   AssistantVisionRouter get visionRouter => _visionRouter;
 
+  AssistantVoiceRouter get voiceRouter => _voiceRouter;
+
   AssistantConversationSessionRegistry get conversationSessions =>
       _conversationSessions;
 
@@ -1383,6 +1438,112 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     if (lower.contains('palco')) return AssistantVisionInputType.stagePhoto;
     if (lower.contains('qr')) return AssistantVisionInputType.qrCode;
     return AssistantVisionInputType.unknown;
+  }
+
+  /// Builds an audio request from audio hints or filename-like rawText.
+  AssistantAudioRequest? _buildAudioRequest(AssistantRequest request) {
+    final hints = request.context?.hints ?? const <String>[];
+    String? ref;
+    String? fileName;
+    String? mimeType;
+
+    for (final h in hints) {
+      if (h.startsWith('audioRef:')) {
+        ref = h.substring('audioRef:'.length);
+      } else if (h.startsWith('voiceRef:')) {
+        ref = h.substring('voiceRef:'.length);
+      } else if (h.startsWith('audioFileName:')) {
+        fileName = h.substring('audioFileName:'.length);
+      } else if (h.startsWith('audioMimeType:')) {
+        mimeType = h.substring('audioMimeType:'.length);
+      }
+    }
+
+    final raw = request.rawText.trim();
+    final lower = raw.toLowerCase();
+    final looksAudio = (mimeType?.startsWith('audio/') ?? false) ||
+        lower.endsWith('.mp3') ||
+        lower.endsWith('.wav') ||
+        lower.endsWith('.m4a') ||
+        lower.endsWith('.ogg') ||
+        lower.contains('audio') ||
+        lower.contains('gravacao') ||
+        lower.contains('gravação') ||
+        lower.contains('voice') ||
+        lower.contains('reuniao') ||
+        lower.contains('reunião') ||
+        // keyword-driven mock triggers used in tests / demos
+        (fileName != null) ||
+        (ref != null);
+
+    if (!looksAudio &&
+        !lower.contains('cliente') &&
+        !lower.contains('pagamento') &&
+        !(hints.any((h) => h.startsWith('audioRef:') || h.startsWith('voiceRef:') || h.startsWith('audioFileName:')))) {
+      // Allow keyword filenames only when explicitly marked as audio via hint
+      // or audio-like extension; avoid colliding with vision "contrato.pdf".
+      return null;
+    }
+
+    // Prefer explicit audio markers; keyword-only rawText needs audio hint/ext.
+    final resolvedName = fileName ?? ref ?? raw;
+    if (ref == null &&
+        fileName == null &&
+        !lower.endsWith('.mp3') &&
+        !lower.endsWith('.wav') &&
+        !lower.endsWith('.m4a') &&
+        !lower.endsWith('.ogg') &&
+        !lower.contains('audio') &&
+        !lower.contains('gravacao') &&
+        !lower.contains('gravação') &&
+        !lower.contains('voice') &&
+        !lower.contains('reuniao') &&
+        !lower.contains('reunião')) {
+      return null;
+    }
+
+    final resolvedUri = ref ?? 'audio-ref:$resolvedName';
+    final identity = AssistantTurnIdentity.resolve(request);
+
+    return AssistantAudioRequest(
+      input: AssistantAudioInput(
+        type: _inferAudioType(resolvedName, mimeType),
+        reference: AssistantAudioReference(
+          uri: resolvedUri,
+          fileName: resolvedName,
+          mimeType: mimeType ?? 'audio/mpeg',
+        ),
+        language: request.locale.split('_').first,
+      ),
+      metadata: AssistantAudioMetadata(
+        correlationId: identity.correlationId,
+        sessionId: identity.sessionId,
+        requestId: request.id,
+        origin: 'orchestrator',
+        locale: request.locale,
+        language: request.locale.split('_').first,
+        timestamp: request.timestamp,
+      ),
+    );
+  }
+
+  AssistantAudioType _inferAudioType(String label, String? mimeType) {
+    final lower = label.toLowerCase();
+    if (lower.contains('reuniao') ||
+        lower.contains('reunião') ||
+        lower.contains('meeting')) {
+      return AssistantAudioType.meeting;
+    }
+    if (lower.contains('call') || lower.contains('telefone')) {
+      return AssistantAudioType.phoneCall;
+    }
+    if (lower.contains('nota') || lower.contains('voice')) {
+      return AssistantAudioType.voiceNote;
+    }
+    if (mimeType?.startsWith('audio/') ?? false) {
+      return AssistantAudioType.voice;
+    }
+    return AssistantAudioType.unknown;
   }
 
   BusinessReasoningRequest _buildBusinessReasoningRequest({

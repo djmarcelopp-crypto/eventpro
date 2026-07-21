@@ -100,3 +100,9 @@ Sem implementação real de telemetria.
 Model Provider **não** analisa imagens/documentos. Vision Engine produz fatos
 visuais estruturados — ver [vision_engine.md](vision_engine.md).
 Vision ≠ Model Provider ≠ Business Reasoning.
+
+## Voice Engine (AI-027)
+
+Model Provider **não** faz STT/TTS. Voice Engine produz fatos de áudio —
+ver [voice_engine.md](voice_engine.md).
+Voice produz fatos. Business Reasoning interpreta. Workflow executa.

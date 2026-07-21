@@ -91,3 +91,8 @@ specialty paths quando a flag está off.
 - AI-014…AI-025 preservados
 - `schemaVersion` 12
 - Sem migrations / HTTP / SDKs / vendors de Vision
+
+## Voice Engine (AI-027)
+
+Vision analisa imagens/documentos. Voice analisa áudio. Ambos produzem fatos;
+Business Reasoning interpreta. Ver [voice_engine.md](voice_engine.md).

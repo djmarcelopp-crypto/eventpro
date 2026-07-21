@@ -75,6 +75,11 @@ Opt-in via `AssistantCapabilities.canUseMultimodalInput` /
 Orchestrator: `AssistantRequest` → factory → pipeline → texto normalizado
 (ou resposta bloqueada com issues tipadas). Aditivo; APIs existentes intactas.
 
+## Context Engine (AI-021)
+
+Após a normalização (quando habilitada), o Context Engine pode montar
+Execution Context conversacional. Ver [context_engine.md](context_engine.md).
+
 ## Limitações / futuro
 
 - Sem OCR, STT, visão, PDF parsing, LLM, HTTP, Drift, UI, upload, câmera

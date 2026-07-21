@@ -39,6 +39,12 @@ Entradas de mídia sem processor não chegam ao Command Resolver.
 
 Ver [multimodal_inputs.md](multimodal_inputs.md).
 
+## Context Engine (AI-021)
+
+O Context Engine pode fornecer intents/commands/entidades recentes ao
+contexto do turno, sem executar Commands. Ver
+[context_engine.md](context_engine.md).
+
 ## Limitações
 
 - Sem execução real no Gateway

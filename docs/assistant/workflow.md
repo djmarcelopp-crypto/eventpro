@@ -102,6 +102,13 @@ Antes da interpretação, o intake pode passar pelo
 Texto normalizado segue ao Intent/Command. Imagem/áudio/documento sem
 processor retornam `requiresProcessing` e não viram texto vazio.
 
+## Context Engine (AI-021)
+
+Opt-in: Conversation → Memory → Context Builder → Execution Context
+antes da interpretação. Ver [context_engine.md](context_engine.md).
+Não altera execução de workflow/commands; apenas alimenta rastreabilidade
+e memória conversacional in-memory.
+
 ## Extensibilidade
 
 1. Registrar `WorkflowDefinition` no definition registry.

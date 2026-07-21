@@ -52,6 +52,7 @@ class AssistantCapabilities {
     this.canUseVision = false,
     this.canUseLLM = false,
     this.canUseMultimodalInput = false,
+    this.canUseContextEngine = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -100,6 +101,9 @@ class AssistantCapabilities {
 
   /// Opt-in multimodal intake pipeline (AI-020) before interpretation.
   final bool canUseMultimodalInput;
+
+  /// Opt-in conversational Context Engine (AI-021) — in-memory only.
+  final bool canUseContextEngine;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -246,6 +250,12 @@ class AssistantCapabilities {
         canUseMultimodalInput: true,
       );
 
+  /// Context Engine (AI-021) — conversational memory + execution context.
+  factory AssistantCapabilities.localContextEngine() =>
+      const AssistantCapabilities(
+        canUseContextEngine: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -309,6 +319,7 @@ class AssistantCapabilities {
     bool? canUseVision,
     bool? canUseLLM,
     bool? canUseMultimodalInput,
+    bool? canUseContextEngine,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -372,6 +383,8 @@ class AssistantCapabilities {
       canUseLLM: canUseLLM ?? this.canUseLLM,
       canUseMultimodalInput:
           canUseMultimodalInput ?? this.canUseMultimodalInput,
+      canUseContextEngine:
+          canUseContextEngine ?? this.canUseContextEngine,
     );
   }
 
@@ -418,7 +431,8 @@ class AssistantCapabilities {
             other.canUseSpeech == canUseSpeech &&
             other.canUseVision == canUseVision &&
             other.canUseLLM == canUseLLM &&
-            other.canUseMultimodalInput == canUseMultimodalInput;
+            other.canUseMultimodalInput == canUseMultimodalInput &&
+            other.canUseContextEngine == canUseContextEngine;
   }
 
   @override
@@ -461,5 +475,6 @@ class AssistantCapabilities {
         canUseVision,
         canUseLLM,
         canUseMultimodalInput,
+        canUseContextEngine,
       ]);
 }

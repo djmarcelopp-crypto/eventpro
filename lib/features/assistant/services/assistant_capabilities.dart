@@ -57,6 +57,7 @@ class AssistantCapabilities {
     this.canUseBusinessReasoning = false,
     this.canUsePersistentMemory = false,
     this.canUseModelProvider = false,
+    this.canUseVisionEngine = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -120,6 +121,9 @@ class AssistantCapabilities {
 
   /// Opt-in Model Provider abstraction (AI-025) — no vendor SDKs / HTTP.
   final bool canUseModelProvider;
+
+  /// Opt-in Vision Engine (AI-026) — structured facts only, no real OCR/vendors.
+  final bool canUseVisionEngine;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -302,6 +306,12 @@ class AssistantCapabilities {
         canUseModelProvider: true,
       );
 
+  /// Vision Engine (AI-026) — structured visual facts via local mock.
+  factory AssistantCapabilities.localVisionEngine() =>
+      const AssistantCapabilities(
+        canUseVisionEngine: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -370,6 +380,7 @@ class AssistantCapabilities {
     bool? canUseBusinessReasoning,
     bool? canUsePersistentMemory,
     bool? canUseModelProvider,
+    bool? canUseVisionEngine,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -443,6 +454,8 @@ class AssistantCapabilities {
           canUsePersistentMemory ?? this.canUsePersistentMemory,
       canUseModelProvider:
           canUseModelProvider ?? this.canUseModelProvider,
+      canUseVisionEngine:
+          canUseVisionEngine ?? this.canUseVisionEngine,
     );
   }
 
@@ -494,7 +507,8 @@ class AssistantCapabilities {
             other.canUseGatewayIntelligence == canUseGatewayIntelligence &&
             other.canUseBusinessReasoning == canUseBusinessReasoning &&
             other.canUsePersistentMemory == canUsePersistentMemory &&
-            other.canUseModelProvider == canUseModelProvider;
+            other.canUseModelProvider == canUseModelProvider &&
+            other.canUseVisionEngine == canUseVisionEngine;
   }
 
   @override
@@ -542,5 +556,6 @@ class AssistantCapabilities {
         canUseBusinessReasoning,
         canUsePersistentMemory,
         canUseModelProvider,
+        canUseVisionEngine,
       ]);
 }

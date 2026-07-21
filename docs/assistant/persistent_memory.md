@@ -118,3 +118,9 @@ Sem logs concretos (no-op por padrão; collector só para testes).
 A memória operacional **não** é o provedor de modelo. A abstração de LLM
 vive em [model_provider.md](model_provider.md) e permanece opt-in / mock-only
 nesta fase.
+
+## Vision Engine (AI-026)
+
+Vision produz fatos estruturados (sinais) que podem ser lembrados depois;
+não substitui Persistent Memory nem toma decisões. Ver
+[vision_engine.md](vision_engine.md).

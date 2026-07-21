@@ -9,6 +9,7 @@ Ordem **real** em `LocalAssistantOrchestrator.handle()` (AR-002):
 ```
 Request
   → [opt] Multimodal Input Pipeline (AI-020)
+  → [opt] Vision Engine (AI-026) — fatos estruturados (sem decisões)
   → [opt] Context Engine (AI-021) + [opt] Persistent Memory (AI-024)
   → effectiveRequest  (única instância lógica daqui em diante)
   → Parser
@@ -64,6 +65,7 @@ Ver também:
 - [business_reasoning.md](business_reasoning.md)
 - [persistent_memory.md](persistent_memory.md)
 - [model_provider.md](model_provider.md)
+- [vision_engine.md](vision_engine.md)
 - [assistant.md](assistant.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
@@ -101,6 +103,7 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AI-023 | **Business reasoning** — deterministic ERP rules / explainability (sem LLM/NLP) |
 | AI-024 | **Persistent memory** — operational in-memory memory + policies (sem vector/LLM) |
 | AI-025 | **Model provider abstraction** — port/registry/mock (sem OpenAI/Gemini/Claude/HTTP) |
+| AI-026 | **Vision engine** — structured visual facts + mock (sem OCR/vendors/HTTP) |
 
 Production write continua **default deny**. AI-016…019 não duplicam pipelines
 nem regras de módulo; commands/capabilities são declarativos e o Gateway só entra na execução.
@@ -111,6 +114,7 @@ AI-022 adiciona descoberta de entidades opt-in sobre gateways locais.
 AI-023 adiciona raciocínio de regras de negócio opt-in e explicável.
 AI-024 adiciona memória operacional in-memory opt-in (não é memória de modelo).
 AI-025 adiciona abstração de providers + mock local (sem vendors / HTTP / SDKs).
+AI-026 adiciona Vision Engine opt-in (fatos estruturados; Business Reasoning decide).
 
 ## Defaults
 
@@ -121,6 +125,7 @@ AI-025 adiciona abstração de providers + mock local (sem vendors / HTTP / SDKs
   `localAuditTrail()` / `localWorkflow()` / `localBusinessWorkflow()` → opt-in progressivo
 - `localPersistentMemory()` → Context Engine + Persistent Memory (AI-024)
 - `localModelProvider()` → Model Provider mock (AI-025)
+- `localVisionEngine()` → Vision Engine mock (AI-026)
 
 ## Dependência
 

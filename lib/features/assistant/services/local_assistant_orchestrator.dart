@@ -44,6 +44,10 @@ import '../domain/model_provider/assistant_model.dart';
 import '../domain/model_provider/assistant_model_message.dart';
 import '../domain/model_provider/assistant_model_role.dart';
 import '../domain/model_provider/assistant_provider_registry.dart';
+import '../domain/vision/assistant_vision_core.dart';
+import '../domain/vision/assistant_vision_port.dart';
+import '../domain/vision/assistant_vision_result.dart';
+import '../domain/vision/assistant_vision_types.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -129,8 +133,10 @@ import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_persistent_memory.dart';
 import 'local_assistant_provider_registry.dart';
 import 'local_assistant_provider_selector.dart';
+import 'local_assistant_vision_router.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_mock_model_provider.dart';
+import 'local_mock_vision_engine.dart';
 import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
@@ -203,6 +209,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     LocalAssistantPersistentMemory? persistentMemory,
     AssistantProviderRegistry? providerRegistry,
     AssistantProviderSelector? providerSelector,
+    AssistantVisionRouter? visionRouter,
     AssistantGatewayIntelligence? gatewayIntelligence,
     AssistantBusinessReasoning? businessReasoning,
     this._executionMode = AssistantExecutionMode.dryRun,
@@ -232,6 +239,18 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
                 : LocalAssistantProviderRegistry()),
         _providerSelector =
             providerSelector ?? const LocalAssistantProviderSelector(),
+        _visionRouter = visionRouter ??
+            ((capabilities ?? const AssistantCapabilities()).canUseVisionEngine
+                ? () {
+                    final router = LocalAssistantVisionRouter();
+                    router.register(
+                      LocalMockVisionEngine.registration(
+                        port: LocalMockVisionEngine(clock: clock),
+                      ),
+                    );
+                    return router;
+                  }()
+                : LocalAssistantVisionRouter()),
         _gatewayIntelligence = gatewayIntelligence ??
             LocalAssistantGatewayIntelligence(gateway: gateway),
         _businessReasoning =
@@ -358,6 +377,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final LocalAssistantPersistentMemory? _persistentMemory;
   final AssistantProviderRegistry _providerRegistry;
   final AssistantProviderSelector _providerSelector;
+  final AssistantVisionRouter _visionRouter;
   final AssistantGatewayIntelligence _gatewayIntelligence;
   final AssistantBusinessReasoning _businessReasoning;
   final AssistantExecutionMode _executionMode;
@@ -436,6 +456,40 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             hints: hints,
           ),
         );
+      }
+    }
+
+    if (_capabilities.canUseVisionEngine) {
+      // AI-026: structured visual facts only — never decisions / workflows.
+      final visionRequest = _buildVisionRequest(effectiveRequest);
+      if (visionRequest != null) {
+        final selection = _visionRouter.select(
+          AssistantVisionSelectionCriteria(
+            inputType: visionRequest.input.type,
+            mimeType: visionRequest.input.reference.mimeType,
+            requiredCapabilities: visionRequest.requestedCapabilities,
+          ),
+        );
+        if (selection != null) {
+          final vision = await selection.port.analyze(visionRequest);
+          final hints = <String>[
+            ...?effectiveRequest.context?.hints,
+            'visionEngine:${vision.engineId}',
+            'visionStatus:${vision.status.name}',
+            'visionConfidence:${vision.confidence.name}',
+            'visionDocType:${vision.document.documentType.name}',
+            'visionEntities:${vision.entities.length}',
+            for (final s in vision.signals.take(6))
+              'visionSignal:${s.code}',
+            if (vision.error != null) 'visionError:${vision.error!.code.name}',
+          ];
+          effectiveRequest = effectiveRequest.copyWith(
+            context:
+                (effectiveRequest.context ?? const AssistantContext()).copyWith(
+              hints: hints,
+            ),
+          );
+        }
       }
     }
 
@@ -1145,6 +1199,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   AssistantProviderRegistry get providerRegistry => _providerRegistry;
 
+  AssistantVisionRouter get visionRouter => _visionRouter;
+
   AssistantConversationSessionRegistry get conversationSessions =>
       _conversationSessions;
 
@@ -1249,6 +1305,84 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
     return parts.join(' ');
+  }
+
+  /// Builds a vision request from attachment hints or filename-like rawText.
+  /// Returns null when there is nothing visual to analyze (keeps flow intact).
+  AssistantVisionRequest? _buildVisionRequest(AssistantRequest request) {
+    final hints = request.context?.hints ?? const <String>[];
+    String? ref;
+    String? fileName;
+    String? mimeType;
+
+    for (final h in hints) {
+      if (h.startsWith('visionRef:')) {
+        ref = h.substring('visionRef:'.length);
+      } else if (h.startsWith('attachment:')) {
+        ref = h.substring('attachment:'.length);
+      } else if (h.startsWith('fileName:')) {
+        fileName = h.substring('fileName:'.length);
+      } else if (h.startsWith('mimeType:')) {
+        mimeType = h.substring('mimeType:'.length);
+      }
+    }
+
+    final raw = request.rawText.trim();
+    final looksVisual = raw.contains('.') ||
+        raw.toLowerCase().contains('contrato') ||
+        raw.toLowerCase().contains('orcamento') ||
+        raw.toLowerCase().contains('orçamento') ||
+        raw.toLowerCase().contains('comprovante') ||
+        raw.toLowerCase().contains('palco') ||
+        raw.toLowerCase().contains('energia') ||
+        raw.toLowerCase().contains('qr');
+
+    if (ref == null && fileName == null && !looksVisual) {
+      return null;
+    }
+
+    final resolvedName = fileName ?? ref ?? raw;
+    final resolvedUri = ref ?? 'ref:$resolvedName';
+    final identity = AssistantTurnIdentity.resolve(request);
+
+    return AssistantVisionRequest(
+      input: AssistantVisionInput(
+        type: _inferVisionInputType(resolvedName, mimeType),
+        reference: AssistantVisionReference(
+          uri: resolvedUri,
+          fileName: resolvedName,
+          mimeType: mimeType,
+        ),
+        locale: request.locale,
+      ),
+      metadata: AssistantVisionMetadata(
+        correlationId: identity.correlationId,
+        sessionId: identity.sessionId,
+        requestId: request.id,
+        origin: 'orchestrator',
+        locale: request.locale,
+      ),
+    );
+  }
+
+  AssistantVisionInputType _inferVisionInputType(
+    String label,
+    String? mimeType,
+  ) {
+    final lower = label.toLowerCase();
+    final mime = mimeType?.toLowerCase() ?? '';
+    if (mime.startsWith('image/')) return AssistantVisionInputType.image;
+    if (mime.contains('pdf') || lower.endsWith('.pdf')) {
+      return AssistantVisionInputType.pdf;
+    }
+    if (lower.contains('contrato')) return AssistantVisionInputType.contract;
+    if (lower.contains('orcamento') || lower.contains('orçamento')) {
+      return AssistantVisionInputType.quote;
+    }
+    if (lower.contains('comprovante')) return AssistantVisionInputType.receipt;
+    if (lower.contains('palco')) return AssistantVisionInputType.stagePhoto;
+    if (lower.contains('qr')) return AssistantVisionInputType.qrCode;
+    return AssistantVisionInputType.unknown;
   }
 
   BusinessReasoningRequest _buildBusinessReasoningRequest({

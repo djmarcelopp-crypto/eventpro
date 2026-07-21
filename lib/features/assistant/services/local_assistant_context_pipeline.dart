@@ -5,29 +5,39 @@ import '../domain/context/assistant_conversation_id.dart';
 import '../domain/context/assistant_conversation_memory.dart';
 import '../domain/context/assistant_conversation_summarizer.dart';
 import '../domain/context/assistant_conversation_turn.dart';
+import '../domain/memory/assistant_memory_keys.dart';
+import '../domain/memory/assistant_memory_search.dart';
 import 'local_assistant_context_builder.dart';
 import 'local_assistant_conversation_memory.dart';
 import 'local_assistant_conversation_summarizer.dart';
+import 'local_assistant_persistent_memory.dart';
 
-/// Local Context Engine pipeline (AI-021).
+/// Local Context Engine pipeline (AI-021 + optional AI-024).
 ///
-/// Conversation → Memory → Context Builder → Execution Context
+/// Conversation → [opt] Persistent Memory → Context Builder → Execution Context
 /// Does not run Intent / Command / Capability / Workflow / Gateway.
 class LocalAssistantContextPipeline implements AssistantContextPipeline {
   LocalAssistantContextPipeline({
     AssistantConversationMemory? memory,
     AssistantContextBuilder? builder,
     AssistantConversationSummarizer? summarizer,
+    LocalAssistantPersistentMemory? persistentMemory,
   })  : _memory = memory ?? LocalAssistantConversationMemory(),
         _builder = builder ?? const LocalAssistantContextBuilder(),
         _summarizer =
-            summarizer ?? const LocalAssistantConversationSummarizer();
+            summarizer ?? const LocalAssistantConversationSummarizer(),
+        _persistentMemory = persistentMemory;
 
   final AssistantConversationMemory _memory;
   final AssistantContextBuilder _builder;
   final AssistantConversationSummarizer _summarizer;
 
+  /// Opt-in Persistent Memory Engine (AI-024). Null keeps AI-021 behavior.
+  final LocalAssistantPersistentMemory? _persistentMemory;
+
   AssistantConversationMemory get memory => _memory;
+
+  LocalAssistantPersistentMemory? get persistentMemory => _persistentMemory;
 
   @override
   AssistantContextPipelineResult run(AssistantContextPipelineRequest request) {
@@ -100,6 +110,10 @@ class LocalAssistantContextPipeline implements AssistantContextPipeline {
       }
     }
 
+    final persistentHints = _buildPersistentMemoryHints(
+      sessionId: request.metadata.sessionId,
+    );
+
     final executionContext = _builder.build(
       AssistantContextBuildRequest(
         conversation: conversation,
@@ -114,6 +128,7 @@ class LocalAssistantContextPipeline implements AssistantContextPipeline {
         workflowId: request.workflowId,
         executionPlanId: request.executionPlanId,
         entityRefs: request.entityRefs,
+        persistentMemoryHints: persistentHints,
       ),
     );
 
@@ -121,6 +136,35 @@ class LocalAssistantContextPipeline implements AssistantContextPipeline {
       conversation: conversation,
       executionContext: executionContext,
     );
+  }
+
+  List<String> _buildPersistentMemoryHints({String? sessionId}) {
+    final engine = _persistentMemory;
+    if (engine == null) return const [];
+
+    final result = engine.searchSync(
+      AssistantMemorySearch(
+        sessionId: sessionId,
+        keys: const [
+          AssistantMemoryKeys.lastClient,
+          AssistantMemoryKeys.lastQuote,
+          AssistantMemoryKeys.lastEvent,
+          AssistantMemoryKeys.lastSupplier,
+          AssistantMemoryKeys.lastDecision,
+          AssistantMemoryKeys.lastWorkflow,
+          AssistantMemoryKeys.lastCapability,
+          AssistantMemoryKeys.lastEntity,
+        ],
+        limit: 16,
+      ),
+    );
+    if (result.isEmpty) return const ['persistentMemory:0'];
+
+    return [
+      'persistentMemory:${result.entries.length}',
+      for (final e in result.entries)
+        'mem:${e.key}:${e.value ?? ''}:${e.metadata.confidence.toStringAsFixed(2)}',
+    ];
   }
 
   @override

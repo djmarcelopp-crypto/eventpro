@@ -9,7 +9,7 @@ Ordem **real** em `LocalAssistantOrchestrator.handle()` (AR-002):
 ```
 Request
   → [opt] Multimodal Input Pipeline (AI-020)
-  → [opt] Context Engine (AI-021) — hints / memory (sem inventar sessionId)
+  → [opt] Context Engine (AI-021) + [opt] Persistent Memory (AI-024)
   → effectiveRequest  (única instância lógica daqui em diante)
   → Parser
   → [opt] Gateway Intelligence (AI-022) — entity candidates → hints
@@ -61,6 +61,7 @@ Ver também:
 - [context_engine.md](context_engine.md)
 - [gateway_intelligence.md](gateway_intelligence.md)
 - [business_reasoning.md](business_reasoning.md)
+- [persistent_memory.md](persistent_memory.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -95,6 +96,7 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AR-002 | **Stabilization** — effectiveRequest, TurnIdentity, plan metadata, DIP ports |
 | AI-022 | **Gateway intelligence** — entity discovery via gateway composition (sem LLM/HTTP) |
 | AI-023 | **Business reasoning** — deterministic ERP rules / explainability (sem LLM/NLP) |
+| AI-024 | **Persistent memory** — operational in-memory memory + policies (sem vector/LLM) |
 
 Production write continua **default deny**. AI-016…019 não duplicam pipelines
 nem regras de módulo; commands/capabilities são declarativos e o Gateway só entra na execução.
@@ -103,6 +105,7 @@ AI-021 adiciona contexto conversacional in-memory opt-in, sem memória permanent
 AR-002 estabiliza wiring do orchestrator sem novas funcionalidades.
 AI-022 adiciona descoberta de entidades opt-in sobre gateways locais.
 AI-023 adiciona raciocínio de regras de negócio opt-in e explicável.
+AI-024 adiciona memória operacional in-memory opt-in (não é memória de modelo).
 
 ## Defaults
 
@@ -111,6 +114,7 @@ AI-023 adiciona raciocínio de regras de negócio opt-in e explicável.
 - `localStructuredQuoteRead()` / `localQuoteInsights()` / `localSmartActions()` /
   `localSafeConfirmation()` / `localTransactionExecution()` /
   `localAuditTrail()` / `localWorkflow()` / `localBusinessWorkflow()` → opt-in progressivo
+- `localPersistentMemory()` → Context Engine + Persistent Memory (AI-024)
 
 ## Dependência
 

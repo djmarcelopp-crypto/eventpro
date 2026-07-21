@@ -55,6 +55,7 @@ class AssistantCapabilities {
     this.canUseContextEngine = false,
     this.canUseGatewayIntelligence = false,
     this.canUseBusinessReasoning = false,
+    this.canUsePersistentMemory = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -112,6 +113,9 @@ class AssistantCapabilities {
 
   /// Opt-in Business Reasoning rules engine (AI-023) — no LLM/NLP/HTTP.
   final bool canUseBusinessReasoning;
+
+  /// Opt-in Persistent Memory Engine (AI-024) — in-memory operational memory.
+  final bool canUsePersistentMemory;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -281,6 +285,13 @@ class AssistantCapabilities {
         integrationMode: AssistantIntegrationMode.inMemory,
       );
 
+  /// Persistent Memory Engine (AI-024) — operational memory + context hints.
+  factory AssistantCapabilities.localPersistentMemory() =>
+      const AssistantCapabilities(
+        canUsePersistentMemory: true,
+        canUseContextEngine: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -347,6 +358,7 @@ class AssistantCapabilities {
     bool? canUseContextEngine,
     bool? canUseGatewayIntelligence,
     bool? canUseBusinessReasoning,
+    bool? canUsePersistentMemory,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -416,6 +428,8 @@ class AssistantCapabilities {
           canUseGatewayIntelligence ?? this.canUseGatewayIntelligence,
       canUseBusinessReasoning:
           canUseBusinessReasoning ?? this.canUseBusinessReasoning,
+      canUsePersistentMemory:
+          canUsePersistentMemory ?? this.canUsePersistentMemory,
     );
   }
 
@@ -465,7 +479,8 @@ class AssistantCapabilities {
             other.canUseMultimodalInput == canUseMultimodalInput &&
             other.canUseContextEngine == canUseContextEngine &&
             other.canUseGatewayIntelligence == canUseGatewayIntelligence &&
-            other.canUseBusinessReasoning == canUseBusinessReasoning;
+            other.canUseBusinessReasoning == canUseBusinessReasoning &&
+            other.canUsePersistentMemory == canUsePersistentMemory;
   }
 
   @override
@@ -511,5 +526,6 @@ class AssistantCapabilities {
         canUseContextEngine,
         canUseGatewayIntelligence,
         canUseBusinessReasoning,
+        canUsePersistentMemory,
       ]);
 }

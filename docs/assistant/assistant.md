@@ -17,6 +17,7 @@ controlada sobre o ERP EventPRO. Produção write permanece **default deny**.
 ```
 Request
   → [opt] Multimodal (AI-020)
+  → [opt] Vision (AI-026)
   → [opt] Context Engine (AI-021) + Persistent Memory (AI-024)
   → Parser
   → [opt] Gateway Intelligence (AI-022)
@@ -32,6 +33,7 @@ Request
 | Doc | Tema |
 |-----|------|
 | [architecture.md](architecture.md) | Pipeline e camadas |
+| [vision_engine.md](vision_engine.md) | Vision Engine (AI-026) |
 | [model_provider.md](model_provider.md) | Abstração de providers (AI-025) |
 | [persistent_memory.md](persistent_memory.md) | Memória operacional (AI-024) |
 | [business_reasoning.md](business_reasoning.md) | Regras ERP (AI-023) |
@@ -45,3 +47,4 @@ Request
 - `localContextEngine()` / `localPersistentMemory()`
 - `localGatewayIntelligence()` / `localBusinessReasoning()`
 - `localModelProvider()` — mock local apenas
+- `localVisionEngine()` — fatos visuais estruturados (mock)

@@ -120,3 +120,10 @@ changes. Fluxo textual default permanece intacto.
 
 Persistência opcional, unificação com AI-010 e enrichment multimodal
 permanecem fora desta sprint.
+
+## Vision Engine (AI-026)
+
+Quando opt-in, Vision roda **antes** do Context Engine e injeta sinais/fatos
+em hints. Context não interpreta visão — apenas propaga. Ver
+[vision_engine.md](vision_engine.md).
+**Vision produz fatos. Business Reasoning decide. Workflow executa.**

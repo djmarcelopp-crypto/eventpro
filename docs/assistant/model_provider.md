@@ -94,3 +94,9 @@ Sem implementação real de telemetria.
 - AI-014…AI-024 preservados
 - `schemaVersion` 12
 - Sem migrations / LLM vendors / HTTP
+
+## Vision Engine (AI-026)
+
+Model Provider **não** analisa imagens/documentos. Vision Engine produz fatos
+visuais estruturados — ver [vision_engine.md](vision_engine.md).
+Vision ≠ Model Provider ≠ Business Reasoning.

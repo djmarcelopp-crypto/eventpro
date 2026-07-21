@@ -82,3 +82,9 @@ substitui o motor de regras.
 Após o raciocínio de negócio, o orchestrator pode consultar a abstração de
 Model Provider (opt-in, mock local). Ver [model_provider.md](model_provider.md).
 Não substitui Business Reasoning e não integra vendors.
+
+## Vision Engine (AI-026)
+
+Vision (antes do Context/Intent) gera **sinais/fatos** (ex.: parece contrato).
+Business Reasoning consome fatos estruturados e decide. Vision **nunca**
+executa. Ver [vision_engine.md](vision_engine.md).

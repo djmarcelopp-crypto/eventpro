@@ -72,6 +72,7 @@ void main() {
       txPlanner = LocalAssistantTransactionExecutionPlanner(clock: clock);
       txGateway = LocalAssistantTransactionExecutionGateway(
         writeCoordinator: writeCoordinator,
+        writeGateway: writeGateway,
         clock: clock,
       );
     });
@@ -147,7 +148,6 @@ void main() {
       final result = await txGateway.execute(
         request: planned.request!,
         context: ctx(),
-        writeGateway: writeGateway,
       );
       expect(result.outcome, AssistantTransactionExecutionOutcome.completed);
       expect(result.executed, isTrue);
@@ -312,7 +312,6 @@ void main() {
       final first = await txGateway.execute(
         request: planned.request!,
         context: ctx(),
-        writeGateway: writeGateway,
       );
       expect(first.outcome, AssistantTransactionExecutionOutcome.completed);
       final count = (await repository.listAll()).length;
@@ -321,7 +320,6 @@ void main() {
       final second = await txGateway.execute(
         request: planned.request!,
         context: ctx(),
-        writeGateway: writeGateway,
       );
       expect(second.writeResult?.executed, isTrue);
       expect(second.writeResult?.mutatedErp, isFalse);

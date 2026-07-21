@@ -94,6 +94,12 @@ Capabilities resolvidas em turnos anteriores podem constar na memória
 conversacional (IDs), sem reexecução automática. Ver
 [context_engine.md](context_engine.md).
 
+## Gateway Intelligence (AI-022)
+
+Descoberta de entidades (client/event/quote/…) via composição de gateways,
+opt-in `canUseGatewayIntelligence`. Não altera resolução de Capabilities.
+Ver [gateway_intelligence.md](gateway_intelligence.md).
+
 ## Limitações
 
 - Sem Drift / HTTP / LLM / persistência

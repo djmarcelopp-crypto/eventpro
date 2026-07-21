@@ -53,6 +53,7 @@ class AssistantCapabilities {
     this.canUseLLM = false,
     this.canUseMultimodalInput = false,
     this.canUseContextEngine = false,
+    this.canUseGatewayIntelligence = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -104,6 +105,9 @@ class AssistantCapabilities {
 
   /// Opt-in conversational Context Engine (AI-021) — in-memory only.
   final bool canUseContextEngine;
+
+  /// Opt-in Gateway Intelligence discovery (AI-022) — no LLM/HTTP.
+  final bool canUseGatewayIntelligence;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -256,6 +260,15 @@ class AssistantCapabilities {
         canUseContextEngine: true,
       );
 
+  /// Gateway Intelligence (AI-022) — entity discovery via local composition.
+  factory AssistantCapabilities.localGatewayIntelligence() =>
+      const AssistantCapabilities(
+        canUseGatewayIntelligence: true,
+        integrationMode: AssistantIntegrationMode.inMemory,
+        canExecuteClientSearch: true,
+        canExecuteLookupQuote: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -320,6 +333,7 @@ class AssistantCapabilities {
     bool? canUseLLM,
     bool? canUseMultimodalInput,
     bool? canUseContextEngine,
+    bool? canUseGatewayIntelligence,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -385,6 +399,8 @@ class AssistantCapabilities {
           canUseMultimodalInput ?? this.canUseMultimodalInput,
       canUseContextEngine:
           canUseContextEngine ?? this.canUseContextEngine,
+      canUseGatewayIntelligence:
+          canUseGatewayIntelligence ?? this.canUseGatewayIntelligence,
     );
   }
 
@@ -432,7 +448,8 @@ class AssistantCapabilities {
             other.canUseVision == canUseVision &&
             other.canUseLLM == canUseLLM &&
             other.canUseMultimodalInput == canUseMultimodalInput &&
-            other.canUseContextEngine == canUseContextEngine;
+            other.canUseContextEngine == canUseContextEngine &&
+            other.canUseGatewayIntelligence == canUseGatewayIntelligence;
   }
 
   @override
@@ -476,5 +493,6 @@ class AssistantCapabilities {
         canUseLLM,
         canUseMultimodalInput,
         canUseContextEngine,
+        canUseGatewayIntelligence,
       ]);
 }

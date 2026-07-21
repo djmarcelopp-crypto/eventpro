@@ -26,10 +26,15 @@ import '../domain/idempotency/assistant_idempotency_service.dart';
 import '../domain/insight/assistant_insight_formatter.dart';
 import '../domain/insight/assistant_insight_gateway.dart';
 import '../domain/insight/assistant_insight_planner.dart';
+import '../domain/gateway_intelligence/assistant_gateway_intelligence.dart';
+import '../domain/gateway_intelligence/gateway_entity_kind.dart';
+import '../domain/gateway_intelligence/gateway_query.dart';
+import '../domain/gateway_intelligence/gateway_query_context.dart';
 import '../domain/input/assistant_input_pipeline.dart';
 import '../domain/context/assistant_context_pipeline.dart';
 import '../domain/context/assistant_conversation_id.dart';
 import '../domain/context/assistant_conversation_metadata.dart';
+import '../domain/context/assistant_turn_identity.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -38,6 +43,8 @@ import '../domain/transaction_execution/assistant_transaction_execution_metadata
 import '../domain/transaction_execution/assistant_transaction_execution_outcome.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_planner.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_result.dart';
+import '../domain/workflow/assistant_workflow_business_context.dart';
+import '../domain/workflow/assistant_workflow_context.dart';
 import '../domain/workflow/assistant_workflow_executor.dart';
 import '../domain/workflow/assistant_workflow_formatter.dart';
 import '../domain/workflow/assistant_workflow_planner.dart';
@@ -55,6 +62,7 @@ import '../models/assistant_confirmation_operation_kind.dart';
 import '../models/assistant_confirmation_presentation.dart';
 import '../models/assistant_confirmation_result.dart';
 import '../models/assistant_conversation_presentation.dart';
+import '../models/assistant_entity_type.dart';
 import '../models/assistant_execution_context.dart';
 import '../models/assistant_execution_mode.dart';
 import '../models/assistant_execution_policy.dart';
@@ -106,6 +114,7 @@ import 'local_assistant_insight_intent_resolver.dart';
 import 'local_assistant_insight_planner.dart';
 import 'local_assistant_input_pipeline.dart';
 import 'local_assistant_context_pipeline.dart';
+import 'local_assistant_gateway_intelligence.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_assistant_read_formatter.dart';
@@ -177,6 +186,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantBusinessGateway? businessGateway,
     AssistantInputPipeline? inputPipeline,
     AssistantContextPipeline? contextPipeline,
+    AssistantGatewayIntelligence? gatewayIntelligence,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -188,6 +198,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _inputPipeline = inputPipeline ?? LocalAssistantInputPipeline(),
         _contextPipeline = contextPipeline ?? LocalAssistantContextPipeline(),
+        _gatewayIntelligence = gatewayIntelligence ??
+            LocalAssistantGatewayIntelligence(gateway: gateway),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
         _parser = parser ?? LocalAssistantParser(clock: clock),
@@ -275,6 +287,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     _resolvedTransactionExecutionGateway = transactionExecutionGateway ??
         LocalAssistantTransactionExecutionGateway(
           writeCoordinator: _writeCoordinator,
+          writeGateway: writeGateway,
           clock: clock,
         );
     _auditEmitter = auditEmitter ??
@@ -302,6 +315,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantCapabilities _capabilities;
   final AssistantInputPipeline _inputPipeline;
   final AssistantContextPipeline _contextPipeline;
+  final AssistantGatewayIntelligence _gatewayIntelligence;
   final AssistantExecutionMode _executionMode;
   final Set<String> _confirmedStepIds;
   final DateTime Function() _clock;
@@ -355,7 +369,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   @override
   Future<AssistantResponse> handle(AssistantRequest request) async {
-    var workingRequest = request;
+    var effectiveRequest = request;
 
     if (_capabilities.canUseMultimodalInput) {
       final multimodal = await _inputPipeline.run(
@@ -372,7 +386,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           'correlationId:${multimodal.correlationId}',
           'inputStatus:${multimodal.normalization.status.name}',
         ];
-        workingRequest = request.copyWith(
+        effectiveRequest = request.copyWith(
           rawText: normalized,
           context: (request.context ?? const AssistantContext()).copyWith(
             hints: hints,
@@ -382,47 +396,77 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     }
 
     if (_capabilities.canUseContextEngine) {
-      final sessionId = workingRequest.context?.sessionId;
-      final conversationId = AssistantConversationId(
-        (sessionId != null && sessionId.isNotEmpty)
-            ? sessionId
-            : 'req:${workingRequest.id}',
-      );
+      // AR-002: conversationId shares sessionId when present; never invents
+      // sessionId for AI-010 (see AssistantConversationOwnership).
+      final identity = AssistantTurnIdentity.resolve(effectiveRequest);
+      final conversationId =
+          AssistantConversationId(identity.conversationId);
       final contextResult = _contextPipeline.run(
         AssistantContextPipelineRequest(
           conversationId: conversationId,
-          requestId: workingRequest.id,
+          requestId: effectiveRequest.id,
           now: _clock(),
           metadata: AssistantConversationMetadata(
-            sessionId: sessionId,
-            locale: workingRequest.locale,
-            timezone: workingRequest.timezone,
-            origin: workingRequest.origin.name,
-            correlationId: workingRequest.id,
+            sessionId: identity.sessionId,
+            locale: effectiveRequest.locale,
+            timezone: effectiveRequest.timezone,
+            origin: effectiveRequest.origin.name,
+            correlationId: identity.correlationId,
           ),
-          correlationId: workingRequest.id,
-          normalizedInputText: workingRequest.rawText,
+          correlationId: identity.correlationId,
+          normalizedInputText: effectiveRequest.rawText,
           autoSummarize: false,
           commitTurn: false,
         ),
       );
       final hints = <String>[
-        ...?workingRequest.context?.hints,
+        ...?effectiveRequest.context?.hints,
         ...contextResult.executionContext.traceHints,
+        'conversationId:${identity.conversationId}',
+        'correlationId:${identity.correlationId}',
+        if (identity.sessionId != null) 'sessionId:${identity.sessionId}',
         if (contextResult.conversation.summary.text.isNotEmpty)
           'summary:${contextResult.conversation.summary.text}',
       ];
-      workingRequest = workingRequest.copyWith(
-        context: (workingRequest.context ?? const AssistantContext()).copyWith(
+      effectiveRequest = effectiveRequest.copyWith(
+        context: (effectiveRequest.context ?? const AssistantContext()).copyWith(
           hints: hints,
-          sessionId: sessionId ?? conversationId.value,
         ),
       );
     }
 
-    final parseResult = _parser.parse(workingRequest);
+    // AR-002: single identity + single request instance for all pipelines.
+    final turnIdentity = AssistantTurnIdentity.resolve(effectiveRequest);
+    final sessionId = turnIdentity.sessionId;
+
+    final parseResult = _parser.parse(effectiveRequest);
+
+    if (_capabilities.canUseGatewayIntelligence) {
+      final giQuery = _buildGatewayIntelligenceQuery(
+        request: effectiveRequest,
+        parseResult: parseResult,
+      );
+      if (giQuery != null) {
+        final giResult = await _gatewayIntelligence.suggestEntities(giQuery);
+        if (giResult.isNotEmpty) {
+          final hints = <String>[
+            ...?effectiveRequest.context?.hints,
+            'gatewayIntelligence:${giResult.length}',
+            for (final m in giResult.take(5))
+              'giCandidate:${m.reference.kind.name}:${m.reference.id}:${m.reference.label ?? ''}:${m.confidence.toStringAsFixed(2)}',
+          ];
+          effectiveRequest = effectiveRequest.copyWith(
+            context:
+                (effectiveRequest.context ?? const AssistantContext()).copyWith(
+              hints: hints,
+            ),
+          );
+        }
+      }
+    }
+
     final intents = _intentClassifier.classify(
-      request: workingRequest,
+      request: effectiveRequest,
       parseResult: parseResult,
     );
     final primary = intents.first;
@@ -430,7 +474,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         intents.length > 1 ? intents.sublist(1) : const <AssistantIntent>[];
 
     final eventDraft = AssistantDraftBuilder.buildEventDraft(
-      sourceText: workingRequest.rawText,
+      sourceText: effectiveRequest.rawText,
       entities: parseResult.entities,
     );
     final quoteDraft = AssistantDraftBuilder.buildQuoteDraft(
@@ -438,7 +482,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     );
 
     final interpreted = _responseBuilder.build(
-      request: workingRequest,
+      request: effectiveRequest,
       parseResult: parseResult,
       primaryIntent: primary,
       alternativeIntents: alternatives,
@@ -460,11 +504,11 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         : AssistantExecutionPolicy.ai004Defaults;
 
     final executionRequest = AssistantExecutionRequest(
-      id: 'exec-${request.id}',
+      id: 'exec-${effectiveRequest.id}',
       context: AssistantExecutionContext(
-        requestId: request.id,
+        requestId: effectiveRequest.id,
         token: AssistantExecutionToken(
-          'tok-${request.id}-${_clock().millisecondsSinceEpoch}',
+          'tok-${effectiveRequest.id}-${_clock().millisecondsSinceEpoch}',
         ),
         mode: _executionMode,
         integrationMode: _capabilities.integrationMode,
@@ -486,28 +530,35 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       plan: enrichedPlan,
     );
 
-    final sessionId = request.context?.sessionId?.trim();
-    final session = (sessionId != null && sessionId.isNotEmpty)
-        ? _conversationSessions.getOrCreate(sessionId)
+    // sessionId from turnIdentity (AR-002) — AI-010 reads same identity.
+    final session = turnIdentity.hasSession
+        ? _conversationSessions.getOrCreate(sessionId!)
         : null;
 
     // AI-016 workflow engine — multi-step composition of existing pipelines.
     AssistantWorkflowResult? workflowResult;
     AssistantWorkflowPresentation? workflowPresentation;
     final workflowIntent = _workflowIntentResolver.resolve(
-      request: request,
+      request: effectiveRequest,
       capabilities: _capabilities,
     );
     if (workflowIntent != null && _capabilities.canExecuteWorkflow) {
       final planned = _workflowPlanner.plan(
         workflowIntent,
-        requestId: request.id,
-        request: request,
+        requestId: effectiveRequest.id,
+        request: effectiveRequest,
       );
       if (planned != null) {
+        // AR-002: seed planner metadata into context (nodes not executed).
+        final initialContext = const AssistantWorkflowContext()
+            .withResolvedCapabilities(planned.resolvedCapabilities)
+            .withCapabilityExecutionNodes(planned.capabilityExecutionNodes)
+            .withResolvedCommands(planned.resolvedCommands)
+            .withCommandExecutionNodes(planned.commandExecutionNodes);
         workflowResult = await _workflowExecutor.execute(
           workflow: planned,
-          request: request,
+          request: effectiveRequest,
+          initialContext: initialContext,
         );
         workflowPresentation = _workflowFormatter.format(workflowResult);
       }
@@ -520,7 +571,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     final auditWarnings = <AssistantAuditWarning>[];
     final auditEnabled = _capabilities.canExecuteAuditTrail;
     final transactionIntent = _transactionExecutionIntentResolver.resolve(
-      request: request,
+      request: effectiveRequest,
       capabilities: _capabilities,
     );
     if (workflowPresentation == null &&
@@ -554,7 +605,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           blockedByAudit = true;
           auditWarnings.add(preWarn);
           transactionExecutionResult = AssistantTransactionExecutionResult(
-            requestId: request.id,
+            requestId: effectiveRequest.id,
             outcome: AssistantTransactionExecutionOutcome.invalidConfirmation,
             valid: false,
             executed: false,
@@ -562,7 +613,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
                 'Execução bloqueada: falha ao registrar auditoria prévia.',
             warnings: const [],
             metadata: AssistantTransactionExecutionMetadata(
-              requestId: request.id,
+              requestId: effectiveRequest.id,
               generatedAt: _clock().toUtc(),
               sessionId: sessionId,
             ),
@@ -573,7 +624,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       if (!blockedByAudit) {
         final planned = _transactionExecutionPlanner.plan(
           intent: transactionIntent,
-          requestId: request.id,
+          requestId: effectiveRequest.id,
           sessionId: sessionId,
           session: confirmationSession,
           proposedOperationKind:
@@ -598,7 +649,6 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           final executed = await _resolvedTransactionExecutionGateway.execute(
             request: txRequest,
             context: executionRequest.context,
-            writeGateway: _writeGateway,
           );
           transactionExecutionResult = executed;
           if (auditEnabled && sessionId != null && sessionId.isNotEmpty) {
@@ -646,7 +696,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     if (workflowPresentation == null &&
         transactionExecutionPresentation == null) {
       var confirmationIntent = _confirmationIntentResolver.resolve(
-        request: request,
+        request: effectiveRequest,
         capabilities: _capabilities,
       );
       if (confirmationIntent is CreateConfirmationIntent) {
@@ -665,7 +715,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             : null;
         final confirmationRequest = _confirmationPlanner.planRequest(
           confirmationIntent,
-          requestId: request.id,
+          requestId: effectiveRequest.id,
           sessionId: sessionId,
         );
         confirmationResult = _confirmationPlanner.process(
@@ -723,7 +773,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         transactionExecutionPresentation == null &&
         confirmationPresentation == null) {
       final auditIntent = _auditIntentResolver.resolve(
-        request: request,
+        request: effectiveRequest,
         capabilities: _capabilities,
       );
       if (auditIntent is AuditStatusIntent &&
@@ -739,7 +789,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         }
         auditResult = _auditQueryService.query(
           AssistantAuditQuery(
-            requestId: request.id,
+            requestId: effectiveRequest.id,
             sessionId: sessionId,
             eventType: typeFilter,
             latestOnly: auditIntent.latestOnly,
@@ -767,14 +817,14 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         confirmationPresentation == null &&
         auditPresentation == null) {
       final actionIntent = _actionIntentResolver.resolve(
-        request: request,
+        request: effectiveRequest,
         capabilities: _capabilities,
         session: session,
       );
       if (actionIntent != null && _capabilities.canExecuteSmartActions) {
         final actionRequest = _actionPlanner.plan(
           actionIntent,
-          request: request,
+          request: effectiveRequest,
         );
         actionResult = await _actionGateway.execute(actionRequest);
         actionPresentation = _actionFormatter.format(actionResult);
@@ -788,7 +838,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         auditPresentation == null &&
         actionPresentation == null) {
       final insightIntent = _insightIntentResolver.resolve(
-        request: request,
+        request: effectiveRequest,
         capabilities: _capabilities,
       );
       if (insightIntent != null &&
@@ -796,7 +846,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           _insightGateway != null) {
         final insightRequest = _insightPlanner.plan(
           insightIntent,
-          requestId: request.id,
+          requestId: effectiveRequest.id,
           referenceTimestamp: _clock().toUtc(),
         );
         insightResult = await _insightGateway.execute(insightRequest);
@@ -816,7 +866,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         actionPresentation == null &&
         insightPresentation == null) {
       final conversationPlan = _conversationPlanner.plan(
-        request: request,
+        request: effectiveRequest,
         session: session,
         capabilities: _capabilities,
       );
@@ -842,7 +892,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         final readQuery = conversationPlan.query ??
             _readQueryFactory.planIntent(
               readIntent,
-              requestId: request.id,
+              requestId: effectiveRequest.id,
             );
         readResult = await _readCoordinator.execute(
           query: readQuery,
@@ -1050,6 +1100,80 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       );
     }
     return parts.join(' ');
+  }
+
+  /// AI-022: only runs when opt-in and the turn looks like entity discovery.
+  GatewayQuery? _buildGatewayIntelligenceQuery({
+    required AssistantRequest request,
+    required AssistantParseResult parseResult,
+  }) {
+    final text = request.rawText.trim();
+    if (text.isEmpty) return null;
+
+    final folded = text.toLowerCase();
+    final kinds = <GatewayEntityKind>[];
+    String? queryText;
+
+    final clientEntities = parseResult.entities
+        .where((e) => e.type == AssistantEntityType.clientName)
+        .map((e) => e.rawValue.trim())
+        .where((v) => v.isNotEmpty)
+        .toList(growable: false);
+    final clientEntity =
+        clientEntities.isEmpty ? null : clientEntities.first;
+
+    if (clientEntity != null) {
+      kinds.add(GatewayEntityKind.client);
+      queryText = clientEntity;
+    } else if (folded.contains('cliente') ||
+        folded.contains('buscar') ||
+        folded.startsWith('joão') ||
+        folded.startsWith('joao')) {
+      kinds.add(GatewayEntityKind.client);
+      queryText = text
+          .replaceAll(RegExp(r'(?i)buscar\s+cliente'), '')
+          .replaceAll(RegExp(r'(?i)cliente'), '')
+          .trim();
+      if (queryText.isEmpty) queryText = text;
+    }
+
+    if (folded.contains('orçamento') || folded.contains('orcamento')) {
+      kinds.add(GatewayEntityKind.quote);
+      queryText ??= text;
+    }
+    if (folded.contains('evento') || folded.contains('casamento')) {
+      kinds.add(GatewayEntityKind.event);
+      queryText ??= text;
+    }
+    if (folded.contains('contrato')) {
+      kinds.add(GatewayEntityKind.contract);
+      queryText ??= text;
+    }
+    if (folded.contains('fornecedor')) {
+      kinds.add(GatewayEntityKind.supplier);
+      queryText ??= text;
+    }
+
+    if (kinds.isEmpty || queryText == null || queryText.trim().isEmpty) {
+      return null;
+    }
+
+    return GatewayQuery(
+      requestId: request.id,
+      rawText: queryText.trim(),
+      kinds: kinds,
+      context: GatewayQueryContext(
+        activeClientId: request.context?.activeClientId,
+        activeQuoteId: request.context?.activeQuoteId,
+        hints: request.context?.hints ?? const [],
+        preferredKinds: kinds,
+      ),
+      metadata: GatewayQueryMetadata(
+        correlationId: request.id,
+        sessionId: request.context?.sessionId,
+        locale: request.locale,
+      ),
+    );
   }
 
   AssistantResponse _buildMultimodalBlockedResponse(

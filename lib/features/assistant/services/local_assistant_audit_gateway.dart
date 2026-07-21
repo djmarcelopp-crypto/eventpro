@@ -8,10 +8,12 @@ import 'in_memory_assistant_audit_repository.dart';
 class LocalAssistantAuditGateway implements AssistantAuditGateway {
   LocalAssistantAuditGateway({
     AssistantAuditRepository? repository,
-  }) : repository = repository ?? InMemoryAssistantAuditRepository();
+  }) : _repository = repository ?? InMemoryAssistantAuditRepository();
 
-  @override
-  final AssistantAuditRepository repository;
+  final AssistantAuditRepository _repository;
+
+  /// Test/composition access to the backing store (not on the port).
+  AssistantAuditRepository get repository => _repository;
 
   /// Optional test hook to force append failures.
   bool Function(AssistantAuditEvent event)? failAppendIf;
@@ -21,10 +23,13 @@ class LocalAssistantAuditGateway implements AssistantAuditGateway {
     if (failAppendIf?.call(event) == true) {
       throw StateError('Forced audit append failure');
     }
-    return repository.append(event);
+    return _repository.append(event);
   }
 
   @override
   List<AssistantAuditEvent> query(AssistantAuditQuery query) =>
-      repository.query(query);
+      _repository.query(query);
+
+  @override
+  int matchCount(AssistantAuditQuery query) => _repository.matchCount(query);
 }

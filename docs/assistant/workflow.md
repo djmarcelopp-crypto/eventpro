@@ -93,6 +93,11 @@ Fluxo:
 
 `Definition → Command(by operationCode) → CommandResolver(→Capability) → Capability Resolver → ExecutionPlan`
 
+AR-002: `ExecutionPlan.toWorkflow()` **preserva** `commandExecutionNodes`,
+`resolvedCommands`, `capabilityExecutionNodes` e `resolvedCapabilities` no
+`AssistantWorkflow`. O executor **ainda não executa** esses nodes — apenas
+os disponibiliza no `AssistantWorkflowContext` inicial.
+
 ## Multimodal inputs (AI-020)
 
 Antes da interpretação, o intake pode passar pelo
@@ -108,6 +113,12 @@ Opt-in: Conversation → Memory → Context Builder → Execution Context
 antes da interpretação. Ver [context_engine.md](context_engine.md).
 Não altera execução de workflow/commands; apenas alimenta rastreabilidade
 e memória conversacional in-memory.
+
+## Gateway Intelligence (AI-022)
+
+Opt-in: descoberta de clientes/eventos/orçamentos/… via
+`AssistantGatewayIntelligence` antes do Intent/Command. Ver
+[gateway_intelligence.md](gateway_intelligence.md).
 
 ## Extensibilidade
 

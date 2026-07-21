@@ -17,27 +17,26 @@ import '../models/assistant_write_result.dart';
 import '../models/assistant_write_target.dart';
 
 /// Gateway that executes only Create Quote Draft via the write pipeline.
+///
+/// AR-002: [writeGateway] is injected at construction (DIP), not via the port.
 class LocalAssistantTransactionExecutionGateway
     implements AssistantTransactionExecutionGateway {
   LocalAssistantTransactionExecutionGateway({
     required AssistantWriteCoordinator writeCoordinator,
+    AssistantWriteGateway? writeGateway,
     DateTime Function()? clock,
   })  : _writeCoordinator = writeCoordinator,
+        _writeGateway = writeGateway,
         _clock = clock ?? DateTime.now;
 
   final AssistantWriteCoordinator _writeCoordinator;
+  final AssistantWriteGateway? _writeGateway;
   final DateTime Function() _clock;
 
   @override
   Future<AssistantTransactionExecutionResult> execute({
     required AssistantTransactionExecutionRequest request,
     required AssistantExecutionContext context,
-    required AssistantWriteGateway? writeGateway,
-    Future<AssistantWriteResult> Function({
-      required AssistantTransactionExecutionRequest request,
-      required AssistantExecutionContext context,
-      required AssistantWriteGateway? writeGateway,
-    })? writeExecutor,
   }) async {
     final now = _clock().toUtc();
 
@@ -59,40 +58,31 @@ class LocalAssistantTransactionExecutionGateway
       );
     }
 
-    final AssistantWriteResult writeResult;
-    if (writeExecutor != null) {
-      writeResult = await writeExecutor(
-        request: request,
-        context: context,
-        writeGateway: writeGateway,
-      );
-    } else {
-      final writeRequest = AssistantWriteRequest(
-        id: 'write-${request.requestId}-createQuote',
-        requestId: request.requestId,
-        operation: AssistantWriteOperation.create,
-        target: AssistantWriteTarget.quote,
-        capability: AssistantWriteCapability.createQuote,
-        relatedStepId: 'step-create-quote',
-        requestedState: AssistantWriteEntityState.draft,
-        idempotencyKey: request.idempotencyKey,
-        attributes: request.attributes,
-        authorization: const AssistantWriteAuthorization(
-          granted: true,
-          requiresUserConfirmation: true,
-          allowedCapabilities: {AssistantWriteCapability.createQuote},
-          reason: 'AI-014 transaction execution after safe confirmation',
-        ),
-      );
+    final writeRequest = AssistantWriteRequest(
+      id: 'write-${request.requestId}-createQuote',
+      requestId: request.requestId,
+      operation: AssistantWriteOperation.create,
+      target: AssistantWriteTarget.quote,
+      capability: AssistantWriteCapability.createQuote,
+      relatedStepId: 'step-create-quote',
+      requestedState: AssistantWriteEntityState.draft,
+      idempotencyKey: request.idempotencyKey,
+      attributes: request.attributes,
+      authorization: const AssistantWriteAuthorization(
+        granted: true,
+        requiresUserConfirmation: true,
+        allowedCapabilities: {AssistantWriteCapability.createQuote},
+        reason: 'AI-014 transaction execution after safe confirmation',
+      ),
+    );
 
-      final preparation = await _writeCoordinator.prepareAndMaybeExecute(
-        request: writeRequest,
-        context: context,
-        confirmationSatisfied: true,
-        writeGateway: writeGateway,
-      );
-      writeResult = preparation.writeResult;
-    }
+    final preparation = await _writeCoordinator.prepareAndMaybeExecute(
+      request: writeRequest,
+      context: context,
+      confirmationSatisfied: true,
+      writeGateway: _writeGateway,
+    );
+    final writeResult = preparation.writeResult;
 
     if (!writeResult.executed) {
       return AssistantTransactionExecutionResult(

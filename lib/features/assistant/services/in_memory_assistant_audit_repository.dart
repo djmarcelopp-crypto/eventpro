@@ -57,7 +57,7 @@ class InMemoryAssistantAuditRepository implements AssistantAuditRepository {
     return List.unmodifiable(list.sublist(0, limit));
   }
 
-  /// Full match count without applying limit.
+  @override
   int matchCount(AssistantAuditQuery query) => _match(query).length;
 
   List<AssistantAuditEvent> _match(AssistantAuditQuery query) {

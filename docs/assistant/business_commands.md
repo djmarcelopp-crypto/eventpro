@@ -32,6 +32,9 @@ Commands **não** declaram `capabilityId`.
 | `dependencyIndexes` | Ordens de commands produtores de deps |
 | `producedOutputs` | Keys de resultados declarados |
 
+AR-002: esses nodes permanecem no `AssistantWorkflow` / `WorkflowContext`
+durante a execução (sem serem executados ainda).
+
 ## Multimodal (AI-020)
 
 Commands/Capabilities recebem apenas conteúdo **já normalizado** (texto).

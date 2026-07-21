@@ -3,7 +3,6 @@ import '../domain/audit/assistant_audit_query.dart';
 import '../domain/audit/assistant_audit_query_service.dart';
 import '../domain/audit/assistant_audit_result.dart';
 import '../domain/audit/assistant_audit_warning.dart';
-import 'in_memory_assistant_audit_repository.dart';
 
 /// Applies filters + mandatory limit and returns an immutable result.
 class LocalAssistantAuditQueryService implements AssistantAuditQueryService {
@@ -25,10 +24,7 @@ class LocalAssistantAuditQueryService implements AssistantAuditQueryService {
     );
 
     final events = _gateway.query(effective);
-    final repo = _gateway.repository;
-    final totalMatched = repo is InMemoryAssistantAuditRepository
-        ? repo.matchCount(effective)
-        : events.length;
+    final totalMatched = _gateway.matchCount(effective);
 
     final warnings = <AssistantAuditWarning>[
       if (totalMatched > events.length)

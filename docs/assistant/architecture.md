@@ -4,38 +4,33 @@ Documentação mínima da fronteira do assistente (EPIC-001…005). Escopo restr
 
 ## Pipeline
 
+Ordem **real** em `LocalAssistantOrchestrator.handle()` (AR-002):
+
 ```
-Texto
+Request
+  → [opt] Multimodal Input Pipeline (AI-020)
+  → [opt] Context Engine (AI-021) — hints / memory (sem inventar sessionId)
+  → effectiveRequest  (única instância lógica daqui em diante)
   → Parser
-    → Intent (negócio / classificação)
-    → Drafts (event/quote)
-    → ResponseBuilder
-    → Execution Planner
-    → Module Consultant (leituras AI-003 / fixtures)
-    → Execution Validator / Confirmation Gate AI-004 / Dispatcher
-    → WriteIntentFactory + Write Coordinator (AI-005…007, isolado)
-    → Multimodal Input Pipeline (AI-020, opt-in) — AssistantInput → Normalized Text
-    → Context Engine (AI-021, opt-in) — Conversation → Memory → Execution Context
-    → Workflow Engine (AI-016…019) — Command(operationCode) → CommandResolver→Capability → ExecutionPlan
-         → Step Registry → Business Bridge → Gateway (stubs)
-    → Transaction Execution Planner/Gateway (AI-014 — Create Quote Draft only)
-         → valida confirmação → consome token → Write Pipeline → Result
-         → Orchestrator emite audit (AI-015)
-    → Safe Confirmation Planner (AI-013, isolado — lifecycle only)
-         → ConfirmationRequest → Session → Pending → Result → Formatter
-         → Orchestrator emite audit (AI-015)
-    → Audit Query AUDIT_STATUS (AI-015, isolado)
-         → QueryService → Formatter
-    → Action Intent Resolver + Planner (AI-012, isolado)
-         → ActionRequest → Gateway → LocalActionAdapter → Formatter
-    → Insight Intent Resolver + Planner (AI-011, isolado)
-         → InsightRequest → Gateway → Quote Insight Adapter → Formatter
-    → Conversation Planner (AI-010) + Read Planner (AI-009)
-         → ReadQuery → Gateway → Quote Read Adapter → Formatter
+  → [opt] Gateway Intelligence (AI-022) — entity candidates → hints
+  → Intent → Drafts → ResponseBuilder
+  → Execution Planner → Module Consultant → Dispatcher
+  → WriteIntentFactory (prepare)
+  → Workflow Engine (AI-016…019)
+       → ExecutionPlan → Workflow (+ planner metadata no context)
+       → Step Registry → Business Bridge → Gateway
+  → Transaction Execution (AI-014) — Create Quote Draft
+  → Safe Confirmation (AI-013)
+  → Audit Query (AI-015)
+  → Smart Action (AI-012)
+  → Insight (AI-011)
+  → Conversation AI-010 + Read (AI-009)
   → AssistantResponse
-       (… | auditResult | auditPresentation |
-        workflowResult | workflowPresentation | writeResult)
 ```
+
+`effectiveRequest` é a única fonte consumida por specialty paths (AR-002 / C1).
+Identidade conversacional: `AssistantTurnIdentity` (sessionId / conversationId /
+correlationId) — AR-002 / C2–C3.
 
 Pipelines posteriores são pulados quando um anterior já atendeu o turno
 (workflow → transaction execution → confirmation → audit → action → insight → conversation/read).
@@ -62,6 +57,7 @@ Ver também:
 - [business_commands.md](business_commands.md)
 - [multimodal_inputs.md](multimodal_inputs.md)
 - [context_engine.md](context_engine.md)
+- [gateway_intelligence.md](gateway_intelligence.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -93,11 +89,15 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AI-019 | **Business command engine** — registry/resolver + planner integration |
 | AI-020 | **Multimodal input engine** — contracts/normalizer/pipeline (sem OCR/STT) |
 | AI-021 | **Context engine** — conversation memory + execution context (sem LLM/Drift) |
+| AR-002 | **Stabilization** — effectiveRequest, TurnIdentity, plan metadata, DIP ports |
+| AI-022 | **Gateway intelligence** — entity discovery via gateway composition (sem LLM/HTTP) |
 
 Production write continua **default deny**. AI-016…019 não duplicam pipelines
 nem regras de módulo; commands/capabilities são declarativos e o Gateway só entra na execução.
 AI-020 adiciona intake multimodal opt-in sem motores reais de mídia.
 AI-021 adiciona contexto conversacional in-memory opt-in, sem memória permanente.
+AR-002 estabiliza wiring do orchestrator sem novas funcionalidades.
+AI-022 adiciona descoberta de entidades opt-in sobre gateways locais.
 
 ## Defaults
 

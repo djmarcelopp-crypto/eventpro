@@ -8,6 +8,22 @@ Camada responsável pelo **contexto conversacional** do Assistente.
 Complementa (não substitui) o Conversation Context de leituras de orçamento
 ([conversation-context.md](conversation-context.md) — AI-010).
 
+## Ownership (AR-002)
+
+| Concern | Owner | Escreve | Lê |
+|---------|-------|---------|-----|
+| `sessionId` / `correlationId` | `AssistantTurnIdentity` em `effectiveRequest` | Caller / intake | Todos os pipelines |
+| Quote-read follow-ups | AI-010 SessionRegistry | Planner após read OK | AI-010 / smart actions |
+| Turns / summary / cmd-cap labels | AI-021 ConversationMemory | Context pipeline (opt-in) | Context Builder / hints |
+| Confirmation pending | ConfirmationSessionRegistry | Confirmation planner | TX |
+
+Regras:
+
+- AI-010 **não** escreve memória AI-021.
+- AI-021 **não** escreve `AssistantConversationContext` (AI-010).
+- AI-021 **não inventa** `sessionId` para forçar sessão AI-010; usa
+  `req:{requestId}` só como `conversationId` interno quando não há sessão.
+
 ## Arquitetura
 
 ```

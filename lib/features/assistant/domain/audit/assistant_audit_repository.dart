@@ -11,6 +11,9 @@ abstract class AssistantAuditRepository {
   /// Chronological query (ascending by sequence / timestamp).
   List<AssistantAuditEvent> query(AssistantAuditQuery query);
 
+  /// Full match count without applying [AssistantAuditQuery.limit].
+  int matchCount(AssistantAuditQuery query);
+
   int countBySession(String sessionId);
 
   int countByCorrelation(String correlationId);

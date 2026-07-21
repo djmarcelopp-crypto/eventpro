@@ -80,6 +80,9 @@ class AssistantWorkflowExecutionPlan {
   }
 
   /// Compatibility bridge to the existing orchestrator/executor type.
+  ///
+  /// AR-002: preserves Command/Capability planner metadata on the workflow so
+  /// execution can observe them without running the nodes.
   AssistantWorkflow toWorkflow() {
     return AssistantWorkflow(
       id: id,
@@ -87,6 +90,10 @@ class AssistantWorkflowExecutionPlan {
       recipe: definitionId,
       steps: steps,
       metadata: metadata,
+      resolvedCapabilities: resolvedCapabilities,
+      capabilityExecutionNodes: executionNodes,
+      resolvedCommands: resolvedCommands,
+      commandExecutionNodes: commandExecutionNodes,
     );
   }
 

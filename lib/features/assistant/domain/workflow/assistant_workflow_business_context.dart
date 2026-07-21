@@ -1,6 +1,7 @@
 import '../business/assistant_business_reference.dart';
 import '../business/assistant_business_result.dart';
 import '../business/capabilities/assistant_business_capability_resolution.dart';
+import '../business/capabilities/capability_execution_node.dart';
 import '../business/commands/assistant_business_command_resolution.dart';
 import '../business/commands/command_execution_node.dart';
 import 'assistant_workflow_context.dart';
@@ -21,6 +22,7 @@ abstract final class AssistantWorkflowBusinessKeys {
 
   static const resolvedCommands = 'resolvedCommands';
   static const commandExecutionNodes = 'commandExecutionNodes';
+  static const capabilityExecutionNodes = 'capabilityExecutionNodes';
 }
 
 /// Typed accessors for business references on [AssistantWorkflowContext].
@@ -96,6 +98,13 @@ extension AssistantWorkflowBusinessContext on AssistantWorkflowContext {
     return const [];
   }
 
+  List<CapabilityExecutionNode> get capabilityExecutionNodes {
+    final v = this[AssistantWorkflowBusinessKeys.capabilityExecutionNodes];
+    if (v is List<CapabilityExecutionNode>) return v;
+    if (v is List) return v.whereType<CapabilityExecutionNode>().toList();
+    return const [];
+  }
+
   AssistantWorkflowContext withClientReference(ClientReference reference) =>
       put(AssistantWorkflowBusinessKeys.clientReference, reference);
 
@@ -152,5 +161,13 @@ extension AssistantWorkflowBusinessContext on AssistantWorkflowContext {
       put(
         AssistantWorkflowBusinessKeys.commandExecutionNodes,
         List<CommandExecutionNode>.unmodifiable(nodes),
+      );
+
+  AssistantWorkflowContext withCapabilityExecutionNodes(
+    List<CapabilityExecutionNode> nodes,
+  ) =>
+      put(
+        AssistantWorkflowBusinessKeys.capabilityExecutionNodes,
+        List<CapabilityExecutionNode>.unmodifiable(nodes),
       );
 }

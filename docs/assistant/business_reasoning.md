@@ -76,3 +76,9 @@ Persistent Memory Engine (opt-in), sem NLP. Ver
 [persistent_memory.md](persistent_memory.md).
 Business Reasoning continua avaliando fatos estruturados; a memória não
 substitui o motor de regras.
+
+## Model Provider (AI-025)
+
+Após o raciocínio de negócio, o orchestrator pode consultar a abstração de
+Model Provider (opt-in, mock local). Ver [model_provider.md](model_provider.md).
+Não substitui Business Reasoning e não integra vendors.

@@ -15,6 +15,7 @@ Request
   → [opt] Gateway Intelligence (AI-022) — entity candidates → hints
   → Intent
   → [opt] Business Reasoning (AI-023) — regras ERP → decision/suggestions
+  → [opt] Model Provider (AI-025) — abstração + mock local (sem vendor)
   → Drafts → ResponseBuilder
   → Execution Planner → Module Consultant → Dispatcher
   → WriteIntentFactory (prepare)
@@ -62,6 +63,8 @@ Ver também:
 - [gateway_intelligence.md](gateway_intelligence.md)
 - [business_reasoning.md](business_reasoning.md)
 - [persistent_memory.md](persistent_memory.md)
+- [model_provider.md](model_provider.md)
+- [assistant.md](assistant.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
 
@@ -97,6 +100,7 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AI-022 | **Gateway intelligence** — entity discovery via gateway composition (sem LLM/HTTP) |
 | AI-023 | **Business reasoning** — deterministic ERP rules / explainability (sem LLM/NLP) |
 | AI-024 | **Persistent memory** — operational in-memory memory + policies (sem vector/LLM) |
+| AI-025 | **Model provider abstraction** — port/registry/mock (sem OpenAI/Gemini/Claude/HTTP) |
 
 Production write continua **default deny**. AI-016…019 não duplicam pipelines
 nem regras de módulo; commands/capabilities são declarativos e o Gateway só entra na execução.
@@ -106,6 +110,7 @@ AR-002 estabiliza wiring do orchestrator sem novas funcionalidades.
 AI-022 adiciona descoberta de entidades opt-in sobre gateways locais.
 AI-023 adiciona raciocínio de regras de negócio opt-in e explicável.
 AI-024 adiciona memória operacional in-memory opt-in (não é memória de modelo).
+AI-025 adiciona abstração de providers + mock local (sem vendors / HTTP / SDKs).
 
 ## Defaults
 
@@ -115,6 +120,7 @@ AI-024 adiciona memória operacional in-memory opt-in (não é memória de model
   `localSafeConfirmation()` / `localTransactionExecution()` /
   `localAuditTrail()` / `localWorkflow()` / `localBusinessWorkflow()` → opt-in progressivo
 - `localPersistentMemory()` → Context Engine + Persistent Memory (AI-024)
+- `localModelProvider()` → Model Provider mock (AI-025)
 
 ## Dependência
 

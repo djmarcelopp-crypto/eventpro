@@ -59,6 +59,7 @@ class AssistantCapabilities {
     this.canUseModelProvider = false,
     this.canUseVisionEngine = false,
     this.canUseVoiceEngine = false,
+    this.canUseToolFramework = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -128,6 +129,9 @@ class AssistantCapabilities {
 
   /// Opt-in Voice Engine (AI-027) — structured audio facts, no real STT/TTS.
   final bool canUseVoiceEngine;
+
+  /// Opt-in Tool Calling Framework (AI-028) — mock tools only, no real side effects.
+  final bool canUseToolFramework;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -322,6 +326,12 @@ class AssistantCapabilities {
         canUseVoiceEngine: true,
       );
 
+  /// Tool Calling Framework (AI-028) — registry/router/mock executor only.
+  factory AssistantCapabilities.localToolFramework() =>
+      const AssistantCapabilities(
+        canUseToolFramework: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -392,6 +402,7 @@ class AssistantCapabilities {
     bool? canUseModelProvider,
     bool? canUseVisionEngine,
     bool? canUseVoiceEngine,
+    bool? canUseToolFramework,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -468,6 +479,8 @@ class AssistantCapabilities {
       canUseVisionEngine:
           canUseVisionEngine ?? this.canUseVisionEngine,
       canUseVoiceEngine: canUseVoiceEngine ?? this.canUseVoiceEngine,
+      canUseToolFramework:
+          canUseToolFramework ?? this.canUseToolFramework,
     );
   }
 
@@ -521,7 +534,8 @@ class AssistantCapabilities {
             other.canUsePersistentMemory == canUsePersistentMemory &&
             other.canUseModelProvider == canUseModelProvider &&
             other.canUseVisionEngine == canUseVisionEngine &&
-            other.canUseVoiceEngine == canUseVoiceEngine;
+            other.canUseVoiceEngine == canUseVoiceEngine &&
+            other.canUseToolFramework == canUseToolFramework;
   }
 
   @override
@@ -571,5 +585,6 @@ class AssistantCapabilities {
         canUseModelProvider,
         canUseVisionEngine,
         canUseVoiceEngine,
+        canUseToolFramework,
       ]);
 }

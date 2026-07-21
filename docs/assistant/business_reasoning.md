@@ -95,3 +95,10 @@ Voice gera sinais de áudio (cliente/evento/pagamento mencionados).
 Business Reasoning interpreta. Voice **nunca** cria entidades nem executa.
 Ver [voice_engine.md](voice_engine.md).
 **Voice produz fatos. Business Reasoning interpreta. Workflow executa.**
+
+## Tool Framework (AI-028)
+
+Após Business Reasoning, o Tool Framework pode selecionar/mock-executar
+ferramentas (findCustomer, …). **Não** executa lógica de negócio.
+Business Reasoning decide; Tool Framework disponibiliza capacidades.
+Ver [tool_framework.md](tool_framework.md).

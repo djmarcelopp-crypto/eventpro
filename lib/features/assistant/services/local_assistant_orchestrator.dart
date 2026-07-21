@@ -27,6 +27,9 @@ import '../domain/insight/assistant_insight_formatter.dart';
 import '../domain/insight/assistant_insight_gateway.dart';
 import '../domain/insight/assistant_insight_planner.dart';
 import '../domain/input/assistant_input_pipeline.dart';
+import '../domain/context/assistant_context_pipeline.dart';
+import '../domain/context/assistant_conversation_id.dart';
+import '../domain/context/assistant_conversation_metadata.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -102,6 +105,7 @@ import 'local_assistant_insight_formatter.dart';
 import 'local_assistant_insight_intent_resolver.dart';
 import 'local_assistant_insight_planner.dart';
 import 'local_assistant_input_pipeline.dart';
+import 'local_assistant_context_pipeline.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_assistant_read_formatter.dart';
@@ -172,6 +176,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantWorkflowFormatter? workflowFormatter,
     AssistantBusinessGateway? businessGateway,
     AssistantInputPipeline? inputPipeline,
+    AssistantContextPipeline? contextPipeline,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -182,6 +187,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             LocalAssistantActionGateway(clock: clock),
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _inputPipeline = inputPipeline ?? LocalAssistantInputPipeline(),
+        _contextPipeline = contextPipeline ?? LocalAssistantContextPipeline(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
         _parser = parser ?? LocalAssistantParser(clock: clock),
@@ -295,6 +301,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   final AssistantCapabilities _capabilities;
   final AssistantInputPipeline _inputPipeline;
+  final AssistantContextPipeline _contextPipeline;
   final AssistantExecutionMode _executionMode;
   final Set<String> _confirmedStepIds;
   final DateTime Function() _clock;
@@ -372,6 +379,45 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           ),
         );
       }
+    }
+
+    if (_capabilities.canUseContextEngine) {
+      final sessionId = workingRequest.context?.sessionId;
+      final conversationId = AssistantConversationId(
+        (sessionId != null && sessionId.isNotEmpty)
+            ? sessionId
+            : 'req:${workingRequest.id}',
+      );
+      final contextResult = _contextPipeline.run(
+        AssistantContextPipelineRequest(
+          conversationId: conversationId,
+          requestId: workingRequest.id,
+          now: _clock(),
+          metadata: AssistantConversationMetadata(
+            sessionId: sessionId,
+            locale: workingRequest.locale,
+            timezone: workingRequest.timezone,
+            origin: workingRequest.origin.name,
+            correlationId: workingRequest.id,
+          ),
+          correlationId: workingRequest.id,
+          normalizedInputText: workingRequest.rawText,
+          autoSummarize: false,
+          commitTurn: false,
+        ),
+      );
+      final hints = <String>[
+        ...?workingRequest.context?.hints,
+        ...contextResult.executionContext.traceHints,
+        if (contextResult.conversation.summary.text.isNotEmpty)
+          'summary:${contextResult.conversation.summary.text}',
+      ];
+      workingRequest = workingRequest.copyWith(
+        context: (workingRequest.context ?? const AssistantContext()).copyWith(
+          hints: hints,
+          sessionId: sessionId ?? conversationId.value,
+        ),
+      );
     }
 
     final parseResult = _parser.parse(workingRequest);

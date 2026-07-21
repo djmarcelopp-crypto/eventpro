@@ -88,6 +88,12 @@ Capabilities e Commands só recebem conteúdo **já normalizado** (texto ready).
 Entradas de imagem/áudio/documento sem processor **não** chegam como texto
 vazio ao Capability Resolver. Ver [multimodal_inputs.md](multimodal_inputs.md).
 
+## Context Engine (AI-021)
+
+Capabilities resolvidas em turnos anteriores podem constar na memória
+conversacional (IDs), sem reexecução automática. Ver
+[context_engine.md](context_engine.md).
+
 ## Limitações
 
 - Sem Drift / HTTP / LLM / persistência

@@ -17,6 +17,7 @@ Request
   → [opt] Gateway Intelligence (AI-022) — entity candidates → hints
   → Intent
   → [opt] Business Reasoning (AI-023) — regras ERP → decision/suggestions
+  → [opt] Tool Framework (AI-028) — mock tools (sem side effects reais)
   → [opt] Model Provider (AI-025) — abstração + mock local (sem vendor)
   → Drafts → ResponseBuilder
   → Execution Planner → Module Consultant → Dispatcher
@@ -68,6 +69,7 @@ Ver também:
 - [model_provider.md](model_provider.md)
 - [vision_engine.md](vision_engine.md)
 - [voice_engine.md](voice_engine.md)
+- [tool_framework.md](tool_framework.md)
 - [assistant.md](assistant.md)
 
 O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e dependem dos contratos do assistente.
@@ -107,6 +109,7 @@ O assistente **não** importa DAOs/Drift. Adapters vivem no módulo ERP e depend
 | AI-025 | **Model provider abstraction** — port/registry/mock (sem OpenAI/Gemini/Claude/HTTP) |
 | AI-026 | **Vision engine** — structured visual facts + mock (sem OCR/vendors/HTTP) |
 | AI-027 | **Voice engine** — structured audio facts + mock (sem STT/TTS/vendors/HTTP) |
+| AI-028 | **Tool calling framework** — registry/router/mock tools (sem side effects) |
 
 Production write continua **default deny**. AI-016…019 não duplicam pipelines
 nem regras de módulo; commands/capabilities são declarativos e o Gateway só entra na execução.
@@ -119,6 +122,7 @@ AI-024 adiciona memória operacional in-memory opt-in (não é memória de model
 AI-025 adiciona abstração de providers + mock local (sem vendors / HTTP / SDKs).
 AI-026 adiciona Vision Engine opt-in (fatos estruturados; Business Reasoning decide).
 AI-027 adiciona Voice Engine opt-in (fatos de áudio; Business Reasoning interpreta).
+AI-028 adiciona Tool Framework opt-in (capacidades mock; Business Reasoning decide).
 
 ## Defaults
 
@@ -131,6 +135,7 @@ AI-027 adiciona Voice Engine opt-in (fatos de áudio; Business Reasoning interpr
 - `localModelProvider()` → Model Provider mock (AI-025)
 - `localVisionEngine()` → Vision Engine mock (AI-026)
 - `localVoiceEngine()` → Voice Engine mock (AI-027)
+- `localToolFramework()` → Tool Framework mock (AI-028)
 
 ## Dependência
 

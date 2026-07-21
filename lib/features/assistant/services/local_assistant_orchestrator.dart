@@ -52,6 +52,9 @@ import '../domain/voice/assistant_audio_core.dart';
 import '../domain/voice/assistant_audio_result.dart';
 import '../domain/voice/assistant_audio_types.dart';
 import '../domain/voice/assistant_voice_port.dart';
+import '../domain/tools/assistant_tool_port.dart';
+import '../domain/tools/assistant_tool_request.dart';
+import '../domain/tools/assistant_tool_types.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -139,6 +142,8 @@ import 'local_assistant_provider_registry.dart';
 import 'local_assistant_provider_selector.dart';
 import 'local_assistant_vision_router.dart';
 import 'local_assistant_voice_router.dart';
+import 'local_assistant_tool_registry.dart';
+import 'local_assistant_tool_router.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_mock_model_provider.dart';
 import 'local_mock_vision_engine.dart';
@@ -217,6 +222,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantProviderSelector? providerSelector,
     AssistantVisionRouter? visionRouter,
     AssistantVoiceRouter? voiceRouter,
+    AssistantToolRegistry? toolRegistry,
+    AssistantToolRouter? toolRouter,
     AssistantGatewayIntelligence? gatewayIntelligence,
     AssistantBusinessReasoning? businessReasoning,
     this._executionMode = AssistantExecutionMode.dryRun,
@@ -270,6 +277,11 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
                     return router;
                   }()
                 : LocalAssistantVoiceRouter()),
+        _toolRegistry = toolRegistry ??
+            ((capabilities ?? const AssistantCapabilities()).canUseToolFramework
+                ? LocalAssistantToolRegistry.withMockDefaults(clock: clock)
+                : LocalAssistantToolRegistry()),
+        _toolRouter = toolRouter ?? const LocalAssistantToolRouter(),
         _gatewayIntelligence = gatewayIntelligence ??
             LocalAssistantGatewayIntelligence(gateway: gateway),
         _businessReasoning =
@@ -398,6 +410,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantProviderSelector _providerSelector;
   final AssistantVisionRouter _visionRouter;
   final AssistantVoiceRouter _voiceRouter;
+  final AssistantToolRegistry _toolRegistry;
+  final AssistantToolRouter _toolRouter;
   final AssistantGatewayIntelligence _gatewayIntelligence;
   final AssistantBusinessReasoning _businessReasoning;
   final AssistantExecutionMode _executionMode;
@@ -678,6 +692,25 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           hints: hints,
         ),
       );
+    }
+
+    if (_capabilities.canUseToolFramework) {
+      // AI-028: tool framework — mock execution only, no real side effects.
+      final toolHints = await _runToolFrameworkHints(
+        request: effectiveRequest,
+        intentLabel: primary.type.name,
+      );
+      if (toolHints.isNotEmpty) {
+        effectiveRequest = effectiveRequest.copyWith(
+          context:
+              (effectiveRequest.context ?? const AssistantContext()).copyWith(
+            hints: [
+              ...?effectiveRequest.context?.hints,
+              ...toolHints,
+            ],
+          ),
+        );
+      }
     }
 
     if (_capabilities.canUseModelProvider) {
@@ -1256,6 +1289,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   AssistantVoiceRouter get voiceRouter => _voiceRouter;
 
+  AssistantToolRegistry get toolRegistry => _toolRegistry;
+
   AssistantConversationSessionRegistry get conversationSessions =>
       _conversationSessions;
 
@@ -1544,6 +1579,94 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       return AssistantAudioType.voice;
     }
     return AssistantAudioType.unknown;
+  }
+
+  /// Selects and (mock-)executes at most one tool for architecture validation.
+  Future<List<String>> _runToolFrameworkHints({
+    required AssistantRequest request,
+    required String intentLabel,
+  }) async {
+    final identity = AssistantTurnIdentity.resolve(request);
+    final capability = _inferToolCapability(request.rawText);
+    final selection = _toolRouter.select(
+      registry: _toolRegistry,
+      criteria: AssistantToolSelectionCriteria(
+        capability: capability,
+        maxRisk: AssistantToolRisk.medium,
+        contextHints: [
+          if (capability != null) capability.name,
+          ...?request.context?.hints,
+        ],
+        allowFallback: true,
+      ),
+    );
+    if (selection == null) {
+      return const ['toolFramework:none'];
+    }
+
+    final args = <String, String>{
+      if (selection.tool.parameters.any((p) => p.name == 'query'))
+        'query': request.rawText,
+      if (selection.tool.parameters.any((p) => p.name == 'text'))
+        'text': request.rawText,
+      if (selection.tool.parameters.any((p) => p.name == 'workflowId'))
+        'workflowId': 'wf-mock-1',
+    };
+
+    final response = await selection.port.execute(
+      AssistantToolRequest(
+        toolId: selection.tool.id,
+        arguments: args,
+        requestedCapability: capability,
+        context: AssistantToolExecutionContext(
+          correlationId: identity.correlationId,
+          sessionId: identity.sessionId,
+          requestId: request.id,
+          locale: request.locale,
+          intentLabel: intentLabel,
+          hints: request.context?.hints ?? const [],
+        ),
+      ),
+    );
+
+    return [
+      'toolFramework:${selection.tool.id.value}',
+      'toolReason:${selection.reason}',
+      'toolStatus:${response.result.status.name}',
+      'toolRisk:${selection.tool.policy.risk.name}',
+      if (response.result.message != null)
+        'toolMessage:${response.result.message}',
+      if (response.result.error != null)
+        'toolError:${response.result.error!.code.name}',
+    ];
+  }
+
+  AssistantToolCapability? _inferToolCapability(String text) {
+    final lower = text.toLowerCase();
+    if (lower.contains('cliente') || lower.contains('customer')) {
+      return AssistantToolCapability.findCustomer;
+    }
+    if (lower.contains('evento') || lower.contains('event')) {
+      return AssistantToolCapability.findEvent;
+    }
+    if (lower.contains('orcamento') ||
+        lower.contains('orçamento') ||
+        lower.contains('quote')) {
+      return AssistantToolCapability.findQuote;
+    }
+    if (lower.contains('contrato') || lower.contains('contract')) {
+      return AssistantToolCapability.findContract;
+    }
+    if (lower.contains('fornecedor') || lower.contains('supplier')) {
+      return AssistantToolCapability.findSupplier;
+    }
+    if (lower.contains('lembrete') || lower.contains('reminder')) {
+      return AssistantToolCapability.createReminder;
+    }
+    if (lower.contains('workflow')) {
+      return AssistantToolCapability.openWorkflow;
+    }
+    return null;
   }
 
   BusinessReasoningRequest _buildBusinessReasoningRequest({

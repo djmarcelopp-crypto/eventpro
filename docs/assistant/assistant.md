@@ -10,6 +10,7 @@ controlada sobre o ERP EventPRO. Produção write permanece **default deny**.
 - Dependência de **domínio / ports**, nunca de vendors externos
 - Opt-in progressivo via `AssistantCapabilities`
 - Sem LLM/STT/TTS/OCR real nesta fase (abstrações + mocks locais)
+- Tool Framework (AI-028) **não** executa lógica de negócio
 - `schemaVersion` atual: **12** (sem migrations nestes sprints)
 
 ## Pipeline (resumo)
@@ -24,6 +25,7 @@ Request
   → [opt] Gateway Intelligence (AI-022)
   → Intent
   → [opt] Business Reasoning (AI-023)
+  → [opt] Tool Framework (AI-028)
   → [opt] Model Provider (AI-025)
   → Drafts / Planner / Workflow / TX / Confirmation / Audit / …
   → AssistantResponse
@@ -34,6 +36,7 @@ Request
 | Doc | Tema |
 |-----|------|
 | [architecture.md](architecture.md) | Pipeline e camadas |
+| [tool_framework.md](tool_framework.md) | Tool Calling Framework (AI-028) |
 | [voice_engine.md](voice_engine.md) | Voice Engine (AI-027) |
 | [vision_engine.md](vision_engine.md) | Vision Engine (AI-026) |
 | [model_provider.md](model_provider.md) | Abstração de providers (AI-025) |
@@ -51,3 +54,4 @@ Request
 - `localModelProvider()` — mock local apenas
 - `localVisionEngine()` — fatos visuais estruturados (mock)
 - `localVoiceEngine()` — fatos de áudio estruturados (mock)
+- `localToolFramework()` — ferramentas mock (sem side effects)

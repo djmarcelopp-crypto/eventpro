@@ -125,6 +125,12 @@ Opt-in: descoberta de clientes/eventos/orçamentos/… via
 Opt-in: avaliação determinística de fatos/regras ERP após Intent/GI.
 Ver [business_reasoning.md](business_reasoning.md).
 
+## Tool Framework (AI-028)
+
+Opt-in: disponibiliza capacidades via registry/router/mock — **não** executa
+lógica de negócio nem mutações. Ver [tool_framework.md](tool_framework.md).
+Business Reasoning decide; Tool Framework apenas oferece ferramentas.
+
 ## Persistent Memory (AI-024)
 
 Opt-in: memória operacional in-memory entre Conversation e Context Builder.

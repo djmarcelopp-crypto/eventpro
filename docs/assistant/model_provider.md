@@ -106,3 +106,10 @@ Vision ≠ Model Provider ≠ Business Reasoning.
 Model Provider **não** faz STT/TTS. Voice Engine produz fatos de áudio —
 ver [voice_engine.md](voice_engine.md).
 Voice produz fatos. Business Reasoning interpreta. Workflow executa.
+
+## Tool Framework (AI-028)
+
+Model Provider **não** invoca ferramentas ERP. Tool Framework (registry +
+mock) disponibiliza capacidades sem side effects reais — ver
+[tool_framework.md](tool_framework.md).
+Business Reasoning decide; Tool Framework apenas expõe tools.

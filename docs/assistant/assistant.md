@@ -9,7 +9,7 @@ controlada sobre o ERP EventPRO. Produção write permanece **default deny**.
 
 - Dependência de **domínio / ports**, nunca de vendors externos
 - Opt-in progressivo via `AssistantCapabilities`
-- Sem LLM real nesta fase (AI-025 = abstração + mock local)
+- Sem LLM/STT/TTS/OCR real nesta fase (abstrações + mocks locais)
 - `schemaVersion` atual: **12** (sem migrations nestes sprints)
 
 ## Pipeline (resumo)
@@ -18,6 +18,7 @@ controlada sobre o ERP EventPRO. Produção write permanece **default deny**.
 Request
   → [opt] Multimodal (AI-020)
   → [opt] Vision (AI-026)
+  → [opt] Voice (AI-027)
   → [opt] Context Engine (AI-021) + Persistent Memory (AI-024)
   → Parser
   → [opt] Gateway Intelligence (AI-022)
@@ -33,6 +34,7 @@ Request
 | Doc | Tema |
 |-----|------|
 | [architecture.md](architecture.md) | Pipeline e camadas |
+| [voice_engine.md](voice_engine.md) | Voice Engine (AI-027) |
 | [vision_engine.md](vision_engine.md) | Vision Engine (AI-026) |
 | [model_provider.md](model_provider.md) | Abstração de providers (AI-025) |
 | [persistent_memory.md](persistent_memory.md) | Memória operacional (AI-024) |
@@ -48,3 +50,4 @@ Request
 - `localGatewayIntelligence()` / `localBusinessReasoning()`
 - `localModelProvider()` — mock local apenas
 - `localVisionEngine()` — fatos visuais estruturados (mock)
+- `localVoiceEngine()` — fatos de áudio estruturados (mock)

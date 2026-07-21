@@ -58,6 +58,7 @@ class AssistantCapabilities {
     this.canUsePersistentMemory = false,
     this.canUseModelProvider = false,
     this.canUseVisionEngine = false,
+    this.canUseVoiceEngine = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -124,6 +125,9 @@ class AssistantCapabilities {
 
   /// Opt-in Vision Engine (AI-026) — structured facts only, no real OCR/vendors.
   final bool canUseVisionEngine;
+
+  /// Opt-in Voice Engine (AI-027) — structured audio facts, no real STT/TTS.
+  final bool canUseVoiceEngine;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -312,6 +316,12 @@ class AssistantCapabilities {
         canUseVisionEngine: true,
       );
 
+  /// Voice Engine (AI-027) — structured audio facts via local mock.
+  factory AssistantCapabilities.localVoiceEngine() =>
+      const AssistantCapabilities(
+        canUseVoiceEngine: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -381,6 +391,7 @@ class AssistantCapabilities {
     bool? canUsePersistentMemory,
     bool? canUseModelProvider,
     bool? canUseVisionEngine,
+    bool? canUseVoiceEngine,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -456,6 +467,7 @@ class AssistantCapabilities {
           canUseModelProvider ?? this.canUseModelProvider,
       canUseVisionEngine:
           canUseVisionEngine ?? this.canUseVisionEngine,
+      canUseVoiceEngine: canUseVoiceEngine ?? this.canUseVoiceEngine,
     );
   }
 
@@ -508,7 +520,8 @@ class AssistantCapabilities {
             other.canUseBusinessReasoning == canUseBusinessReasoning &&
             other.canUsePersistentMemory == canUsePersistentMemory &&
             other.canUseModelProvider == canUseModelProvider &&
-            other.canUseVisionEngine == canUseVisionEngine;
+            other.canUseVisionEngine == canUseVisionEngine &&
+            other.canUseVoiceEngine == canUseVoiceEngine;
   }
 
   @override
@@ -557,5 +570,6 @@ class AssistantCapabilities {
         canUsePersistentMemory,
         canUseModelProvider,
         canUseVisionEngine,
+        canUseVoiceEngine,
       ]);
 }

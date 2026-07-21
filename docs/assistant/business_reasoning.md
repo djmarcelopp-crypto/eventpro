@@ -88,3 +88,10 @@ Não substitui Business Reasoning e não integra vendors.
 Vision (antes do Context/Intent) gera **sinais/fatos** (ex.: parece contrato).
 Business Reasoning consome fatos estruturados e decide. Vision **nunca**
 executa. Ver [vision_engine.md](vision_engine.md).
+
+## Voice Engine (AI-027)
+
+Voice gera sinais de áudio (cliente/evento/pagamento mencionados).
+Business Reasoning interpreta. Voice **nunca** cria entidades nem executa.
+Ver [voice_engine.md](voice_engine.md).
+**Voice produz fatos. Business Reasoning interpreta. Workflow executa.**

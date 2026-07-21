@@ -18,6 +18,7 @@ class AssistantContextBuildRequest {
     this.executionPlanId,
     this.entityRefs = const [],
     this.pendingTurn,
+    this.persistentMemoryHints = const [],
   });
 
   final AssistantConversation conversation;
@@ -35,6 +36,9 @@ class AssistantContextBuildRequest {
 
   /// Optional turn being prepared (not yet committed to memory).
   final AssistantConversationTurn? pendingTurn;
+
+  /// Opt-in hints from Persistent Memory Engine (AI-024). Empty by default.
+  final List<String> persistentMemoryHints;
 }
 
 /// Builds [AssistantConversationExecutionContext] without executing anything.

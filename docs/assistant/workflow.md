@@ -125,6 +125,12 @@ Opt-in: descoberta de clientes/eventos/orçamentos/… via
 Opt-in: avaliação determinística de fatos/regras ERP após Intent/GI.
 Ver [business_reasoning.md](business_reasoning.md).
 
+## Persistent Memory (AI-024)
+
+Opt-in: memória operacional in-memory entre Conversation e Context Builder.
+Ver [persistent_memory.md](persistent_memory.md). Não altera execução de
+workflow; apenas alimenta hints estruturados.
+
 ## Extensibilidade
 
 1. Registrar `WorkflowDefinition` no definition registry.

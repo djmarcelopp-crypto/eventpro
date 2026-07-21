@@ -68,3 +68,11 @@ Orchestrator injeta hints `businessReasoning:*` / `brSuggestion:*` /
 - Sem LLM / NLP / HTTP / Drift
 - `schemaVersion` = **12**
 - Fatos devem ser fornecidos estruturados (não extrai NLP sozinho)
+
+## Persistent Memory (AI-024)
+
+Decisões / capabilities / entidades recentes podem ser **lembradas** via
+Persistent Memory Engine (opt-in), sem NLP. Ver
+[persistent_memory.md](persistent_memory.md).
+Business Reasoning continua avaliando fatos estruturados; a memória não
+substitui o motor de regras.

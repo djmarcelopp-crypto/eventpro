@@ -38,6 +38,8 @@ import '../domain/context/assistant_context_pipeline.dart';
 import '../domain/context/assistant_conversation_id.dart';
 import '../domain/context/assistant_conversation_metadata.dart';
 import '../domain/context/assistant_turn_identity.dart';
+import '../domain/memory/assistant_memory_keys.dart';
+import '../domain/memory/assistant_memory_search.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -120,6 +122,7 @@ import 'local_assistant_context_pipeline.dart';
 import 'local_assistant_business_reasoning.dart';
 import 'local_assistant_gateway_intelligence.dart';
 import 'local_assistant_intent_classifier.dart';
+import 'local_assistant_persistent_memory.dart';
 import 'local_assistant_read_coordinator.dart';
 import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
@@ -190,6 +193,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantBusinessGateway? businessGateway,
     AssistantInputPipeline? inputPipeline,
     AssistantContextPipeline? contextPipeline,
+    LocalAssistantPersistentMemory? persistentMemory,
     AssistantGatewayIntelligence? gatewayIntelligence,
     AssistantBusinessReasoning? businessReasoning,
     this._executionMode = AssistantExecutionMode.dryRun,
@@ -202,7 +206,11 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             LocalAssistantActionGateway(clock: clock),
         _capabilities = capabilities ?? AssistantCapabilities.localDefaults(),
         _inputPipeline = inputPipeline ?? LocalAssistantInputPipeline(),
-        _contextPipeline = contextPipeline ?? LocalAssistantContextPipeline(),
+        _persistentMemory = persistentMemory ??
+            ((capabilities ?? const AssistantCapabilities())
+                    .canUsePersistentMemory
+                ? LocalAssistantPersistentMemory(clock: clock)
+                : null),
         _gatewayIntelligence = gatewayIntelligence ??
             LocalAssistantGatewayIntelligence(gateway: gateway),
         _businessReasoning =
@@ -291,6 +299,10 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
             workflowPlanner ?? LocalAssistantWorkflowPlanner(clock: clock),
         _workflowFormatter =
             workflowFormatter ?? const LocalAssistantWorkflowFormatter() {
+    _contextPipeline = contextPipeline ??
+        LocalAssistantContextPipeline(
+          persistentMemory: _persistentMemory,
+        );
     _resolvedTransactionExecutionGateway = transactionExecutionGateway ??
         LocalAssistantTransactionExecutionGateway(
           writeCoordinator: _writeCoordinator,
@@ -321,7 +333,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
 
   final AssistantCapabilities _capabilities;
   final AssistantInputPipeline _inputPipeline;
-  final AssistantContextPipeline _contextPipeline;
+  late final AssistantContextPipeline _contextPipeline;
+  final LocalAssistantPersistentMemory? _persistentMemory;
   final AssistantGatewayIntelligence _gatewayIntelligence;
   final AssistantBusinessReasoning _businessReasoning;
   final AssistantExecutionMode _executionMode;
@@ -439,6 +452,39 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
       effectiveRequest = effectiveRequest.copyWith(
         context: (effectiveRequest.context ?? const AssistantContext()).copyWith(
           hints: hints,
+        ),
+      );
+    } else if (_capabilities.canUsePersistentMemory &&
+        _persistentMemory != null) {
+      // AI-024: memory hints without Context Engine (still opt-in).
+      final identity = AssistantTurnIdentity.resolve(effectiveRequest);
+      final memResult = _persistentMemory.searchSync(
+        AssistantMemorySearch(
+          sessionId: identity.sessionId,
+          keys: const [
+            AssistantMemoryKeys.lastClient,
+            AssistantMemoryKeys.lastQuote,
+            AssistantMemoryKeys.lastEvent,
+            AssistantMemoryKeys.lastSupplier,
+            AssistantMemoryKeys.lastDecision,
+            AssistantMemoryKeys.lastWorkflow,
+            AssistantMemoryKeys.lastCapability,
+            AssistantMemoryKeys.lastEntity,
+          ],
+          limit: 16,
+        ),
+      );
+      final memHints = <String>[
+        'persistentMemory:${memResult.entries.length}',
+        for (final e in memResult.entries)
+          'mem:${e.key}:${e.value ?? ''}:${e.metadata.confidence.toStringAsFixed(2)}',
+      ];
+      effectiveRequest = effectiveRequest.copyWith(
+        context: (effectiveRequest.context ?? const AssistantContext()).copyWith(
+          hints: [
+            ...?effectiveRequest.context?.hints,
+            ...memHints,
+          ],
         ),
       );
     }
@@ -1026,6 +1072,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   }
 
   AssistantCapabilities get capabilities => _capabilities;
+
+  LocalAssistantPersistentMemory? get persistentMemory => _persistentMemory;
 
   AssistantConversationSessionRegistry get conversationSessions =>
       _conversationSessions;

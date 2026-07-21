@@ -91,12 +91,18 @@ Não executa Commands, Capabilities, Workflow ou Gateway.
 
 `LocalAssistantContextPipeline`:
 
-Conversation → Memory → Context Builder → Execution Context
+Conversation → [opt] Persistent Memory (AI-024) → Context Builder → Execution Context
+
+Quando `LocalAssistantPersistentMemory` é injetado, hints `persistentMemory:*`
+/ `mem:*` entram no Execution Context sem alterar o fluxo default.
 
 ## Integração (CP-6)
 
 Opt-in: `AssistantCapabilities.canUseContextEngine` /
 `localContextEngine()`.
+
+Persistent Memory: `canUsePersistentMemory` / `localPersistentMemory()`
+(ver [persistent_memory.md](persistent_memory.md)).
 
 Orchestrator adiciona `traceHints` ao `AssistantContext.hints` sem breaking
 changes. Fluxo textual default permanece intacto.
@@ -108,6 +114,7 @@ changes. Fluxo textual default permanece intacto.
 - Sem memória cross-process
 - `schemaVersion` = **12**
 - AI-010 quote-read sessions continuam separadas
+- AI-024 Persistent Memory é in-memory (não é memória permanente em disco)
 
 ## Futuro
 

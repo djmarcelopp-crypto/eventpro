@@ -15,6 +15,7 @@ class LocalAssistantContextBuilder implements AssistantContextBuilder {
       if (request.inputId != null) 'inputId:${request.inputId}',
       if (request.normalizedInputText != null)
         'hasNormalizedText:${request.normalizedInputText!.isNotEmpty}',
+      ...request.persistentMemoryHints,
     ];
 
     return AssistantConversationExecutionContext.fromConversation(

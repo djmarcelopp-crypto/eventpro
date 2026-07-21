@@ -26,6 +26,9 @@ import '../domain/idempotency/assistant_idempotency_service.dart';
 import '../domain/insight/assistant_insight_formatter.dart';
 import '../domain/insight/assistant_insight_gateway.dart';
 import '../domain/insight/assistant_insight_planner.dart';
+import '../domain/business/reasoning/assistant_business_reasoning.dart';
+import '../domain/business/reasoning/business_reasoning_metadata.dart';
+import '../domain/business/reasoning/business_reasoning_request.dart';
 import '../domain/gateway_intelligence/assistant_gateway_intelligence.dart';
 import '../domain/gateway_intelligence/gateway_entity_kind.dart';
 import '../domain/gateway_intelligence/gateway_query.dart';
@@ -114,6 +117,7 @@ import 'local_assistant_insight_intent_resolver.dart';
 import 'local_assistant_insight_planner.dart';
 import 'local_assistant_input_pipeline.dart';
 import 'local_assistant_context_pipeline.dart';
+import 'local_assistant_business_reasoning.dart';
 import 'local_assistant_gateway_intelligence.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_read_coordinator.dart';
@@ -187,6 +191,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantInputPipeline? inputPipeline,
     AssistantContextPipeline? contextPipeline,
     AssistantGatewayIntelligence? gatewayIntelligence,
+    AssistantBusinessReasoning? businessReasoning,
     this._executionMode = AssistantExecutionMode.dryRun,
     Set<String> confirmedStepIds = const {},
     DateTime Function()? clock,
@@ -200,6 +205,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         _contextPipeline = contextPipeline ?? LocalAssistantContextPipeline(),
         _gatewayIntelligence = gatewayIntelligence ??
             LocalAssistantGatewayIntelligence(gateway: gateway),
+        _businessReasoning =
+            businessReasoning ?? const LocalAssistantBusinessReasoning(),
         _confirmedStepIds = Set.unmodifiable(confirmedStepIds),
         _clock = clock ?? DateTime.now,
         _parser = parser ?? LocalAssistantParser(clock: clock),
@@ -316,6 +323,7 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantInputPipeline _inputPipeline;
   final AssistantContextPipeline _contextPipeline;
   final AssistantGatewayIntelligence _gatewayIntelligence;
+  final AssistantBusinessReasoning _businessReasoning;
   final AssistantExecutionMode _executionMode;
   final Set<String> _confirmedStepIds;
   final DateTime Function() _clock;
@@ -472,6 +480,29 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     final primary = intents.first;
     final List<AssistantIntent> alternatives =
         intents.length > 1 ? intents.sublist(1) : const <AssistantIntent>[];
+
+    if (_capabilities.canUseBusinessReasoning) {
+      final reasoningRequest = _buildBusinessReasoningRequest(
+        request: effectiveRequest,
+        intentLabel: primary.type.name,
+      );
+      final reasoning =
+          await _businessReasoning.evaluate(reasoningRequest);
+      final hints = <String>[
+        ...?effectiveRequest.context?.hints,
+        'businessReasoning:${reasoning.decision.kind.name}',
+        'businessReasoningConfidence:${reasoning.decision.confidence.name}',
+        for (final s in reasoning.suggestions.take(3))
+          'brSuggestion:${s.code}:${s.message}',
+        for (final line in reasoning.explanations.take(4))
+          'brExplain:$line',
+      ];
+      effectiveRequest = effectiveRequest.copyWith(
+        context: (effectiveRequest.context ?? const AssistantContext()).copyWith(
+          hints: hints,
+        ),
+      );
+    }
 
     final eventDraft = AssistantDraftBuilder.buildEventDraft(
       sourceText: effectiveRequest.rawText,
@@ -1102,6 +1133,42 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     return parts.join(' ');
   }
 
+  BusinessReasoningRequest _buildBusinessReasoningRequest({
+    required AssistantRequest request,
+    required String intentLabel,
+  }) {
+    final hints = request.context?.hints ?? const <String>[];
+    final giCandidates = hints
+        .where((h) => h.startsWith('giCandidate:'))
+        .map((h) => h.substring('giCandidate:'.length).split(':'))
+        .where((p) => p.isNotEmpty)
+        .toList(growable: false);
+    final clientCandidates =
+        giCandidates.where((p) => p.first == 'client').toList(growable: false);
+    final ambiguous = hints.any((h) => h.startsWith('gatewayIntelligence:')) &&
+        clientCandidates.length > 1;
+
+    return BusinessReasoningRequest(
+      requestId: request.id,
+      intentLabel: intentLabel,
+      clientCandidateCount: clientCandidates.length,
+      clientFound: clientCandidates.length == 1,
+      clientId: clientCandidates.length == 1 && clientCandidates.first.length > 1
+          ? clientCandidates.first[1]
+          : null,
+      clientLabel: clientCandidates.length == 1 &&
+              clientCandidates.first.length > 2
+          ? clientCandidates.first[2]
+          : null,
+      gatewayAmbiguous: ambiguous,
+      metadata: BusinessReasoningMetadata(
+        correlationId: request.id,
+        sessionId: request.context?.sessionId,
+        evaluatedAt: _clock().toUtc(),
+      ),
+    );
+  }
+
   /// AI-022: only runs when opt-in and the turn looks like entity discovery.
   GatewayQuery? _buildGatewayIntelligenceQuery({
     required AssistantRequest request,
@@ -1131,8 +1198,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
         folded.startsWith('joao')) {
       kinds.add(GatewayEntityKind.client);
       queryText = text
-          .replaceAll(RegExp(r'(?i)buscar\s+cliente'), '')
-          .replaceAll(RegExp(r'(?i)cliente'), '')
+          .replaceAll(RegExp(r'buscar\s+cliente', caseSensitive: false), '')
+          .replaceAll(RegExp(r'cliente', caseSensitive: false), '')
           .trim();
       if (queryText.isEmpty) queryText = text;
     }

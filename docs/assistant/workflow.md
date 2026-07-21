@@ -120,6 +120,11 @@ Opt-in: descoberta de clientes/eventos/orçamentos/… via
 `AssistantGatewayIntelligence` antes do Intent/Command. Ver
 [gateway_intelligence.md](gateway_intelligence.md).
 
+## Business Reasoning (AI-023)
+
+Opt-in: avaliação determinística de fatos/regras ERP após Intent/GI.
+Ver [business_reasoning.md](business_reasoning.md).
+
 ## Extensibilidade
 
 1. Registrar `WorkflowDefinition` no definition registry.

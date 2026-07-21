@@ -40,6 +40,10 @@ import '../domain/context/assistant_conversation_metadata.dart';
 import '../domain/context/assistant_turn_identity.dart';
 import '../domain/memory/assistant_memory_keys.dart';
 import '../domain/memory/assistant_memory_search.dart';
+import '../domain/model_provider/assistant_model.dart';
+import '../domain/model_provider/assistant_model_message.dart';
+import '../domain/model_provider/assistant_model_role.dart';
+import '../domain/model_provider/assistant_provider_registry.dart';
 import '../domain/observability/assistant_write_observer.dart';
 import '../domain/read/assistant_read_gateway.dart';
 import '../domain/transaction_execution/assistant_transaction_execution_formatter.dart';
@@ -123,7 +127,10 @@ import 'local_assistant_business_reasoning.dart';
 import 'local_assistant_gateway_intelligence.dart';
 import 'local_assistant_intent_classifier.dart';
 import 'local_assistant_persistent_memory.dart';
+import 'local_assistant_provider_registry.dart';
+import 'local_assistant_provider_selector.dart';
 import 'local_assistant_read_coordinator.dart';
+import 'local_mock_model_provider.dart';
 import 'local_assistant_read_formatter.dart';
 import 'local_assistant_read_query_factory.dart';
 import 'local_assistant_response_builder.dart';
@@ -194,6 +201,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
     AssistantInputPipeline? inputPipeline,
     AssistantContextPipeline? contextPipeline,
     LocalAssistantPersistentMemory? persistentMemory,
+    AssistantProviderRegistry? providerRegistry,
+    AssistantProviderSelector? providerSelector,
     AssistantGatewayIntelligence? gatewayIntelligence,
     AssistantBusinessReasoning? businessReasoning,
     this._executionMode = AssistantExecutionMode.dryRun,
@@ -211,6 +220,18 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
                     .canUsePersistentMemory
                 ? LocalAssistantPersistentMemory(clock: clock)
                 : null),
+        _providerRegistry = providerRegistry ??
+            ((capabilities ?? const AssistantCapabilities()).canUseModelProvider
+                ? () {
+                    final registry = LocalAssistantProviderRegistry();
+                    registry.register(LocalMockProvider.registration(
+                      port: LocalMockProvider(clock: clock),
+                    ));
+                    return registry;
+                  }()
+                : LocalAssistantProviderRegistry()),
+        _providerSelector =
+            providerSelector ?? const LocalAssistantProviderSelector(),
         _gatewayIntelligence = gatewayIntelligence ??
             LocalAssistantGatewayIntelligence(gateway: gateway),
         _businessReasoning =
@@ -335,6 +356,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   final AssistantInputPipeline _inputPipeline;
   late final AssistantContextPipeline _contextPipeline;
   final LocalAssistantPersistentMemory? _persistentMemory;
+  final AssistantProviderRegistry _providerRegistry;
+  final AssistantProviderSelector _providerSelector;
   final AssistantGatewayIntelligence _gatewayIntelligence;
   final AssistantBusinessReasoning _businessReasoning;
   final AssistantExecutionMode _executionMode;
@@ -548,6 +571,51 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
           hints: hints,
         ),
       );
+    }
+
+    if (_capabilities.canUseModelProvider) {
+      // AI-025: provider abstraction only — hints, no vendor / no response change.
+      final selection = _providerSelector.select(
+        registry: _providerRegistry,
+        criteria: const AssistantProviderSelectionCriteria(
+          requiredCapabilities: {AssistantModelCapability.text},
+          allowFallback: true,
+        ),
+      );
+      if (selection != null) {
+        final health = await selection.port.health();
+        final probe = await selection.port.complete(
+          AssistantModelRequest(
+            messages: [
+              AssistantModelMessage(
+                role: AssistantModelRole.user,
+                content: effectiveRequest.rawText,
+              ),
+            ],
+            metadata: AssistantModelMetadata(
+              origin: 'orchestrator',
+              correlationId: turnIdentity.correlationId,
+              sessionId: turnIdentity.sessionId,
+            ),
+          ),
+        );
+        final hints = <String>[
+          ...?effectiveRequest.context?.hints,
+          'modelProvider:${selection.provider.id}',
+          'modelProviderReason:${selection.reason}',
+          'modelProviderHealth:${health.status.name}',
+          'modelProviderModel:${probe.modelId}',
+          'modelProviderTokens:${probe.usage.totalTokens}',
+          for (final c in selection.provider.capabilities.capabilities.take(6))
+            'modelCapability:${c.name}',
+        ];
+        effectiveRequest = effectiveRequest.copyWith(
+          context:
+              (effectiveRequest.context ?? const AssistantContext()).copyWith(
+            hints: hints,
+          ),
+        );
+      }
     }
 
     final eventDraft = AssistantDraftBuilder.buildEventDraft(
@@ -1074,6 +1142,8 @@ class LocalAssistantOrchestrator implements AssistantOrchestrator {
   AssistantCapabilities get capabilities => _capabilities;
 
   LocalAssistantPersistentMemory? get persistentMemory => _persistentMemory;
+
+  AssistantProviderRegistry get providerRegistry => _providerRegistry;
 
   AssistantConversationSessionRegistry get conversationSessions =>
       _conversationSessions;

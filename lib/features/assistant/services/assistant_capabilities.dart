@@ -56,6 +56,7 @@ class AssistantCapabilities {
     this.canUseGatewayIntelligence = false,
     this.canUseBusinessReasoning = false,
     this.canUsePersistentMemory = false,
+    this.canUseModelProvider = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -116,6 +117,9 @@ class AssistantCapabilities {
 
   /// Opt-in Persistent Memory Engine (AI-024) — in-memory operational memory.
   final bool canUsePersistentMemory;
+
+  /// Opt-in Model Provider abstraction (AI-025) — no vendor SDKs / HTTP.
+  final bool canUseModelProvider;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -292,6 +296,12 @@ class AssistantCapabilities {
         canUseContextEngine: true,
       );
 
+  /// Model Provider abstraction (AI-025) — local mock only, no vendor SDKs.
+  factory AssistantCapabilities.localModelProvider() =>
+      const AssistantCapabilities(
+        canUseModelProvider: true,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -359,6 +369,7 @@ class AssistantCapabilities {
     bool? canUseGatewayIntelligence,
     bool? canUseBusinessReasoning,
     bool? canUsePersistentMemory,
+    bool? canUseModelProvider,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -430,6 +441,8 @@ class AssistantCapabilities {
           canUseBusinessReasoning ?? this.canUseBusinessReasoning,
       canUsePersistentMemory:
           canUsePersistentMemory ?? this.canUsePersistentMemory,
+      canUseModelProvider:
+          canUseModelProvider ?? this.canUseModelProvider,
     );
   }
 
@@ -480,7 +493,8 @@ class AssistantCapabilities {
             other.canUseContextEngine == canUseContextEngine &&
             other.canUseGatewayIntelligence == canUseGatewayIntelligence &&
             other.canUseBusinessReasoning == canUseBusinessReasoning &&
-            other.canUsePersistentMemory == canUsePersistentMemory;
+            other.canUsePersistentMemory == canUsePersistentMemory &&
+            other.canUseModelProvider == canUseModelProvider;
   }
 
   @override
@@ -527,5 +541,6 @@ class AssistantCapabilities {
         canUseGatewayIntelligence,
         canUseBusinessReasoning,
         canUsePersistentMemory,
+        canUseModelProvider,
       ]);
 }

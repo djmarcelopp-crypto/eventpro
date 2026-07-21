@@ -100,6 +100,12 @@ Descoberta de entidades (client/event/quote/…) via composição de gateways,
 opt-in `canUseGatewayIntelligence`. Não altera resolução de Capabilities.
 Ver [gateway_intelligence.md](gateway_intelligence.md).
 
+## Business Reasoning (AI-023)
+
+Reasoning avalia readiness/conflitos/missing data **antes** da execução de
+Capabilities — sem alterar o Capability Resolver. Ver
+[business_reasoning.md](business_reasoning.md).
+
 ## Limitações
 
 - Sem Drift / HTTP / LLM / persistência

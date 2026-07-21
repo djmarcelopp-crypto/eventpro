@@ -59,6 +59,12 @@ Opt-in: `AssistantCapabilities.canUseGatewayIntelligence` /
 Orchestrator: após parse, se o turno parecer descoberta de entidade, gera
 hints `giCandidate:…` em `effectiveRequest.context` — sem alterar specialty paths.
 
+## Business Reasoning (AI-023)
+
+Candidatos/ambiguidade do Gateway Intelligence alimentam fatos do
+Business Reasoning (`gatewayAmbiguous`, `clientCandidateCount`). Ver
+[business_reasoning.md](business_reasoning.md).
+
 ## Limitações
 
 - Sem LLM / embeddings / HTTP / Drift

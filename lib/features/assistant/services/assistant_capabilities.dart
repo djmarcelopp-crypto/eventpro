@@ -54,6 +54,7 @@ class AssistantCapabilities {
     this.canUseMultimodalInput = false,
     this.canUseContextEngine = false,
     this.canUseGatewayIntelligence = false,
+    this.canUseBusinessReasoning = false,
   });
 
   /// Trust/environment level. ERP mode is reserved for a future approved adapter.
@@ -108,6 +109,9 @@ class AssistantCapabilities {
 
   /// Opt-in Gateway Intelligence discovery (AI-022) — no LLM/HTTP.
   final bool canUseGatewayIntelligence;
+
+  /// Opt-in Business Reasoning rules engine (AI-023) — no LLM/NLP/HTTP.
+  final bool canUseBusinessReasoning;
 
   /// Default: planning on for core intents, no read/write executors.
   factory AssistantCapabilities.localDefaults() =>
@@ -269,6 +273,14 @@ class AssistantCapabilities {
         canExecuteLookupQuote: true,
       );
 
+  /// Business Reasoning (AI-023) — deterministic ERP rule evaluation.
+  factory AssistantCapabilities.localBusinessReasoning() =>
+      const AssistantCapabilities(
+        canUseBusinessReasoning: true,
+        canUseGatewayIntelligence: true,
+        integrationMode: AssistantIntegrationMode.inMemory,
+      );
+
   bool get anyExecutionEnabled =>
       canExecuteCreateEvent ||
       canExecuteCreateQuote ||
@@ -334,6 +346,7 @@ class AssistantCapabilities {
     bool? canUseMultimodalInput,
     bool? canUseContextEngine,
     bool? canUseGatewayIntelligence,
+    bool? canUseBusinessReasoning,
   }) {
     return AssistantCapabilities(
       integrationMode: integrationMode ?? this.integrationMode,
@@ -401,6 +414,8 @@ class AssistantCapabilities {
           canUseContextEngine ?? this.canUseContextEngine,
       canUseGatewayIntelligence:
           canUseGatewayIntelligence ?? this.canUseGatewayIntelligence,
+      canUseBusinessReasoning:
+          canUseBusinessReasoning ?? this.canUseBusinessReasoning,
     );
   }
 
@@ -449,7 +464,8 @@ class AssistantCapabilities {
             other.canUseLLM == canUseLLM &&
             other.canUseMultimodalInput == canUseMultimodalInput &&
             other.canUseContextEngine == canUseContextEngine &&
-            other.canUseGatewayIntelligence == canUseGatewayIntelligence;
+            other.canUseGatewayIntelligence == canUseGatewayIntelligence &&
+            other.canUseBusinessReasoning == canUseBusinessReasoning;
   }
 
   @override
@@ -494,5 +510,6 @@ class AssistantCapabilities {
         canUseMultimodalInput,
         canUseContextEngine,
         canUseGatewayIntelligence,
+        canUseBusinessReasoning,
       ]);
 }
